@@ -60,7 +60,7 @@ def load(req: LoadRequest):
     global _model, _tok
     if not os.path.exists(req.path):
         raise HTTPException(404, f"Checkpoint not found: {req.path}")
-    ckpt    = torch.load(req.path, map_location=_device)
+    ckpt    = torch.load(req.path, map_location=_device, weights_only=False)
     cfg     = ckpt["config"]
     _model  = AaravLM(cfg).to(_device)
     _model.load_state_dict(ckpt["model"])

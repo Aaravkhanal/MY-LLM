@@ -25,7 +25,7 @@ def generate(
     device = torch.device(device_name or ("mps" if torch.backends.mps.is_available() else "cpu"))
     print(f"Loading  {ckpt_path}  on  {device}")
 
-    ckpt  = torch.load(ckpt_path, map_location=device)
+    ckpt  = torch.load(ckpt_path, map_location=device, weights_only=False)
     cfg   = ckpt["config"]
     model = AaravLM(cfg).to(device)
     model.load_state_dict(ckpt["model"])

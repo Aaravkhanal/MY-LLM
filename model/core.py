@@ -254,14 +254,16 @@ class AaravLM(nn.Module):
                     next_logits[next_logits < v[:, [-1]]] = float("-inf")
 
                 if top_p is not None and top_p < 1.0:
-                    s_logits, s_idx  = torch.sort(next_logits, descending=True)
-                    cum_probs        = torch.cumsum(F.softmax(s_logits, dim=-1), dim=-1)
-                    remove           = cum_probs > top_p
-                    remove[:, 1:]    = remove[:, :-1].clone()
-                    remove[:, 0]     = False
-                    next_logits.scatter_(1, s_idx, next_logits.scatter(1, s_idx, next_logits).masked_fill(remove, float("-inf")))
+                    sorted_logits, sorted_indices = torch.sort(next_logits, descending=True)
+                    cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
+                    sorted_indices_to_remove = cumulative_probs > top_p
+                    sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+                    sorted_indices_to_remove[..., 0] = False
+                    indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
+                    next_logits[indices_to_remove] = float("-inf")
 
-                idx_next = torch.multinomial(F.softmax(next_logits, dim=-1), num_samples=1)
+                probs = F.softmax(next_logits, dim=-1)
+                idx_next = torch.multinomial(probs, num_samples=1)
 
             idx = torch.cat([idx, idx_next], dim=1)
 
