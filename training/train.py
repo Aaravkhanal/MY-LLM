@@ -134,6 +134,8 @@ def train(
 
         # ── Evaluation & checkpoint ───────────────────────────────────────
         if step % eval_interval == 0 or step == 1:
+            if device.type == "mps":
+                torch.mps.empty_cache()
             losses = eval_loss(model, eval_iters, cfg.block_size, batch_size, device, Path(data_dir), ctx)
             print(f"  step {step:4d}/{max_iters}  "
                   f"train={losses['train']:.4f}  val={losses['val']:.4f}  lr={lr:.2e}")
