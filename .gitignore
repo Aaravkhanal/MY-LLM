@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.DS_Store
+*.egg-info/
+build/
+dist/
+
+# Binary data & weights
+data/*.bin
+data/shakespeare_raw.txt
+checkpoints/
+*.pt
