@@ -1,0 +1,11 @@
+10:07:37 [setup] tiny_tinystories  device=mps  precision=fp32  params=4.95M (body 4.43M)  weights=18.9MB
+10:07:37 [setup] train 15,768,659 tok / val 159,560 tok  seq=256  batch=16x4  tokens/step=16,384  steps=3000  total=49.2M tok (3.12 epochs)
+10:07:39 [eval] step 0  val loss 7.6624  ppl 2126.9  (untrained baseline)
+10:08:23 step     25/3000  loss 7.0478  lr 2.50e-04  gnorm max 5.11 (clipped 25/25)  9,086 tok/s  1983 ms/step  rss 99MB  mps 1258MB  free 1177MB  eta 1h38m
+10:09:18 step     50/3000  loss 5.6223  lr 5.00e-04  gnorm max 2.00 (clipped 19/25)  7,720 tok/s  2158 ms/step  rss 94MB  mps 1258MB  free 1016MB  eta 1h46m
+10:10:09 step     75/3000  loss 4.4951  lr 7.50e-04  gnorm max 1.14 (clipped 1/25)  8,177 tok/s  2018 ms/step  rss 113MB  mps 1258MB  free 1060MB  eta 1h38m
+10:11:02 step    100/3000  loss 3.9029  lr 1.00e-03  gnorm max 1.19 (clipped 1/25)  7,529 tok/s  2184 ms/step  rss 108MB  mps 1258MB  free 1723MB  eta 1h45m
+10:11:52 step    125/3000  loss 3.5202  lr 1.00e-03  gnorm max 0.88 (clipped 0/25)  9,039 tok/s  1841 ms/step  rss 110MB  mps 1258MB  free 1242MB  eta 1h28m
+10:12:34 step    150/3000  loss 3.2366  lr 9.99e-04  gnorm max 0.84 (clipped 0/25)  9,521 tok/s  1725 ms/step  rss 117MB  mps 1258MB  free 1131MB  eta 1h21m
+10:13:21 step    175/3000  loss 3.0521  lr 9.99e-04  gnorm max 0.84 (clipped 0/25)  8,597 tok/s  1964 ms/step  rss 58MB  mps 1258MB  free 976MB  eta 1h32m
+10:14:06 step    200/3000  loss 2.9058  lr 9.97e-04  gnorm max 0.80 (clipped 0/25)  9,187 tok/s  1798 ms/step  rss 104MB  mps 1258MB  free 1641MB  eta 1h23m
