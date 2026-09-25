@@ -26,8 +26,8 @@ train:
   device: auto
   precision: fp32
   max_steps: 3000
-  batch_size: 32
-  grad_accum: 2
+  batch_size: 16
+  grad_accum: 4
   lr: 0.001
   min_lr_ratio: 0.1
   warmup_steps: 100

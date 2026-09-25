@@ -10,7 +10,7 @@ Four size presets are provided, all calibrated to fit comfortably inside
 8 GB of Apple Unified Memory while leaving room for the OS and activations.
 """
 
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, fields, replace
 from typing import Callable, Dict, Literal, Optional
 
 
@@ -169,4 +169,12 @@ def get_preset(name: str, **overrides) -> ModelConfig:
     """Build a preset by name, e.g. get_preset("tiny", vocab_size=2048)."""
     if name not in PRESETS:
         raise KeyError(f"unknown preset {name!r}; choose from {sorted(PRESETS)}")
-    return PRESETS[name](**overrides)
+    # The factories only take vocab_size/block_size; every other field is replaced afterwards.
+    factory_args = {k: overrides.pop(k) for k in ("vocab_size", "block_size") if k in overrides}
+    cfg = PRESETS[name](**factory_args)
+    if not overrides:
+        return cfg
+    unknown = set(overrides) - {f.name for f in fields(ModelConfig)}
+    if unknown:
+        raise ValueError(f"unknown ModelConfig override(s): {sorted(unknown)}")
+    return replace(cfg, **overrides)
