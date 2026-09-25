@@ -13,7 +13,8 @@ from pathlib import Path
 
 from aarav_lm.config import ExperimentConfig
 from aarav_lm.paths import EXPERIMENT_DIR, REPO_ROOT
-from aarav_lm.train.trainer import Trainer, next_experiment_dir
+from aarav_lm.train.sft_trainer import make_trainer
+from aarav_lm.train.trainer import next_experiment_dir
 
 # Changing anything else mid-experiment would make the resumed run differ from the recorded config.
 RESUME_SAFE = {"train.max_steps", "train.eval_interval", "train.log_interval", "train.ckpt_interval", "train.device"}
@@ -38,7 +39,7 @@ def main() -> None:
         exp = ExperimentConfig.from_yaml(args.config).with_overrides(args.overrides)
         run_dir = next_experiment_dir(Path(args.exp_root), exp.name)
 
-    summary = Trainer(exp, run_dir, repo_root=REPO_ROOT).run(resume=bool(args.resume))
+    summary = make_trainer(exp, run_dir, repo_root=REPO_ROOT).run(resume=bool(args.resume))
     print(f"\nexperiment: {run_dir}\nstatus: {summary['status']}  best val loss: {summary['best_val_loss']}")
 
 

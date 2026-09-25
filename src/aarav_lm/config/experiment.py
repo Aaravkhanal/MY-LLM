@@ -67,12 +67,17 @@ class TrainConfig:
     ckpt_interval: int = 200
     early_stop_patience: int = 0      # evals without improvement; 0 disables
     keep_last: int = 2                # rolling step checkpoints to keep
+    lora_rank: int = 0                # >0: fine-tune with LoRA adapters of this rank (SFT only)
+    lora_alpha: float = 16.0
+    lora_dropout: float = 0.0
 
 
 @dataclass
 class ExperimentConfig:
     name: str = "exp"
     description: str = ""
+    stage: str = "pretrain"           # pretrain | sft
+    init_from: str = ""               # sft: checkpoint (best.pt/final.pt/step_*.pt) to start from
     model_preset: str = "tiny"
     model_overrides: dict = field(default_factory=dict)
     tokenizer: TokenizerConfig = field(default_factory=TokenizerConfig)

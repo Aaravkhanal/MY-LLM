@@ -128,29 +128,19 @@ class Trainer:
         seed_everything(self.cfg.seed)
 
         self.tok = AaravTokenizer.load(resolve(self.exp.tokenizer.artifact_dir))
-        problems = validate_dataset(resolve(self.exp.data.out_dir), self.tok)
-        if problems:
-            raise RuntimeError("dataset validation failed:\n  " + "\n  ".join(problems))
-
         self.model_cfg = self.exp.build_model_config()
         if self.model_cfg.vocab_size != self.tok.vocab_size:
             raise RuntimeError(
                 f"model vocab {self.model_cfg.vocab_size} != tokenizer vocab {self.tok.vocab_size}"
             )
-        seq_len = self.model_cfg.block_size
-        out = resolve(self.exp.data.out_dir)
-        self.train_ds = TokenDataset(Shard.open(out / "train.bin"), seq_len)
-        self.val_ds = TokenDataset(Shard.open(out / "val.bin"), seq_len)
-        self.stream = BatchStream(self.train_ds, self.cfg.batch_size, seed=self.cfg.seed)
-        self.val_batches = self.val_ds.fixed_eval_batches(self.cfg.batch_size, self.cfg.eval_iters)
-
-        # Initialise on CPU so weights are identical across devices for a given seed.
-        self.model = AaravLM(self.model_cfg)
+        self._validate_data()
+        self.seq_len = self.model_cfg.block_size
+        self._build_data()
+        self.model = self._init_model()
         self.model.to(self.device).train()
         self.optimizer = self.model.configure_optimizers(
             self.cfg.weight_decay, self.cfg.lr, (self.cfg.beta1, self.cfg.beta2), self.device.type
         )
-        self.tokens_per_step = self.cfg.batch_size * self.cfg.grad_accum * seq_len
 
         if resume:
             latest = ckpt.latest_checkpoint(self.ckpt_dir)
@@ -173,11 +163,9 @@ class Trainer:
             f"weights={tensors_nbytes(self.model)/MB:.1f}MB"
         )
         self.log(
-            f"[setup] train {self.train_ds.shard.n_tokens:,} tok / val {self.val_ds.shard.n_tokens:,} tok  "
-            f"seq={seq_len}  batch={self.cfg.batch_size}x{self.cfg.grad_accum}  "
-            f"tokens/step={self.tokens_per_step:,}  steps={self.cfg.max_steps}  "
-            f"total={self.tokens_per_step * self.cfg.max_steps/1e6:.1f}M tok "
-            f"({self.tokens_per_step * self.cfg.max_steps / self.train_ds.shard.n_tokens:.2f} epochs)"
+            f"[setup] stage={self.exp.stage}  {self.data_summary}  seq={self.seq_len}  "
+            f"batch={self.cfg.batch_size}x{self.cfg.grad_accum}  steps={self.cfg.max_steps}  "
+            f"(~{self.epoch_estimate():.2f} epochs)"
         )
 
     def _restore(self, path: Path) -> None:
@@ -197,6 +185,33 @@ class Trainer:
         ckpt.restore_rng_state(state["rng"])
         self.resumed_from = path.name
         self.log(f"[resume] {path.name}: step {self.step}, {self.tokens_seen:,} tokens, best val {self.best_val:.4f}")
+
+    # ── stage hooks (SFTTrainer overrides these) ───────────────────────────
+    def _validate_data(self) -> None:
+        problems = validate_dataset(resolve(self.exp.data.out_dir), self.tok)
+        if problems:
+            raise RuntimeError("dataset validation failed:\n  " + "\n  ".join(problems))
+
+    def _build_data(self) -> None:
+        """Set self.stream, self.val_batches, self.train_tokens, self.val_tokens, self.data_summary."""
+        out = resolve(self.exp.data.out_dir)
+        train_ds = TokenDataset(Shard.open(out / "train.bin"), self.seq_len)
+        val_ds = TokenDataset(Shard.open(out / "val.bin"), self.seq_len)
+        self.stream = BatchStream(train_ds, self.cfg.batch_size, seed=self.cfg.seed)
+        self.val_batches = val_ds.fixed_eval_batches(self.cfg.batch_size, self.cfg.eval_iters)
+        self.train_tokens, self.val_tokens = train_ds.shard.n_tokens, val_ds.shard.n_tokens
+        self.data_summary = f"train {self.train_tokens:,} tok / val {self.val_tokens:,} tok"
+
+    def _init_model(self) -> AaravLM:
+        # Initialise on CPU so weights are identical across devices for a given seed.
+        return AaravLM(self.model_cfg)
+
+    def _export_model(self) -> AaravLM:
+        """The plain model to put in model-only checkpoints."""
+        return self.model
+
+    def epoch_estimate(self) -> float:
+        return self.cfg.batch_size * self.cfg.grad_accum * self.cfg.max_steps * self.seq_len / max(1, self.train_tokens)
 
     # ── checkpoints ────────────────────────────────────────────────────────
     def _train_state(self) -> Dict[str, Any]:
@@ -219,8 +234,9 @@ class Trainer:
 
     def _save_best(self, val: Dict[str, float]) -> None:
         ckpt.save_model_checkpoint(
-            self.ckpt_dir / "best.pt", self.model, self.tok.fingerprint,
-            {"step": self.step, "val_loss": val["loss"], "val_perplexity": val["perplexity"]},
+            self.ckpt_dir / "best.pt", self._export_model(), self.tok.fingerprint,
+            {"step": self.step, "val_loss": val["loss"], "val_perplexity": val["perplexity"],
+             "stage": self.exp.stage, "experiment": self.run_dir.name},
         )
 
     # ── evaluation ─────────────────────────────────────────────────────────
@@ -256,8 +272,10 @@ class Trainer:
                     g["lr"] = lr
 
                 step_loss = torch.zeros((), device=self.device)
+                step_tokens = 0
                 for _ in range(self.cfg.grad_accum):
                     x, y = self.stream.next_batch()
+                    step_tokens += x.numel()
                     x, y = x.to(self.device), y.to(self.device)
                     with self.ctx():
                         _, loss = self.model(x, targets=y)
@@ -282,9 +300,9 @@ class Trainer:
                 self.optimizer.zero_grad(set_to_none=True)
 
                 self.step += 1
-                self.tokens_seen += self.tokens_per_step
+                self.tokens_seen += step_tokens
                 synchronize(self.device)
-                tracker.tick(self.tokens_per_step)
+                tracker.tick(step_tokens)
                 window_loss += loss_val
                 window_n += 1
                 grad_norm_max = max(grad_norm_max, gnorm)
@@ -356,8 +374,8 @@ class Trainer:
 
         path = self.save_checkpoint()
         ckpt.save_model_checkpoint(
-            self.ckpt_dir / "final.pt", self.model, self.tok.fingerprint,
-            {"step": self.step, "status": status},
+            self.ckpt_dir / "final.pt", self._export_model(), self.tok.fingerprint,
+            {"step": self.step, "status": status, "stage": self.exp.stage, "experiment": self.run_dir.name},
         )
         self.log(f"[done] {status} at step {self.step}; saved {path.name}, final.pt")
         summary = self._write_summary(status)
@@ -380,7 +398,7 @@ class Trainer:
             "best_val_loss": None if math.isinf(self.best_val) else self.best_val,
             "best_val_perplexity": None if math.isinf(self.best_val) else math.exp(self.best_val),
             "last_eval": last_val, "checkpoint_mb": sizes,
-            "dataset_train_tokens": self.train_ds.shard.n_tokens,
+            "dataset_train_tokens": self.train_tokens, "stage": self.exp.stage,
             "peak_rss_mb": self.peak_rss_mb, "peak_mps_driver_mb": self.peak_mps_mb,
             "config_fingerprint": self.exp.fingerprint(), "tokenizer_fingerprint": self.tok.fingerprint,
             "device": str(self.device), "precision": self.cfg.precision,

@@ -1,0 +1,35 @@
+# Supervised fine-tuning demo: teach the pretrained tiny model the chat template and story requests.
+# Start it only after exp_001 (pretraining) has finished.
+name: sft_tinystories
+description: Full fine-tune of exp_001 on templated story-request conversations built from our own corpus.
+stage: sft
+init_from: experiments/exp_001_tiny_tinystories/checkpoints/final.pt
+model_preset: tiny
+
+tokenizer:
+  kind: bpe
+  vocab_size: 2048
+  artifact_dir: artifacts/tokenizer_tinystories_v1   # must be the pretraining tokenizer
+
+data:
+  sources: [data/raw/story_requests_v1.jsonl]
+  out_dir: data/processed/story_sft_v1
+  dedup: true
+  seed: 1337
+
+train:
+  seed: 1337
+  device: auto
+  precision: fp32
+  max_steps: 600
+  batch_size: 16
+  grad_accum: 2
+  lr: 0.0003
+  min_lr_ratio: 0.1
+  warmup_steps: 30
+  weight_decay: 0.01
+  eval_interval: 100
+  eval_iters: 20
+  log_interval: 20
+  ckpt_interval: 100
+  lora_rank: 0
