@@ -22,7 +22,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--checkpoint", required=True)
     ap.add_argument("--device", default="auto")
-    ap.add_argument("--prompts", default="evals/prompts_v1.jsonl")
+    ap.add_argument("--prompts", default=None,
+                    help="default: evals/chat_prompts_v1.jsonl for instruction-tuned checkpoints, else evals/prompts_v1.jsonl")
     ap.add_argument("--probes", default="evals/probes_v1.jsonl")
     ap.add_argument("--max-new-tokens", type=int, default=200)
     ap.add_argument("--out", help="results file (default: <experiment>/eval/<checkpoint>_results.json)")
@@ -36,7 +37,9 @@ def main() -> None:
     engine = InferenceEngine.from_checkpoint(ckpt, resolve(cfg["tokenizer"]["artifact_dir"]), args.device)
     engine.meta["experiment"] = run_dir.name
 
-    results = run_suite(engine, resolve(cfg["data"]["out_dir"]), resolve(args.prompts), resolve(args.probes),
+    prompts = args.prompts or ("evals/chat_prompts_v1.jsonl" if engine.meta.get("stage") == "sft" else "evals/prompts_v1.jsonl")
+    print(f"[eval] stage={engine.meta.get('stage', 'pretrain')}  prompts={prompts}")
+    results = run_suite(engine, resolve(cfg["data"]["out_dir"]), resolve(prompts), resolve(args.probes),
                         max_new_tokens=args.max_new_tokens)
     out = Path(args.out) if args.out else run_dir / "eval" / f"{ckpt.stem}_results.json"
     print(f"[eval] wrote {save_results(results, out)}")

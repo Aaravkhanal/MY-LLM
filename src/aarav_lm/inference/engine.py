@@ -82,13 +82,20 @@ def sample_next(
     cfg: GenerationConfig,
     generator: Optional[torch.Generator],
     recent_ids: Sequence[int] = (),
+    exempt_ids: Sequence[int] = (),
 ) -> int:
-    """Pick the next token id from a (V,) logits vector."""
+    """Pick the next token id from a (V,) logits vector.
+
+    The repetition penalty looks at `recent_ids` (the model's own output) and never touches
+    `exempt_ids` (stop tokens): penalising the end-of-turn token would make replies ramble on.
+    """
     logits = logits.float().clone()
-    if cfg.repetition_penalty != 1.0 and len(recent_ids):
-        idx = torch.tensor(sorted(set(recent_ids[-REPETITION_WINDOW:])), dtype=torch.long)
-        picked = logits[idx]
-        logits[idx] = torch.where(picked > 0, picked / cfg.repetition_penalty, picked * cfg.repetition_penalty)
+    if cfg.repetition_penalty != 1.0:
+        penalised = sorted(set(recent_ids[-REPETITION_WINDOW:]) - set(exempt_ids))
+        if penalised:
+            idx = torch.tensor(penalised, dtype=torch.long)
+            picked = logits[idx]
+            logits[idx] = torch.where(picked > 0, picked / cfg.repetition_penalty, picked * cfg.repetition_penalty)
     if cfg.temperature == 0.0:
         return int(torch.argmax(logits))
     logits = logits / cfg.temperature
@@ -164,7 +171,7 @@ class InferenceEngine:
         finish = "length"
 
         for _ in range(cfg.max_new_tokens):
-            nxt = sample_next(logits.cpu(), cfg, gen, ids)
+            nxt = sample_next(logits.cpu(), cfg, gen, gen_ids, exempt_ids=(self.tok.eot_id, *cfg.stop_ids))
             if cfg.stop_at_eot and nxt == self.tok.eot_id:
                 finish = "eot"
                 break
@@ -183,9 +190,10 @@ class InferenceEngine:
                         yield text[emitted:cut]
                     emitted, finish = cut, "stop"
                     break
-            safe = len(text) - hold
-            if text.endswith("�"):
-                safe = min(safe, len(text) - 1)                        # incomplete UTF-8 tail
+            # Hold back (a) an incomplete UTF-8 tail (shown as U+FFFD) and (b) enough characters before
+            # it that a stop sequence still forming can't leak. Both apply together, so subtract both.
+            incomplete = len(text) - len(text.rstrip("\N{REPLACEMENT CHARACTER}"))
+            safe = len(text) - incomplete - hold
             if safe > emitted:
                 yield text[emitted:safe]
                 emitted = safe

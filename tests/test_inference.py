@@ -147,3 +147,60 @@ def test_loading_with_the_wrong_tokenizer_fails_loudly(tiny_run, tmp_path):
 def test_engine_info_reports_model_facts(engine):
     info = engine.info()
     assert info["context_length"] == 32 and info["vocab_size"] == 300 and info["params"] > 0
+
+
+# ── regressions found by the independent review ──────────────────────────────
+
+def test_repetition_penalty_never_suppresses_stop_tokens():
+    end = 5
+    logits = torch.zeros(10)
+    logits[end], logits[3] = 1.6, 1.5
+    cfg = greedy(repetition_penalty=1.3)
+    assert sample_next(logits, cfg, None, recent_ids=[end]) == 3                          # penalised: 1.6/1.3 < 1.5, choice flips
+    assert sample_next(logits, cfg, None, recent_ids=[end], exempt_ids=[end]) == end      # exempt: stop token still wins
+
+
+def test_penalty_only_sees_generated_tokens_not_the_prompt(engine, monkeypatch):
+    seen = {}
+
+    def spy(logits, cfg, gen, recent_ids=(), exempt_ids=()):
+        seen["recent"], seen["exempt"] = list(recent_ids), set(exempt_ids)
+        return engine.tok.eot_id
+
+    monkeypatch.setattr(eng_mod, "sample_next", spy)
+    prompt = engine.tok.encode("Once upon a time there was a dog")
+    engine.generate(prompt, GenerationConfig(max_new_tokens=3, repetition_penalty=1.5))
+    assert seen["recent"] == []                                                          # nothing generated yet
+    assert engine.tok.eot_id in seen["exempt"]
+
+
+def _scripted_stream(engine, monkeypatch, text, stop):
+    script = iter(engine.tok.encode(text))
+    monkeypatch.setattr(eng_mod, "sample_next", lambda *a, **k: next(script))
+    n = len(engine.tok.encode(text))
+    deltas = list(engine.stream(engine.tok.encode("The"), GenerationConfig(max_new_tokens=n, stop_sequences=(stop,))))
+    return deltas, engine.last_result
+
+
+def test_stop_sequence_with_a_split_multibyte_character_never_leaks(engine, monkeypatch):
+    deltas, res = _scripted_stream(engine, monkeypatch, "Hi 你好 there", "你好")
+    assert res.text == "Hi " and res.finish_reason == "stop"
+    assert "".join(deltas) == "Hi "                                      # used to stream 'Hi ' + the first stop character
+    assert not any("你" in d for d in deltas)
+
+
+def test_streamed_text_always_equals_the_final_text_fuzz(engine, monkeypatch):
+    import random
+    rng = random.Random(0)
+    alphabet = list("abc de.") + ["你", "好", "☃", "\U0001F642", "é"]
+    for _ in range(150):
+        text = "".join(rng.choice(alphabet) for _ in range(rng.randint(6, 20)))
+        i = rng.randrange(1, len(text) - 1)
+        stop = text[i: i + rng.randint(1, 3)]
+        script = iter(engine.tok.encode(text))
+        monkeypatch.setattr(eng_mod, "sample_next", lambda *a, **k: next(script))
+        deltas = list(engine.stream(engine.tok.encode("The"), GenerationConfig(max_new_tokens=len(engine.tok.encode(text)), stop_sequences=(stop,))))
+        res = engine.last_result
+        assert "".join(deltas) == res.text, (text, stop, deltas, res.text)
+        assert stop not in res.text
+        assert res.text == text[: text.find(stop)]

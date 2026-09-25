@@ -83,9 +83,8 @@ def no_state_leaks_between_requests(e):
 
 
 def stop_sequence_is_honoured(e):
-    base = _gen(e, "Once upon a time", max_new_tokens=30).text
-    if len(base) < 8:
-        return "skipped (output too short)"
+    base = _gen(e, "Once upon a time", max_new_tokens=60).text
+    assert len(base) >= 8, f"model produced only {len(base)} characters, so a stop sequence can't be tested"
     stop = base[4:7]
     r = _gen(e, "Once upon a time", max_new_tokens=30, stop_sequences=(stop,))
     assert stop not in r.text and r.finish_reason == "stop"

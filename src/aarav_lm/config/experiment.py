@@ -71,6 +71,23 @@ class TrainConfig:
     lora_alpha: float = 16.0
     lora_dropout: float = 0.0
 
+    def validate(self) -> "TrainConfig":
+        """Reject values that would crash mid-run (e.g. an interval of 0 divides by zero after step 1)."""
+        positive = ("max_steps", "batch_size", "grad_accum", "eval_interval", "eval_iters", "log_interval", "ckpt_interval")
+        for name in positive:
+            if getattr(self, name) < 1:
+                raise ValueError(f"train.{name} must be >= 1, got {getattr(self, name)}")
+        for name in ("warmup_steps", "keep_last", "early_stop_patience", "lora_rank"):
+            if getattr(self, name) < 0:
+                raise ValueError(f"train.{name} must be >= 0, got {getattr(self, name)}")
+        if not (0.0 <= self.min_lr_ratio <= 1.0):
+            raise ValueError("train.min_lr_ratio must be in [0, 1]")
+        if self.lr < 0 or self.weight_decay < 0 or self.grad_clip <= 0:
+            raise ValueError("train.lr/weight_decay must be >= 0 and grad_clip > 0")
+        if self.precision not in ("fp32", "bf16"):
+            raise ValueError("train.precision must be 'fp32' or 'bf16'")
+        return self
+
 
 @dataclass
 class ExperimentConfig:
@@ -108,7 +125,9 @@ class ExperimentConfig:
         _check_keys(cls, d, "experiment")
         scalars = {k: v for k, v in d.items() if k not in sub}
         d.update(_coerce_section(cls, scalars, "experiment"))
-        return cls(**d)
+        exp = cls(**d)
+        exp.train.validate()
+        return exp
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "ExperimentConfig":

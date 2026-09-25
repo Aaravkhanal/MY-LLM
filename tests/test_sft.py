@@ -302,3 +302,38 @@ def test_lora_sft_trains_only_adapters_and_exports_a_plain_merged_model(tmp_path
     # LoRA crash-resume: the training checkpoint holds the adapters
     st = torch.load(tmp_path / "lora/checkpoints/step_00000012.pt", weights_only=True)
     assert any("lora_A" in k for k in st["model"])
+
+
+def test_lora_crash_resume_matches_the_uninterrupted_run(tmp_path, tiny_run):
+    """The earlier LoRA test only checked adapter keys existed; this one actually resumes."""
+    (tmp_path / "s").mkdir()
+    exp = _pretrain_and_sft(tmp_path, tiny_run, lora_rank=4, lora_alpha=8, lr=5e-3)
+    full, crashed = tmp_path / "full", tmp_path / "crashed"
+    SFTTrainer(exp, full, log=quiet).run()
+    (crashed / "checkpoints").mkdir(parents=True)
+    shutil.copy(full / "config.yaml", crashed / "config.yaml")
+    shutil.copy(full / "checkpoints/step_00000004.pt", crashed / "checkpoints")
+    SFTTrainer(exp, crashed, log=quiet).run(resume=True)
+    a = torch.load(full / "checkpoints/step_00000012.pt", weights_only=True)["model"]
+    b = torch.load(crashed / "checkpoints/step_00000012.pt", weights_only=True)["model"]
+    assert any("lora_A" in k for k in a) and all(torch.equal(a[k], b[k]) for k in a)
+    fa = torch.load(full / "checkpoints/final.pt", weights_only=True)["model"]
+    fb = torch.load(crashed / "checkpoints/final.pt", weights_only=True)["model"]
+    assert all(torch.equal(fa[k], fb[k]) for k in fa)                # the merged export matches too
+
+
+def test_evaluation_suite_handles_an_sft_checkpoint_and_sft_data(sft_exp, tiny_run, tmp_path):
+    """Used to crash: the suite only knew pretraining .bin shards and raw-text prompts."""
+    from aarav_lm.evaluation.suite import run_suite
+    SFTTrainer(sft_exp, tmp_path / "run", log=quiet).run()
+    engine = InferenceEngine.from_checkpoint(tmp_path / "run/checkpoints/best.pt", tiny_run["tok_dir"], "cpu")
+    prompts = tmp_path / "p.jsonl"
+    prompts.write_text("\n".join(json.dumps(r) for r in [{"id": "a", "prompt": "Tell dog 3", "entity": "dog"},
+                                                          {"id": "b", "prompt": "Tell cat 4", "entity": None}]) + "\n")
+    probes = Path(__file__).resolve().parents[1] / "evals/probes_v1.jsonl"
+    res = run_suite(engine, sft_exp.data.out_dir, prompts, probes, max_new_tokens=10, max_windows=8, log=quiet)
+    assert res["model"]["stage"] == "sft"
+    assert res["loss"]["val"]["windows"] > 0 and res["loss"]["val"]["loss"] > 0 and res["loss"]["val"]["bits_per_byte"] is None
+    assert {s["finish_reason"] for s in res["generation"]["greedy"]["samples"]} <= {"length", "stop", "eot"}
+    assert res["edge_cases"]["all_passed"], [c for c in res["edge_cases"]["cases"] if not c["passed"]]
+    assert res["eval_sets"]["dataset_fingerprint"]

@@ -81,7 +81,7 @@ class Trainer:
         repo_root: Optional[Path] = None,
     ):
         self.exp = exp
-        self.cfg = exp.train
+        self.cfg = exp.train.validate()
         self.run_dir = Path(run_dir)
         self.ckpt_dir = self.run_dir / "checkpoints"
         self.repo_root = repo_root or Path.cwd()
@@ -123,8 +123,6 @@ class Trainer:
         self.ckpt_dir.mkdir(exist_ok=True)
         self._log_file = open(self.run_dir / "train.log", "a", encoding="utf-8")
 
-        if not (self.run_dir / "config.yaml").exists():
-            self.exp.to_yaml(self.run_dir / "config.yaml")
         seed_everything(self.cfg.seed)
 
         self.tok = AaravTokenizer.load(resolve(self.exp.tokenizer.artifact_dir))
@@ -136,6 +134,7 @@ class Trainer:
         self._validate_data()
         self.seq_len = self.model_cfg.block_size
         self._build_data()
+        self.data_id = [int(self.train_tokens), int(self.val_tokens), int(getattr(self, "n_train_examples", 0))]
         self.model = self._init_model()
         self.model.to(self.device).train()
         self.optimizer = self.model.configure_optimizers(
@@ -148,13 +147,17 @@ class Trainer:
                 raise ckpt.CheckpointError(f"nothing to resume in {self.ckpt_dir}")
             self._restore(latest)
 
+        self._record_config_and_env()
         info = {
             "python": sys.version.split()[0], "torch": torch.__version__, "platform": platform.platform(),
             "device": str(self.device), "precision": self.cfg.precision,
             "git": _git_info(self.repo_root), "config_fingerprint": self.exp.fingerprint(),
             "tokenizer_fingerprint": self.tok.fingerprint,
         }
-        (self.run_dir / "env.json").write_text(json.dumps(info, indent=2), encoding="utf-8")
+        env_path = self.run_dir / "env.json"
+        if env_path.exists():             # keep the original run's environment (git commit etc.); log this resume separately
+            env_path = self.run_dir / f"env.resume_at_step{self.step}.json"
+        env_path.write_text(json.dumps(info, indent=2), encoding="utf-8")
 
         n = self.model.num_params()
         self.log(
@@ -168,6 +171,17 @@ class Trainer:
             f"(~{self.epoch_estimate():.2f} epochs)"
         )
 
+    def _record_config_and_env(self) -> None:
+        """config.yaml must always describe what actually runs. If a resume changed it (e.g. a larger
+        max_steps, which also moves the cosine schedule), keep the previous file and write the new one."""
+        path = self.run_dir / "config.yaml"
+        if path.exists():
+            if yaml.safe_load(path.read_text(encoding="utf-8")) == self.exp.to_dict():
+                return
+            path.rename(self.run_dir / f"config.before_resume_at_step{self.step}.yaml")
+            self.log(f"[resume] config changed; previous saved as config.before_resume_at_step{self.step}.yaml")
+        self.exp.to_yaml(path)
+
     def _restore(self, path: Path) -> None:
         state = ckpt.load_training_checkpoint(path)
         self.tok.check_fingerprint(state["tokenizer_fingerprint"], what=f"checkpoint {path.name}")
@@ -177,6 +191,12 @@ class Trainer:
         self.optimizer.load_state_dict(state["optimizer"])
         self.stream.load_state_dict(state["stream_state"])
         ts = state["train_state"]
+        saved_data = ts.get("data_id")
+        if saved_data is not None and list(saved_data) != self.data_id:
+            raise ckpt.CheckpointError(
+                f"the dataset changed since this checkpoint was written (size {saved_data} vs {self.data_id}); "
+                "resuming would replay a different data stream"
+            )
         self.step, self.tokens_seen = ts["step"], ts["tokens_seen"]
         self.best_val = ts["best_val"] if ts["best_val"] is not None else math.inf
         self.evals_without_improvement = ts["evals_without_improvement"]
@@ -219,11 +239,19 @@ class Trainer:
             "step": self.step, "tokens_seen": self.tokens_seen,
             "best_val": None if math.isinf(self.best_val) else self.best_val,
             "evals_without_improvement": self.evals_without_improvement,
-            "train_seconds": self.train_seconds,
+            "train_seconds": self.train_seconds, "data_id": self.data_id,
             "peak_rss_mb": self.peak_rss_mb, "peak_mps_mb": self.peak_mps_mb,
         }
 
+    def _assert_finite_weights(self) -> None:
+        """Never write NaN/inf weights over the last good rolling checkpoint."""
+        flags = torch.stack([torch.isfinite(p).all() for p in self.model.parameters()])
+        if not bool(flags.all()):
+            bad = [n for (n, _), ok in zip(self.model.named_parameters(), flags.tolist()) if not ok]
+            raise FloatingPointError(f"non-finite weights in {bad[:3]} at step {self.step}; checkpoint not written")
+
     def save_checkpoint(self) -> Path:
+        self._assert_finite_weights()
         path = ckpt.step_path(self.ckpt_dir, self.step)
         ckpt.save_training_checkpoint(
             path, self.model, self.optimizer, self._train_state(), self.stream.state_dict(),

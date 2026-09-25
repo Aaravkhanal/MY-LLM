@@ -32,6 +32,18 @@ DEFAULT_RULES: List[Tuple[str, str, float]] = [
 ]
 
 
+# Two results only mean something side by side if these match exactly.
+COMPARABILITY_KEYS: List[Tuple[str, str]] = [
+    ("eval_sets.prompts.sha256", "evaluation prompt sets"),
+    ("eval_sets.probes.sha256", "probe sets"),
+    ("eval_sets.dataset_fingerprint", "held-out datasets"),
+    ("model.tokenizer_fingerprint", "tokenizers (per-token loss is not comparable across vocabularies)"),
+    ("settings.max_new_tokens", "generation lengths"),
+    ("settings.max_windows", "numbers of evaluation windows"),
+    ("settings.sampled", "sampling settings"),
+]
+
+
 @dataclass
 class RuleResult:
     metric: str
@@ -71,12 +83,11 @@ def compare_to_baseline(
     new: Dict, baseline: Dict, rules: Optional[List[Tuple[str, str, float]]] = None
 ) -> Tuple[bool, List[RuleResult]]:
     problems: List[RuleResult] = []
-    for name in ("prompts", "probes"):
-        a = get_path(baseline, f"eval_sets.{name}.sha256")
-        b = get_path(new, f"eval_sets.{name}.sha256")
+    for path, what in COMPARABILITY_KEYS:
+        a, b = get_path(baseline, path), get_path(new, path)
         if a != b:
-            problems.append(RuleResult(f"eval_sets.{name}", "same_set", a, b, False,
-                                       "evaluation sets differ; results are not comparable"))
+            problems.append(RuleResult(path, "same_setup", a, b, False,
+                                       f"{what} differ; results are not comparable"))
     if problems:
         return False, problems
     results = []

@@ -22,11 +22,11 @@ from __future__ import annotations
 import json
 import threading
 import time
-from contextlib import contextmanager
 from dataclasses import replace
 from pathlib import Path
 from typing import Iterator, List, Literal, Optional
 
+import anyio.to_thread
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
@@ -52,6 +52,63 @@ SECURITY_HEADERS = {
                                "img-src 'self' data:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
     "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "Cache-Control": "no-cache",
 }
+
+
+class _TooLarge(Exception):
+    pass
+
+
+class BodyLimitMiddleware:
+    """Reject request bodies over `max_bytes`, including chunked ones with no Content-Length.
+
+    The Content-Length header is checked up front; otherwise bytes are counted as the app reads
+    them and the response is replaced with 413 (FastAPI would otherwise report a 400/422).
+    """
+
+    def __init__(self, app, max_bytes: int):
+        self.app, self.max_bytes = app, max_bytes
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        length = dict(scope["headers"]).get(b"content-length", b"")
+        if length.isdigit() and int(length) > self.max_bytes:
+            return await self._reject(send, started=False)
+        seen, exceeded, started = 0, False, False
+
+        async def limited_receive():
+            nonlocal seen, exceeded
+            msg = await receive()
+            if msg["type"] == "http.request":
+                seen += len(msg.get("body", b""))
+                if seen > self.max_bytes:
+                    exceeded = True
+                    raise _TooLarge()
+            return msg
+
+        async def guarded_send(msg):
+            nonlocal started
+            if exceeded:                                  # swallow whatever the app tried to answer with
+                if not started:
+                    await self._reject(send, started=False)
+                    started = True
+                return
+            if msg["type"] == "http.response.start":
+                started = True
+            await send(msg)
+
+        try:
+            await self.app(scope, limited_receive, guarded_send)
+        except _TooLarge:
+            if not started:
+                await self._reject(send, started=False)
+
+    @staticmethod
+    async def _reject(send, started: bool) -> None:
+        body = b'{"error":"request body too large"}'
+        await send({"type": "http.response.start", "status": 413,
+                    "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())]})
+        await send({"type": "http.response.body", "body": body})
 
 
 class Sampling(BaseModel):
@@ -88,6 +145,7 @@ class Stats:
         self.prompt_tokens = 0
         self.gen_seconds = 0.0
         self.in_flight = 0
+        self.waiting = 0
         self._lock = threading.Lock()
 
     def add(self, **kw: float) -> None:
@@ -100,7 +158,7 @@ class Stats:
             return {
                 "uptime_seconds": round(time.time() - self.started, 1),
                 "requests": self.requests, "rejected": self.rejected, "errors": self.errors,
-                "in_flight": self.in_flight,
+                "in_flight": self.in_flight, "waiting": self.waiting,
                 "prompt_tokens": self.prompt_tokens, "completion_tokens": self.completion_tokens,
                 "avg_tokens_per_sec": round(self.completion_tokens / self.gen_seconds, 1) if self.gen_seconds else 0.0,
             }
@@ -114,6 +172,7 @@ def create_app(
     rate_limit_per_min: float = 60.0,
     rate_limit_burst: int = 10,
     queue_timeout: float = 30.0,
+    max_waiters: int = 8,
     cors_origins: tuple = (),
     model_name: str = "aarav-lm",
     mode: str = "auto",
@@ -131,14 +190,9 @@ def create_app(
         app.add_middleware(CORSMiddleware, allow_origins=list(cors_origins), allow_methods=["GET", "POST"],
                            allow_headers=["Authorization", "Content-Type"])
 
-    @app.middleware("http")
-    async def limit_body(request: Request, call_next):
-        length = request.headers.get("content-length")
-        if length and length.isdigit() and int(length) > MAX_BODY_BYTES:
-            return JSONResponse({"error": "request body too large"}, status_code=413)
-        return await call_next(request)
+    app.add_middleware(BodyLimitMiddleware, max_bytes=MAX_BODY_BYTES)
 
-    def identify(request: Request) -> str:
+    async def identify(request: Request) -> str:
         """Authenticate (if required) and rate-limit. Returns the caller identity."""
         identity = request.client.host if request.client else "unknown"
         if require_auth:
@@ -165,17 +219,26 @@ def create_app(
         except ValueError as e:
             raise HTTPException(422, str(e)) from e
 
-    @contextmanager
-    def generation_slot():
-        if not engine.lock.acquire(timeout=queue_timeout):
+    def acquire_slot() -> None:
+        """Wait (bounded) for the single generation slot. Runs in a worker thread."""
+        with stats._lock:
+            if stats.waiting >= max_waiters:            # never let queued requests exhaust the thread pool
+                stats.rejected += 1
+                raise HTTPException(503, "too many requests waiting, try again shortly", headers={"Retry-After": "5"})
+            stats.waiting += 1
+        try:
+            got = engine.lock.acquire(timeout=queue_timeout)
+        finally:
+            with stats._lock:
+                stats.waiting -= 1
+        if not got:
             stats.add(rejected=1)
             raise HTTPException(503, "model is busy, try again shortly", headers={"Retry-After": "5"})
         stats.add(in_flight=1)
-        try:
-            yield
-        finally:
-            stats.add(in_flight=-1)
-            engine.lock.release()
+
+    def release_slot() -> None:
+        stats.add(in_flight=-1)
+        engine.lock.release()
 
     def run(prompt_ids: List[int], cfg: GenerationConfig, stream: bool, extra: dict):
         stats.add(requests=1, prompt_tokens=len(prompt_ids))
@@ -189,30 +252,54 @@ def create_app(
             }
 
         if not stream:
-            with generation_slot():
-                try:
-                    for _ in engine.stream(prompt_ids, cfg):
-                        pass
-                except Exception:                                    # noqa: BLE001
-                    stats.add(errors=1)
-                    raise HTTPException(500, "generation failed") from None
+            acquire_slot()
+            try:
+                for _ in engine.stream(prompt_ids, cfg):
+                    pass
                 result = engine.last_result
+            except Exception:                                        # noqa: BLE001
+                stats.add(errors=1)
+                raise HTTPException(500, "generation failed") from None
+            finally:
+                release_slot()
             return {"text": result.text, **finish(result)}
 
-        with generation_slot():        # fail with a real 503 *before* the 200 stream starts if the model is busy
-            pass
+        # Fail with a real 503 *before* the 200 stream starts if the model is busy.
+        acquire_slot()
+        release_slot()
 
-        def events() -> Iterator[str]:
+        end = object()
+
+        async def events():
+            """Async on purpose: on client disconnect Starlette cancels this generator, so `finally`
+            always runs and the slot is released. (A sync generator is only closed by the garbage
+            collector, which left the model locked after every "Stop" click.)"""
+            held = {"slot": False}
+            it = None
+
+            def take_slot() -> None:
+                acquire_slot()
+                held["slot"] = True                # set inside the thread: cancellation can't lose it
+
             try:
-                with generation_slot():
-                    for delta in engine.stream(prompt_ids, cfg):
-                        yield f"data: {json.dumps({'delta': delta})}\n\n"
-                    yield f"data: {json.dumps({'done': True, **finish(engine.last_result)})}\n\n"
+                await anyio.to_thread.run_sync(take_slot)
+                it = engine.stream(prompt_ids, cfg)
+                while True:
+                    delta = await anyio.to_thread.run_sync(next, it, end)
+                    if delta is end:
+                        break
+                    yield f"data: {json.dumps({'delta': delta})}\n\n"
+                yield f"data: {json.dumps({'done': True, **finish(engine.last_result)})}\n\n"
             except HTTPException as e:
                 yield f"data: {json.dumps({'error': e.detail, 'status': e.status_code})}\n\n"
             except Exception:                                        # noqa: BLE001
                 stats.add(errors=1)
                 yield f"data: {json.dumps({'error': 'generation failed', 'status': 500})}\n\n"
+            finally:
+                if it is not None:
+                    it.close()
+                if held["slot"]:
+                    release_slot()
 
         return StreamingResponse(events(), media_type="text/event-stream",
                                  headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
@@ -229,11 +316,11 @@ def create_app(
             app.add_api_route(route, web_route(filename, media_type), methods=["GET"], include_in_schema=False)
 
     @app.get("/health")
-    def health():
+    async def health():
         return {"status": "ok", "model_loaded": True}
 
     @app.get("/model")
-    def model_info(_: str = Depends(identify)):
+    async def model_info(_: str = Depends(identify)):
         info = engine.info()
         return {
             "name": model_name, "params": info["params"], "context_length": info["context_length"],
@@ -244,7 +331,7 @@ def create_app(
         }
 
     @app.get("/stats")
-    def get_stats(_: str = Depends(identify)):
+    async def get_stats(_: str = Depends(identify)):
         return stats.snapshot()
 
     @app.post("/generate")

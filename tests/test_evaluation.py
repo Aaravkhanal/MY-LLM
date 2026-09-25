@@ -286,3 +286,56 @@ def test_bits_per_byte_is_derived_from_loss_and_dataset_bytes_per_token(engine, 
     for split in ("val", "test"):
         bpt = manifest["splits"][split]["bytes_per_token"]
         assert res["loss"][split]["bits_per_byte"] == pytest.approx(res["loss"][split]["loss"] / math.log(2) / bpt)
+
+
+# ── regressions found by the independent review ──────────────────────────────
+
+@pytest.mark.parametrize("path,value,fragment", [
+    ("eval_sets.dataset_fingerprint", "0" * 64, "held-out datasets"),
+    ("model.tokenizer_fingerprint", "0" * 64, "tokenizers"),
+    ("settings.max_new_tokens", 7, "generation lengths"),
+    ("settings.max_windows", 3, "evaluation windows"),
+])
+def test_regression_refuses_results_from_a_different_dataset_tokenizer_or_settings(engine, tiny_run, small_sets, path, value, fragment):
+    from aarav_lm.evaluation.regression import get_path
+    base = _suite(engine, tiny_run, small_sets)
+    other = copy.deepcopy(base)
+    node = other
+    *parents, leaf = path.split(".")
+    for part in parents:
+        node = node[part]
+    assert node[leaf] != value
+    node[leaf] = value
+    ok, results = compare_to_baseline(other, base)
+    assert not ok and fragment in results[0].note and get_path(base, path) != value
+
+
+def test_dataset_fingerprint_ignores_build_timing_but_tracks_content(tiny_run, tmp_path):
+    from aarav_lm.evaluation.suite import dataset_fingerprint
+    data_dir = Path(tiny_run["exp"].data.out_dir)
+    a = dataset_fingerprint(data_dir)
+    copy_dir = tmp_path / "d"
+    shutil.copytree(data_dir, copy_dir)
+    m = json.loads((copy_dir / "manifest.json").read_text())
+    m["build_seconds"] = 9999.0
+    (copy_dir / "manifest.json").write_text(json.dumps(m))
+    assert dataset_fingerprint(copy_dir) == a                          # a rebuild's different timing must not matter
+    m["splits"]["val"]["tokens"] += 1
+    (copy_dir / "manifest.json").write_text(json.dumps(m))
+    assert dataset_fingerprint(copy_dir) != a
+    assert dataset_fingerprint(tmp_path / "missing") is None
+
+
+def test_stale_wordlist_cache_is_rebuilt(engine, tiny_run, tmp_path):
+    from aarav_lm.evaluation.suite import load_wordlist
+    data_dir = tmp_path / "d"
+    shutil.copytree(tiny_run["exp"].data.out_dir, data_dir)
+    real = load_wordlist(data_dir, engine)
+    cache = data_dir / "wordlist.json"
+    d = json.loads(cache.read_text())
+    d["dataset_fingerprint"], d["words"] = "stale", ["bogus"]
+    cache.write_text(json.dumps(d))
+    assert load_wordlist(data_dir, engine) == real != {"bogus"}
+
+
+import shutil                                                            # noqa: E402

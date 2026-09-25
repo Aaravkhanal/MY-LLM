@@ -30,6 +30,32 @@ class SessionFileError(ValueError):
     pass
 
 
+_GEN_TYPES = {                      # field -> accepted types (bool is never a valid number)
+    "max_new_tokens": (int,), "temperature": (int, float), "top_k": (int, type(None)),
+    "top_p": (int, float, type(None)), "repetition_penalty": (int, float), "stop_sequences": (list,),
+    "stop_ids": (list,), "stop_at_eot": (bool,), "seed": (int, type(None)),
+}
+
+
+def _generation_from_dict(gen) -> GenerationConfig:
+    """Strictly typed: a hand-edited session file must fail here, not later inside torch."""
+    if not isinstance(gen, dict):
+        raise SessionFileError("generation must be an object")
+    unknown = set(gen) - set(_GEN_TYPES)
+    if unknown:
+        raise SessionFileError(f"unknown generation field(s): {sorted(unknown)}")
+    for k, v in gen.items():
+        if isinstance(v, bool) and bool not in _GEN_TYPES[k]:
+            raise SessionFileError(f"generation.{k} has the wrong type")
+        if not isinstance(v, _GEN_TYPES[k]):
+            raise SessionFileError(f"generation.{k} has the wrong type ({type(v).__name__})")
+    if not all(isinstance(x, str) for x in gen.get("stop_sequences", [])) or not all(
+            isinstance(x, int) and not isinstance(x, bool) for x in gen.get("stop_ids", [])):
+        raise SessionFileError("stop_sequences must be strings and stop_ids integers")
+    return GenerationConfig(**{**gen, "stop_sequences": tuple(gen.get("stop_sequences", ())),
+                               "stop_ids": tuple(gen.get("stop_ids", ()))}).validate()
+
+
 class ChatSession:
     def __init__(
         self,
@@ -111,22 +137,24 @@ class ChatSession:
             raise SessionFileError("session file is too large")
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise SessionFileError("session file must contain a JSON object")
             if data.get("version") != SESSION_VERSION:
                 raise SessionFileError(f"unsupported session version {data.get('version')!r}")
             if data["tokenizer_fingerprint"] != self.engine.tok.fingerprint:
                 raise SessionFileError("session was saved with a different tokenizer/model")
+            if not isinstance(data["messages"], list) or not all(isinstance(m, dict) for m in data["messages"]):
+                raise SessionFileError("messages must be a list of objects")
             messages = [Message(m["role"], m["content"]) for m in data["messages"]]
             validate_messages(messages)
-            gen = data["generation"]
-            gen_cfg = GenerationConfig(**{**gen, "stop_sequences": tuple(gen.get("stop_sequences", ())),
-                                          "stop_ids": tuple(gen.get("stop_ids", ()))}).validate()
+            gen_cfg = _generation_from_dict(data["generation"])
             system_prompt = data["system_prompt"]
             if not isinstance(system_prompt, str):
                 raise SessionFileError("system_prompt must be a string")
-        except (KeyError, TypeError, json.JSONDecodeError, ChatFormatError, ValueError) as e:
-            if isinstance(e, SessionFileError):
-                raise
-            raise SessionFileError(f"invalid session file: {e}") from e
+        except SessionFileError:
+            raise
+        except (KeyError, TypeError, AttributeError, ValueError, OSError, UnicodeDecodeError, ChatFormatError) as e:
+            raise SessionFileError(f"invalid session file: {type(e).__name__}: {e}") from e
         self.messages, self.system_prompt, self.gen_cfg = messages, system_prompt, gen_cfg
         self.turns = sum(m.role == "assistant" for m in messages)
         return len(messages)

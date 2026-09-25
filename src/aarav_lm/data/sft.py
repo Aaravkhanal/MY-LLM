@@ -46,7 +46,8 @@ def validate_conversation(raw) -> Tuple[Optional[List[Message]], Optional[str]]:
         return None, "no_messages"
     msgs: List[Message] = []
     for m in raw["messages"]:
-        if not isinstance(m, dict) or m.get("role") not in ROLE_TOKEN or not isinstance(m.get("content"), str):
+        if (not isinstance(m, dict) or not isinstance(m.get("role"), str) or m["role"] not in ROLE_TOKEN
+                or not isinstance(m.get("content"), str)):
             return None, "bad_message"
         content = normalize_text(m["content"])
         if not content:
@@ -224,3 +225,6 @@ class SFTBatchStream:
             raise ValueError(f"stream seed mismatch: checkpoint {state['seed']} vs {self.seed}")
         self.epoch, self.pos = int(state["epoch"]), int(state["pos"])
         self._order = self._make_order(self.epoch)
+        if not 0 <= self.pos < len(self._order):
+            raise ValueError(f"stream position {self.pos} is outside the dataset ({len(self._order)} items); "
+                             "the data changed since this state was saved")

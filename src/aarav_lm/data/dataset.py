@@ -101,3 +101,6 @@ class BatchStream:
             raise ValueError(f"stream seed mismatch: checkpoint {state['seed']} vs {self.seed}")
         self.epoch, self.pos = int(state["epoch"]), int(state["pos"])
         self._order = self._make_order(self.epoch)
+        if not 0 <= self.pos < len(self._order):
+            raise ValueError(f"stream position {self.pos} is outside the dataset ({len(self._order)} items); "
+                             "the data changed since this state was saved")

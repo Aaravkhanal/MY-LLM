@@ -8,9 +8,8 @@ from pathlib import Path
 
 import yaml
 
-from aarav_lm.data.dataset import TokenDataset
-from aarav_lm.data.shards import Shard
 from aarav_lm.evaluation.loss import evaluate_loss
+from aarav_lm.evaluation.suite import eval_batches
 from aarav_lm.inference.quantize import max_relative_error, save_int8_checkpoint
 from aarav_lm.paths import resolve
 from aarav_lm.tokenizer import AaravTokenizer
@@ -32,8 +31,9 @@ def main() -> None:
     info = save_int8_checkpoint(out, model, tok.fingerprint, raw.get("meta"))
     q_model, _ = ck.load_model(out, "cpu", tok.fingerprint)
 
-    ds = TokenDataset(Shard.open(resolve(cfg["data"]["out_dir"]) / "val.bin"), model.cfg.block_size)
-    batches = ds.fixed_eval_batches(16, max(1, args.eval_windows // 16))
+    from aarav_lm.inference.engine import InferenceEngine
+    engine = InferenceEngine(model, tok, model.token_emb.weight.device)          # only used to pick the right batch loader
+    batches = eval_batches(resolve(cfg["data"]["out_dir"]), "val", engine, args.eval_windows)
     base = evaluate_loss(model, batches, model.token_emb.weight.device)
     quant = evaluate_loss(q_model, batches, model.token_emb.weight.device)
     mb = lambda p: Path(p).stat().st_size / 1e6                          # noqa: E731
