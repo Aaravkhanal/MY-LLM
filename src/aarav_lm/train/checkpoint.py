@@ -161,7 +161,11 @@ def load_model(
             f"expected {expected_tokenizer_fingerprint[:12]}…"
         )
     model = AaravLM(ModelConfig.from_dict(ckpt["model_config"]))
-    model.load_state_dict(ckpt["model"])
+    if ckpt["kind"] == "model_int8":
+        from aarav_lm.inference.quantize import dequantize_checkpoint    # lazy: quantize imports this module
+        model.load_state_dict(dequantize_checkpoint(ckpt))
+    else:
+        model.load_state_dict(ckpt["model"])
     return model.to(device).eval(), ckpt
 
 
