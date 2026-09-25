@@ -13,16 +13,16 @@
 {"id": "c012", "prompt": "Can you tell me a story about a character named Nina?", "entity": "Nina"}
 {"id": "c013", "prompt": "Can you tell me a story about a character named Oscar?", "entity": "Oscar"}
 {"id": "c014", "prompt": "Can you tell me a story about a character named Ruby?", "entity": "Ruby"}
-{"id": "c015", "prompt": "Write a short story with a dog in it.", "entity": null}
-{"id": "c016", "prompt": "Write a short story with a cat in it.", "entity": null}
-{"id": "c017", "prompt": "Write a short story with a bird in it.", "entity": null}
-{"id": "c018", "prompt": "Write a short story with a rabbit in it.", "entity": null}
-{"id": "c019", "prompt": "Write a short story with a fish in it.", "entity": null}
-{"id": "c020", "prompt": "Write a short story with a dragon in it.", "entity": null}
-{"id": "c021", "prompt": "Write a short story with a bear in it.", "entity": null}
-{"id": "c022", "prompt": "Write a short story with a duck in it.", "entity": null}
-{"id": "c023", "prompt": "Write a short story with a frog in it.", "entity": null}
-{"id": "c024", "prompt": "Write a short story with a robot in it.", "entity": null}
+{"id": "c015", "prompt": "Write a short story with a dog in it.", "entity": "dog"}
+{"id": "c016", "prompt": "Write a short story with a cat in it.", "entity": "cat"}
+{"id": "c017", "prompt": "Write a short story with a bird in it.", "entity": "bird"}
+{"id": "c018", "prompt": "Write a short story with a rabbit in it.", "entity": "rabbit"}
+{"id": "c019", "prompt": "Write a short story with a fish in it.", "entity": "fish"}
+{"id": "c020", "prompt": "Write a short story with a dragon in it.", "entity": "dragon"}
+{"id": "c021", "prompt": "Write a short story with a bear in it.", "entity": "bear"}
+{"id": "c022", "prompt": "Write a short story with a duck in it.", "entity": "duck"}
+{"id": "c023", "prompt": "Write a short story with a frog in it.", "entity": "frog"}
+{"id": "c024", "prompt": "Write a short story with a robot in it.", "entity": "robot"}
 {"id": "c025", "prompt": "Tell me a short story.", "entity": null}
 {"id": "c026", "prompt": "I want a story!", "entity": null}
 {"id": "c027", "prompt": "Can you tell me a bedtime story?", "entity": null}

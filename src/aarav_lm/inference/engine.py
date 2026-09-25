@@ -30,7 +30,7 @@ from aarav_lm.model.core import AaravLM
 from aarav_lm.model.layers import KVCache
 from aarav_lm.tokenizer import AaravTokenizer
 from aarav_lm.train import checkpoint as ckpt
-from aarav_lm.train.device import pick_device
+from aarav_lm.train.device import pick_inference_device
 
 REPETITION_WINDOW = 256
 
@@ -127,8 +127,8 @@ class InferenceEngine:
         cls, checkpoint: str | Path, tokenizer_dir: str | Path, device: str = "auto"
     ) -> "InferenceEngine":
         tok = AaravTokenizer.load(tokenizer_dir)
-        dev = pick_device(device)
-        model, raw = ckpt.load_model(Path(checkpoint), dev, expected_tokenizer_fingerprint=tok.fingerprint)
+        model, raw = ckpt.load_model(Path(checkpoint), "cpu", expected_tokenizer_fingerprint=tok.fingerprint)
+        dev = pick_inference_device(device, model.num_params())
         meta = {**raw.get("meta", {}), "checkpoint": str(checkpoint), "tokenizer_fingerprint": tok.fingerprint}
         return cls(model, tok, dev, meta)
 

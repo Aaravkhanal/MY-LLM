@@ -124,6 +124,9 @@ def summarize_generations(
         "clean_ending_frac": sum(ends_cleanly(t) for t in texts) / n,
         "entity_consistency": (sum(mentions(s["text"], s["entity"]) for s in ent) / len(ent)) if ent else None,
         "eot_rate": sum(s["finish_reason"] == "eot" for s in samples) / n,
+        # chat models end a reply with <|end|> ("stop"), base models with <|endoftext|> ("eot"):
+        # either way the model chose to finish rather than being cut off at the token limit
+        "natural_end_rate": sum(s["finish_reason"] in ("eot", "stop") for s in samples) / n,
         "mean_tokens": sum(len(s["tokens"]) for s in samples) / n,
         "mean_words": len(all_words) / n,
         "mean_chars": sum(len(t) for t in texts) / n,

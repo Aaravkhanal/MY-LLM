@@ -30,6 +30,22 @@ def pick_device(name: str = "auto") -> torch.device:
     return dev
 
 
+SMALL_MODEL_PARAMS = 50_000_000     # below this, accelerators lose to the CPU at batch-1 decoding
+
+
+def pick_inference_device(name: str, n_params: int) -> torch.device:
+    """Device for generation. For "auto", small models run on the CPU.
+
+    Measured on an M3 (5M-parameter model, batch-1 decode with KV cache): CPU 732 tok/s vs MPS
+    148 tok/s — each decoded token launches many tiny kernels and the GPU can't amortise that
+    overhead. Training is the opposite (large batches: MPS 18k tok/s), so this applies only to
+    inference. Pass an explicit device to override.
+    """
+    if name == "auto" and n_params < SMALL_MODEL_PARAMS:
+        return torch.device("cpu")
+    return pick_device(name)
+
+
 def seed_everything(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)

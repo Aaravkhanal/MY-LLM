@@ -1,0 +1,839 @@
+{
+  "version": 1,
+  "model": {
+    "params": 4951296,
+    "context_length": 256,
+    "vocab_size": 2048,
+    "device": "cpu",
+    "tokenizer_fingerprint": "d342233120927a9806b00f2a4c4031a5d0a0b59e2f9bb2b7575671b2783e7395",
+    "step": 3000,
+    "val_loss": 1.642224246263504,
+    "val_perplexity": 5.166648640231246,
+    "checkpoint": "experiments/exp_001_tiny_tinystories/checkpoints/best.pt",
+    "experiment": "exp_001_tiny_tinystories"
+  },
+  "loss": {
+    "val": {
+      "loss": 1.644229971710892,
+      "perplexity": 5.177021918383066,
+      "tokens": 159232,
+      "top1": 0.5940074859324759,
+      "top5": 0.841043257636656,
+      "windows": 622,
+      "bits_per_byte": 0.650788045615447
+    },
+    "test": {
+      "loss": 1.6265840547304626,
+      "perplexity": 5.086469905703926,
+      "tokens": 144384,
+      "top1": 0.5968251329787234,
+      "top5": 0.8446919326241135,
+      "windows": 564,
+      "bits_per_byte": 0.6395924637091035
+    }
+  },
+  "generation": {
+    "greedy": {
+      "samples": [
+        {
+          "id": "c000",
+          "prompt": "Tell me a story about Lily.",
+          "text": " She is very happy. She says, \"Thank you, Tom. You are a good friend. I am glad you are safe.\"\nThey hug and say goodbye. They go back to their homes. They are happy. They are friends.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c001",
+          "prompt": "Tell me a story about Tom.",
+          "text": " He is very good at reading. He is very smart and kind. He helps him learn new things. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c002",
+          "prompt": "Tell me a story about Mia.",
+          "text": " She is very good at learning. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words. She learns new words and words.",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c003",
+          "prompt": "Tell me a story about Ben.",
+          "text": " He is very smart and kind. He helps him learn to be kind and helpful. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c004",
+          "prompt": "Tell me a story about Sam.",
+          "text": " He is very good at learning new things. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and words. He learns new words and",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c005",
+          "prompt": "Tell me a story about Anna.",
+          "text": " She is very smart and kind. She likes to help others. She likes to help her mom and dad. She likes to help her mom and dad. She likes to help her mom and dad. She likes to help her mom and dad. She likes to help her mom and dad. She likes to help her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom and dad. She loves her mom",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c006",
+          "prompt": "Tell me a story about Max.",
+          "text": " Max was very happy and thanked Tim. They became good friends and played together every day.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c007",
+          "prompt": "Tell me a story about Sue.",
+          "text": " Sue was happy to learn about the magic word. She knew that the magic word was not just a toy. From that day on, Sue and the magic word were the best of friends.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c008",
+          "prompt": "Tell me a story about Jack.",
+          "text": " He was very happy and he was very proud of himself.\nJack and his mom went to the park to play. Jack was so excited to see the park. He ran around and around, and he was so happy. He had so much fun!\nJack's mom said, \"Jack, you are so brave and healthy!\" Jack smiled and said, \"Yes, I love to do it!\"\nJack and his mom went home, and Jack was so proud of himself. He had a great day at the park and he couldn't wait to tell his friends about the fun he had at the park.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c009",
+          "prompt": "Tell me a story about Emma.",
+          "text": " She was very happy and thanked her mom. From that day on, Emma and her mom were the best of friends.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c010",
+          "prompt": "Can you tell me a story about a character named Zoe?",
+          "text": " I want to be a character too!\"\nZoe thought for a moment and said, \"I know a character. I can teach you a new way to be friends.\"\nZoe and Zoe decided to be friends. They played and had fun together. Zoe was not lonely anymore. They learned that being kind and helping each other made them feel happy.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c011",
+          "prompt": "Can you tell me a story about a character named Leo?",
+          "text": " I want to be a character too!\"\nLeo was very excited and said, \"Yes, Leo, I want to be your friend!\"\nSo, Leo and Leo went to the character house. They talked and laughed as they talked about the characters. They had a lot of fun together.\nAt the end of the day, Leo and Leo were very happy. They knew that they would always be friends and help each other.",
+          "finish_reason": "eot"
+        }
+      ],
+      "distinct_1": 0.10362888140665918,
+      "distinct_2": 0.3259730538922156,
+      "distinct_3": 0.47585174092100335,
+      "mean_sample_distinct_2": 0.666115579033786,
+      "loop_fraction": 0.3333333333333333,
+      "max_token_run": 1,
+      "nonword_rate": 0.005985783763561541,
+      "capitalised_sentence_frac": 1.0,
+      "clean_ending_frac": 0.8333333333333334,
+      "entity_consistency": 0.68,
+      "eot_rate": 0.7666666666666667,
+      "natural_end_rate": 0.7666666666666667,
+      "mean_tokens": 115.8,
+      "mean_words": 89.1,
+      "mean_chars": 435.6666666666667,
+      "empty_fraction": 0.0,
+      "mean_tokens_per_sec": 740.8236993878407
+    },
+    "sampled": {
+      "samples": [
+        {
+          "id": "c000",
+          "prompt": "Tell me a story about Lily.",
+          "text": " She smiles. She is happy to see her cat. She likes to play with her ball. She wants to be friends.\n\"Sure, Lily, you can be friends with the ball. But don't forget your either,\" Ben says.\n\"OK, Ben. I will be your friend. But can I play with your ball?\" Lily asks.\nBen smiles. He thinks for a moment. Then he has an idea. He runs to the tree and grabs the ball.\n\"Here, Lily. I will play with you. You can be my friend. Come on, let's play together.\" Ben says.\nThey play with the ball all day. They are happy and laugh a lot. They are friends.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c001",
+          "prompt": "Tell me a story about Tom.",
+          "text": " She is happy too. She says, \"Tom, you can learn how to read the books and read them well. See? And you will have fun with your friends.\"\nTom nods. He says, \"Thank you, Lily. You are a good friend. You helped me. You are a good friend.\"\nThey hug and laugh. They think Lily is very good. They go to the book and read the book. They are happy. They are friends.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c002",
+          "prompt": "Tell me a story about Mia.",
+          "text": " I am proud of you.\" Mia says, \"Thank you, Spot. I will teach you a new story. You are the best, Spot!\" Spot and Mia play and watch the cat every day. Spot is not a naughty dog, but he is a good friend.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c003",
+          "prompt": "Tell me a story about Ben.",
+          "text": " She wrapped it around the table. She made a castle and a cookie for Ben. They had a fun day together.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c004",
+          "prompt": "Tell me a story about Sam.",
+          "text": " She loved to tell him stories about what he wanted.\nOne day, Sam found a tape in his toy box. He did not know what it was for, but he thought it would be fun to use the tape to draw. He put the tape on the paper and made a tape with the tape. He was very happy with it.\nBut, Sam was not a tape, it was a tape. The tape was old and dirty. Sam tried to get it, but he did not. He asked Sam to give it back, but Sam did not say anything. Sam was sad and went to get the tape. He thought he would find a new tape.\nSam went to his room to find a new tape. He found the tape in the toy box. It was new and not an. Sam was a good tape. He showed it to Sam and said, \"This is a good drawing. We",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c005",
+          "prompt": "Tell me a story about Anna.",
+          "text": " She says, \"You are a funny monkey, but you are very nice.\" Anna smiles and says, \"Thank you, Mom. I love you.\"\nAnna says, \"I love you too, Mom. You are my best friend.\"\nMom says, \"You're welcome, Anna. I'm glad you like him. He is a good friend.\"\nShe hugs Anna and gives her a hug. She says, \"I love you too, Anna. You are a nice dog. Come on, let's go to the park.\"\nAnna opens the car and says, \"OK, mom. I will play with you tomorrow. I will be with you. Thank you for playing with me.\"\nThey run to the car, holding hands, and takes out their toys. They play together and have fun. They forget about the dog and the car. They are happy and have a good day.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c006",
+          "prompt": "Tell me a story about Max.",
+          "text": " Now, Max can help his friends learn how to eat celery.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c007",
+          "prompt": "Tell me a story about Sue.",
+          "text": " Sue read the book about animals, the animals, and the animals. They all liked the story and the animals the story.\nOne day, a big storm came. The wind was very strong and the animals were scared. The storm was very strong and scary. The animals tried to hide, but the storm was too strong.\nThe animals tried to find the storm, but they could not. The storm was too strong, and they could not find the animals. The storm had a bad ending. The storm had a bad ending.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c008",
+          "prompt": "Tell me a story about Jack.",
+          "text": " He was very happy with his story and thanked his friends for his help.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c009",
+          "prompt": "Tell me a story about Emma.",
+          "text": " In the story, the cats loved to learn new things. One day, the cats told a joke happened. The cats were scared and didn't know what to do.\nBob had an idea. He took the cats to his friends. They all took turns to say \"poison\". The cats did not like this. They were not happy.\nBut then, something unexpected happened. The big cats started to talk! Bob and his friends were so surprised. They laughed and played with the cats. The cats became friends with Bob and his friends. Now, they all have a joke and a big smile on their faces.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c010",
+          "prompt": "Can you tell me a story about a character named Zoe?",
+          "text": " I love to be your friend.\"\nRoe smiled and said, \"Of course! I would love to be your friend!\"\nSo, Boe and Zoe spent the whole day playing in the park. They laughed and had a great time. The characters loved to dance and play with Zoe, too. And they both lived happily ever after.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "c011",
+          "prompt": "Can you tell me a story about a character named Leo?",
+          "text": " I am very sleepy. Can you help me?\"\nLeo smiled and said, \"Of course, Leo! I will help you.\" They went to a small house with a big tree. Leo's family was very happy to see the tree.\nLeo and Leo became good friends. They played and had fun together. Leo was not sleepy anymore. He was not sleepy anymore.\nFrom that day on, Leo and Leo played together every day. They learned that they could always count on each other, and they were never lazy.",
+          "finish_reason": "eot"
+        }
+      ],
+      "distinct_1": 0.18676716917922948,
+      "distinct_2": 0.6346878927524089,
+      "distinct_3": 0.8776194467728415,
+      "mean_sample_distinct_2": 0.8874391042156708,
+      "loop_fraction": 0.0,
+      "max_token_run": 1,
+      "nonword_rate": 0.005443886097152429,
+      "capitalised_sentence_frac": 1.0,
+      "clean_ending_frac": 0.9,
+      "entity_consistency": 0.84,
+      "eot_rate": 0.9333333333333333,
+      "natural_end_rate": 0.9333333333333333,
+      "mean_tokens": 107.5,
+      "mean_words": 79.6,
+      "mean_chars": 391.3,
+      "empty_fraction": 0.03333333333333333,
+      "mean_tokens_per_sec": 682.9036133759139
+    }
+  },
+  "probes": {
+    "accuracy": 0.9272727272727272,
+    "n": 55,
+    "by_category": {
+      "commonsense": {
+        "accuracy": 0.7894736842105263,
+        "n": 19
+      },
+      "grammar": {
+        "accuracy": 1.0,
+        "n": 26
+      },
+      "story_logic": {
+        "accuracy": 1.0,
+        "n": 10
+      }
+    },
+    "items": [
+      {
+        "category": "grammar",
+        "prefix": "The dogs",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -2.3106460571289062,
+        "incorrect_logp": -12.168248176574707,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The cat",
+        "correct": " is",
+        "incorrect": " are",
+        "correct_logp": -7.839706897735596,
+        "incorrect_logp": -13.383756637573242,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Tom and Mia",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -1.360385537147522,
+        "incorrect_logp": -8.691957473754883,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "She",
+        "correct": " was",
+        "incorrect": " were",
+        "correct_logp": -3.1913001537323,
+        "incorrect_logp": -7.513463020324707,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "They",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -3.6181106567382812,
+        "incorrect_logp": -8.727670669555664,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "I",
+        "correct": " am",
+        "incorrect": " is",
+        "correct_logp": -2.436236619949341,
+        "incorrect_logp": -8.861627578735352,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The children",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -1.3432471752166748,
+        "incorrect_logp": -5.773449897766113,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The flowers",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -3.1472232341766357,
+        "incorrect_logp": -8.564023971557617,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "We",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -1.9320447444915771,
+        "incorrect_logp": -10.086792945861816,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "You",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -0.9721547961235046,
+        "incorrect_logp": -9.195240020751953,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "It",
+        "correct": " is",
+        "incorrect": " are",
+        "correct_logp": -1.304173469543457,
+        "incorrect_logp": -7.949326515197754,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Mia and Sam",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -1.297756314277649,
+        "incorrect_logp": -7.381758689880371,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The boy",
+        "correct": " has",
+        "incorrect": " have",
+        "correct_logp": -8.586196899414062,
+        "incorrect_logp": -11.085402488708496,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The boys",
+        "correct": " have",
+        "incorrect": " has",
+        "correct_logp": -7.656064510345459,
+        "incorrect_logp": -10.949408531188965,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "She",
+        "correct": " has",
+        "incorrect": " have",
+        "correct_logp": -6.655280113220215,
+        "incorrect_logp": -10.216470718383789,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "They",
+        "correct": " have",
+        "incorrect": " has",
+        "correct_logp": -5.229560852050781,
+        "incorrect_logp": -10.629138946533203,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "This",
+        "correct": " is",
+        "incorrect": " are",
+        "correct_logp": -0.4304351210594177,
+        "incorrect_logp": -7.226558685302734,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "These",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -4.028103351593018,
+        "incorrect_logp": -8.557991027832031,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "He",
+        "correct": " was",
+        "incorrect": " were",
+        "correct_logp": -2.532707929611206,
+        "incorrect_logp": -7.660859107971191,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The birds",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -1.1460704803466797,
+        "incorrect_logp": -5.940135955810547,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Yesterday, they",
+        "correct": " played",
+        "incorrect": " play",
+        "correct_logp": -3.918090343475342,
+        "incorrect_logp": -6.933191776275635,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Tomorrow, we will",
+        "correct": " play",
+        "incorrect": " played",
+        "correct_logp": -3.1628026962280273,
+        "incorrect_logp": -10.15146541595459,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Mia looked at",
+        "correct": " herself",
+        "incorrect": " himself",
+        "correct_logp": -6.5953755378723145,
+        "incorrect_logp": -9.747603416442871,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Tom looked at",
+        "correct": " himself",
+        "incorrect": " herself",
+        "correct_logp": -6.575193405151367,
+        "incorrect_logp": -9.853377342224121,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The girl said she",
+        "correct": " was",
+        "incorrect": " were",
+        "correct_logp": -1.4743928909301758,
+        "incorrect_logp": -7.980067253112793,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "He",
+        "correct": " likes",
+        "incorrect": " like",
+        "correct_logp": -4.96027946472168,
+        "incorrect_logp": -8.320613861083984,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The sun is very",
+        "correct": " hot",
+        "incorrect": " cold",
+        "correct_logp": -1.0966160297393799,
+        "incorrect_logp": -5.909548759460449,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Ice is very",
+        "correct": " cold",
+        "incorrect": " hot",
+        "correct_logp": -5.182847499847412,
+        "incorrect_logp": -4.904052734375,
+        "passed": false
+      },
+      {
+        "category": "commonsense",
+        "prefix": "A fire is",
+        "correct": " hot",
+        "incorrect": " cold",
+        "correct_logp": -1.825817584991455,
+        "incorrect_logp": -3.66157865524292,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Fish live in the",
+        "correct": " water",
+        "incorrect": " sky",
+        "correct_logp": -2.7281668186187744,
+        "incorrect_logp": -3.509537935256958,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Birds fly in the",
+        "correct": " sky",
+        "incorrect": " water",
+        "correct_logp": -1.0248265266418457,
+        "incorrect_logp": -1.611544132232666,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "A fish can",
+        "correct": " swim",
+        "incorrect": " fly",
+        "correct_logp": -3.366638660430908,
+        "incorrect_logp": -3.43928861618042,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "We see with our",
+        "correct": " eyes",
+        "incorrect": " nose",
+        "correct_logp": -6.293988227844238,
+        "incorrect_logp": -8.361261367797852,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "We smell with our",
+        "correct": " nose",
+        "incorrect": " eyes",
+        "correct_logp": -7.363443851470947,
+        "incorrect_logp": -6.168056964874268,
+        "passed": false
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Grass is",
+        "correct": " green",
+        "incorrect": " purple",
+        "correct_logp": -6.745187759399414,
+        "incorrect_logp": -8.096132278442383,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The sky is",
+        "correct": " blue",
+        "incorrect": " green",
+        "correct_logp": -0.4729807674884796,
+        "incorrect_logp": -4.004837512969971,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Snow is",
+        "correct": " white",
+        "incorrect": " black",
+        "correct_logp": -6.808989524841309,
+        "incorrect_logp": -5.860715866088867,
+        "passed": false
+      },
+      {
+        "category": "commonsense",
+        "prefix": "When it rains, the ground gets",
+        "correct": " wet",
+        "incorrect": " dry",
+        "correct_logp": -0.8794137835502625,
+        "incorrect_logp": -3.000502824783325,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "She was hungry, so she ate some",
+        "correct": " food",
+        "incorrect": " rocks",
+        "correct_logp": -1.870100498199463,
+        "incorrect_logp": -10.15184211730957,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "He was sleepy, so he went to",
+        "correct": " bed",
+        "incorrect": " swim",
+        "correct_logp": -2.782111644744873,
+        "incorrect_logp": -11.592711448669434,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The water was cold, so she felt",
+        "correct": " cold",
+        "incorrect": " hot",
+        "correct_logp": -2.7486650943756104,
+        "incorrect_logp": -3.5003440380096436,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "We use a spoon to eat",
+        "correct": " soup",
+        "incorrect": " rocks",
+        "correct_logp": -4.916398048400879,
+        "incorrect_logp": -9.016971588134766,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "A baby is very",
+        "correct": " small",
+        "incorrect": " old",
+        "correct_logp": -3.3999135494232178,
+        "incorrect_logp": -4.955085754394531,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The elephant is very",
+        "correct": " big",
+        "incorrect": " tiny",
+        "correct_logp": -3.391801118850708,
+        "incorrect_logp": -7.6579484939575195,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "An ant is very",
+        "correct": " small",
+        "incorrect": " big",
+        "correct_logp": -3.9079763889312744,
+        "incorrect_logp": -3.5393168926239014,
+        "passed": false
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Tom lost his toy and he felt",
+        "correct": " sad",
+        "incorrect": " happy",
+        "correct_logp": -1.7359719276428223,
+        "incorrect_logp": -3.61285400390625,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Mia got a big present and she felt",
+        "correct": " happy",
+        "incorrect": " sad",
+        "correct_logp": -2.9549107551574707,
+        "incorrect_logp": -4.724534034729004,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "The dog was thirsty, so he drank some",
+        "correct": " water",
+        "incorrect": " sand",
+        "correct_logp": -0.3629343509674072,
+        "incorrect_logp": -7.000306129455566,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Ben was tired, so he took a",
+        "correct": " nap",
+        "incorrect": " run",
+        "correct_logp": -1.1936707496643066,
+        "incorrect_logp": -7.799306392669678,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Sam fell down and he started to",
+        "correct": " cry",
+        "incorrect": " dance",
+        "correct_logp": -0.8258852362632751,
+        "incorrect_logp": -6.165593147277832,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Anna won the game and she felt",
+        "correct": " proud",
+        "incorrect": " sad",
+        "correct_logp": -2.9340884685516357,
+        "incorrect_logp": -3.3405396938323975,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "The boy was scared, so he ran to his",
+        "correct": " mom",
+        "incorrect": " toy",
+        "correct_logp": -0.374092161655426,
+        "incorrect_logp": -6.400791645050049,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "It was dark, so she turned on the",
+        "correct": " light",
+        "incorrect": " sun",
+        "correct_logp": -1.7745614051818848,
+        "incorrect_logp": -4.699065208435059,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "He was very hungry, so he wanted to",
+        "correct": " eat",
+        "incorrect": " sleep",
+        "correct_logp": -1.025597333908081,
+        "incorrect_logp": -5.185542106628418,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "She was very sleepy, so she wanted to",
+        "correct": " sleep",
+        "incorrect": " run",
+        "correct_logp": -1.7950997352600098,
+        "incorrect_logp": -5.663625240325928,
+        "passed": true
+      }
+    ]
+  },
+  "edge_cases": {
+    "all_passed": true,
+    "passed": 14,
+    "total": 14,
+    "cases": [
+      {
+        "name": "single_character_prompt",
+        "passed": true,
+        "detail": "12 tokens"
+      },
+      {
+        "name": "whitespace_prompt",
+        "passed": true,
+        "detail": "12 tokens"
+      },
+      {
+        "name": "newline_prompt",
+        "passed": true,
+        "detail": "12 tokens"
+      },
+      {
+        "name": "unicode_prompt",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "emoji_only_prompt",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "control_token_text_is_inert",
+        "passed": true,
+        "detail": "control strings encode as plain text"
+      },
+      {
+        "name": "prompt_longer_than_context",
+        "passed": true,
+        "detail": "prompt 963 tokens vs window 256"
+      },
+      {
+        "name": "single_token_generation",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "generation_longer_than_context",
+        "passed": true,
+        "detail": "512 tokens through a 256-token window"
+      },
+      {
+        "name": "greedy_is_deterministic",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "seeded_sampling_is_reproducible",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "no_state_leaks_between_requests",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "stop_sequence_is_honoured",
+        "passed": true,
+        "detail": "stopped at 'ere'"
+      },
+      {
+        "name": "text_roundtrips_through_tokenizer",
+        "passed": true,
+        "detail": "ok"
+      }
+    ]
+  },
+  "eval_sets": {
+    "prompts": {
+      "path": "/Users/aaravkhanal/Desktop/myllm/aarav-lm/evals/chat_prompts_v1.jsonl",
+      "sha256": "5677dbab3eb49c1de4f9491ab1a68cd0e8f615da34d643d44e6e738320c08bf9",
+      "n": 30
+    },
+    "probes": {
+      "path": "/Users/aaravkhanal/Desktop/myllm/aarav-lm/evals/probes_v1.jsonl",
+      "sha256": "901a559c9e2d267e202ed69a583ff8ea6f710508738801c1b4792fd775df0aac",
+      "n": 55
+    },
+    "dataset_fingerprint": "776feec7e9f159b5e42852e66a5b1c78bc1f3d174ae793606ce2153fbe03ebe6"
+  },
+  "settings": {
+    "max_new_tokens": 200,
+    "max_windows": 1000,
+    "sampled": {
+      "temperature": 0.8,
+      "top_k": 50,
+      "top_p": 0.95
+    }
+  },
+  "torch": "2.10.0",
+  "eval_seconds": 44.1
+}

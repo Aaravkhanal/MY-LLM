@@ -204,3 +204,12 @@ def test_streamed_text_always_equals_the_final_text_fuzz(engine, monkeypatch):
         assert "".join(deltas) == res.text, (text, stop, deltas, res.text)
         assert stop not in res.text
         assert res.text == text[: text.find(stop)]
+
+
+def test_auto_device_uses_the_cpu_for_small_models_and_honours_explicit_choices(monkeypatch):
+    from aarav_lm.train import device as dev
+    assert dev.pick_inference_device("auto", 5_000_000).type == "cpu"                 # measured: CPU decodes 5x faster
+    assert dev.pick_inference_device("cpu", 5_000_000).type == "cpu"
+    monkeypatch.setattr(dev, "pick_device", lambda name: torch.device("mps") if name == "auto" else torch.device(name))
+    assert dev.pick_inference_device("auto", 200_000_000).type == "mps"               # big models still use the accelerator
+    assert dev.pick_inference_device("mps", 5_000_000).type == "mps"                  # explicit choice wins

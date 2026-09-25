@@ -337,3 +337,19 @@ def test_evaluation_suite_handles_an_sft_checkpoint_and_sft_data(sft_exp, tiny_r
     assert {s["finish_reason"] for s in res["generation"]["greedy"]["samples"]} <= {"length", "stop", "eot"}
     assert res["edge_cases"]["all_passed"], [c for c in res["edge_cases"]["cases"] if not c["passed"]]
     assert res["eval_sets"]["dataset_fingerprint"]
+
+
+def test_padded_widths_are_bucketed_to_few_shapes_and_never_exceed_the_longest_conversation(tok):
+    from aarav_lm.data.sft import PAD_BUCKET
+    rows = [encode_conversation(tok, [Message("user", "hi " * n), Message("assistant", "ok")], 400) for n in range(1, 40)]
+    ids = np.concatenate([r[0] for r in rows])
+    mask = np.concatenate([r[1] for r in rows])
+    offsets = np.concatenate([[0], np.cumsum([len(r[0]) for r in rows])])
+    ds = SFTDataset(ids, mask, offsets, tok.pad_id)
+    widths = {ds.batch([i])[0].shape[1] for i in range(len(rows))}
+    assert len(widths) <= len(rows) // 3                                  # far fewer distinct shapes than lengths
+    assert all(w % PAD_BUCKET == 0 or w == ds.max_width for w in widths)
+    assert max(widths) <= ds.max_width
+    x, y = ds.batch([0])                                                  # padding is still ignored by the loss
+    real = len(rows[0][0]) - 1
+    assert (y[0, real:] == -1).all() and (x[0, real:] == tok.pad_id).all()

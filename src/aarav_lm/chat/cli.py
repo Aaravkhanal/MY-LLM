@@ -22,7 +22,7 @@ import yaml
 
 from aarav_lm.chat.session import ChatSession, SessionFileError
 from aarav_lm.inference.engine import GenerationConfig, InferenceEngine
-from aarav_lm.paths import EXPERIMENT_DIR, resolve
+from aarav_lm.paths import ARTIFACT_DIR, EXPERIMENT_DIR, MODELS_DIR, resolve
 
 HELP = """\
   /help                          show this help
@@ -43,23 +43,40 @@ SETTABLE = {
 
 
 def find_checkpoint(explicit: Optional[str]) -> Path:
-    """The checkpoint to chat with; without --checkpoint, the newest experiment's best/final."""
+    """The checkpoint to chat with.
+
+    Without --checkpoint: the newest experiment's best/final checkpoint, else a packaged model in
+    models/ (instruction-tuned ones first).
+    """
     if explicit:
         return Path(explicit)
     runs = sorted((p for p in EXPERIMENT_DIR.glob("exp_*") if (p / "checkpoints").is_dir()), reverse=True)
     found = [p / "checkpoints" / n for p in runs for n in ("best.pt", "final.pt") if (p / "checkpoints" / n).exists()]
     if not found:
-        raise SystemExit("no trained checkpoint found under experiments/ — run scripts/train.py first")
+        found = sorted(MODELS_DIR.glob("*.pt"), key=lambda p: ("sft" not in p.name, p.name))
+    if not found:
+        raise SystemExit("no trained checkpoint found: run scripts/train.py, or pass --checkpoint")
     return found[0]
 
 
 def tokenizer_dir_for(ckpt: Path, override: Optional[str]) -> Path:
+    """Tokenizer directory: --tokenizer, else the run's config.yaml, else the artifact whose
+    fingerprint matches the one recorded inside the checkpoint."""
     if override:
         return resolve(override)
     cfg_file = ckpt.parent.parent / "config.yaml"
-    if not cfg_file.exists():
-        raise SystemExit(f"cannot locate the tokenizer: {cfg_file} is missing; pass --tokenizer")
-    return resolve(yaml.safe_load(cfg_file.read_text())["tokenizer"]["artifact_dir"])
+    if cfg_file.exists():
+        return resolve(yaml.safe_load(cfg_file.read_text())["tokenizer"]["artifact_dir"])
+    import json
+    import torch
+    try:
+        fp = torch.load(ckpt, map_location="cpu", weights_only=True)["tokenizer_fingerprint"]
+    except Exception as e:                                        # noqa: BLE001
+        raise SystemExit(f"cannot read {ckpt}: {e}") from e
+    for meta in sorted(ARTIFACT_DIR.glob("*/meta.json")):
+        if json.loads(meta.read_text()).get("sha256") == fp:
+            return meta.parent
+    raise SystemExit(f"no tokenizer in {ARTIFACT_DIR} matches this checkpoint ({fp[:12]}…); pass --tokenizer")
 
 
 def apply_set(session: ChatSession, name: str, raw: str) -> str:

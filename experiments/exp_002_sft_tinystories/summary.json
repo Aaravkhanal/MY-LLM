@@ -1,0 +1,36 @@
+{
+  "name": "sft_tinystories",
+  "status": "completed",
+  "steps": 600,
+  "tokens_seen": 4582704,
+  "train_seconds": 391.5,
+  "resumed_from": null,
+  "params": 4951296,
+  "params_body": 4427008,
+  "model_mb_fp32": 18.89,
+  "best_val_loss": 1.447887399514105,
+  "best_val_perplexity": 4.254117763989205,
+  "last_eval": {
+    "type": "eval",
+    "step": 600,
+    "time": 1790316970.032,
+    "val_loss": 1.447887399514105,
+    "val_ppl": 4.254117763989205,
+    "best_val": 1.447887399514105,
+    "improved": true
+  },
+  "checkpoint_mb": {
+    "best.pt": 18.91,
+    "final.pt": 18.91,
+    "step_00000500.pt": 56.74,
+    "step_00000600.pt": 56.74
+  },
+  "dataset_train_tokens": 3861403,
+  "stage": "sft",
+  "peak_rss_mb": 659.7,
+  "peak_mps_driver_mb": 3516.1,
+  "config_fingerprint": "a2c461b95c20",
+  "tokenizer_fingerprint": "d342233120927a9806b00f2a4c4031a5d0a0b59e2f9bb2b7575671b2783e7395",
+  "device": "mps",
+  "precision": "fp32"
+}

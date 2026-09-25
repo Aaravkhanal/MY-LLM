@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pytest
 
@@ -183,3 +184,60 @@ def test_cli_commands(engine, tmp_path, monkeypatch):
     assert "reset" in handle_command(s, "/reset")
     assert "unknown command" in handle_command(s, "/frobnicate")
     assert handle_command(s, "/exit") is None and handle_command(s, "/QUIT") is None
+
+
+# ── locating checkpoints and tokenizers ──────────────────────────────────────
+
+def test_tokenizer_is_found_by_fingerprint_when_no_run_directory_exists(tiny_run, tmp_path, monkeypatch):
+    import shutil
+    from aarav_lm.chat import cli
+    from aarav_lm.train.checkpoint import save_model_checkpoint, load_model
+    model, raw = load_model(tiny_run["final"], "cpu")
+    lone = tmp_path / "models" / "m.pt"                       # no ../config.yaml beside it
+    save_model_checkpoint(lone, model, raw["tokenizer_fingerprint"], raw["meta"])
+    arts = tmp_path / "artifacts"
+    shutil.copytree(tiny_run["tok_dir"], arts / "right")
+    other = tmp_path / "other_tok"
+    from aarav_lm.tokenizer import train_tokenizer
+    train_tokenizer(["different words entirely here"] * 30, vocab_size=300).save(arts / "wrong")
+    monkeypatch.setattr(cli, "ARTIFACT_DIR", arts)
+    assert cli.tokenizer_dir_for(lone, None) == arts / "right"
+    assert cli.tokenizer_dir_for(lone, str(other)) == other   # an explicit --tokenizer always wins
+    shutil.rmtree(arts / "right")
+    with pytest.raises(SystemExit, match="no tokenizer"):
+        cli.tokenizer_dir_for(lone, None)
+
+
+def test_default_checkpoint_prefers_experiments_then_packaged_sft_models(tmp_path, monkeypatch):
+    from aarav_lm.chat import cli
+    exp, models = tmp_path / "experiments", tmp_path / "models"
+    monkeypatch.setattr(cli, "EXPERIMENT_DIR", exp)
+    monkeypatch.setattr(cli, "MODELS_DIR", models)
+    with pytest.raises(SystemExit, match="no trained checkpoint"):
+        cli.find_checkpoint(None)
+    models.mkdir()
+    for n in ("a-base-int8.pt", "b-sft-int8.pt"):
+        (models / n).write_bytes(b"x")
+    assert cli.find_checkpoint(None).name == "b-sft-int8.pt"                       # instruction-tuned model first
+    (exp / "exp_001_x/checkpoints").mkdir(parents=True)
+    (exp / "exp_001_x/checkpoints/final.pt").write_bytes(b"x")
+    assert cli.find_checkpoint(None) == exp / "exp_001_x/checkpoints/final.pt"     # a fresh experiment wins
+    (exp / "exp_002_y/checkpoints").mkdir(parents=True)
+    (exp / "exp_002_y/checkpoints/best.pt").write_bytes(b"x")
+    assert cli.find_checkpoint(None) == exp / "exp_002_y/checkpoints/best.pt"      # newest, best over final
+    assert cli.find_checkpoint("somewhere/else.pt") == Path("somewhere/else.pt")
+
+
+def test_packaged_models_load_and_generate_if_present():
+    """The shipped int8 models must load through the normal path with their matching tokenizer."""
+    from aarav_lm.chat.cli import tokenizer_dir_for
+    from aarav_lm.inference.engine import InferenceEngine
+    from aarav_lm.paths import MODELS_DIR
+    files = sorted(MODELS_DIR.glob("*.pt"))
+    if not files:
+        pytest.skip("no packaged models in this checkout")
+    for f in files:
+        e = InferenceEngine.from_checkpoint(f, tokenizer_dir_for(f, None), "cpu")
+        assert e.meta["quantization"] == "int8-per-row"
+        res = e.generate("Once upon a time", GenerationConfig(max_new_tokens=12, temperature=0.0, top_k=None, top_p=None, stop_at_eot=False))
+        assert res.generated_tokens == 12 and res.text.strip()

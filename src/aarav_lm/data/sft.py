@@ -38,6 +38,7 @@ from aarav_lm.paths import resolve
 from aarav_lm.tokenizer import ASSISTANT, END_TURN, AaravTokenizer
 
 SPLITS = ("train", "val", "test")
+PAD_BUCKET = 32
 
 
 def validate_conversation(raw) -> Tuple[Optional[List[Message]], Optional[str]]:
@@ -157,6 +158,7 @@ class SFTDataset:
         if len(ids) != len(mask) or offsets[0] != 0 or offsets[-1] != len(ids) or np.any(np.diff(offsets) < 2):
             raise ValueError("inconsistent SFT arrays")
         self.ids, self.mask, self.offsets, self.pad_id = ids, mask, offsets, pad_id
+        self.max_width = int(np.diff(offsets).max()) - 1          # longest x/y row any batch can need
 
     @classmethod
     def load(cls, path: str | Path, pad_id: int) -> "SFTDataset":
@@ -179,6 +181,10 @@ class SFTDataset:
             m = self.mask[a:b].astype(bool)
             rows.append((ids[:-1], np.where(m[1:], ids[1:], -1)))
         width = max(len(x) for x, _ in rows)
+        # Round up to a multiple of PAD_BUCKET (capped at the longest conversation): a handful of
+        # distinct batch shapes instead of ~250 keeps the Metal allocator from caching a differently
+        # sized buffer set for every width (measured: 3.4 GB held vs 1.2 GB for pretraining).
+        width = min(-(-width // PAD_BUCKET) * PAD_BUCKET, self.max_width)
         X = np.full((len(rows), width), self.pad_id, dtype=np.int64)
         Y = np.full((len(rows), width), -1, dtype=np.int64)
         for r, (x, y) in enumerate(rows):

@@ -16,6 +16,7 @@ LEGACY_DATA_DIR = DATA_DIR / "legacy"      # GPT-2-token data from the first pro
 CHECKPOINT_DIR = REPO_ROOT / "checkpoints"
 EXPERIMENT_DIR = REPO_ROOT / "experiments"
 ARTIFACT_DIR = REPO_ROOT / "artifacts"     # tokenizers and other versioned outputs
+MODELS_DIR = REPO_ROOT / "models"          # packaged, ready-to-chat checkpoints (small int8 files)
 SECRETS_DIR = REPO_ROOT / "secrets"
 
 

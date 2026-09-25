@@ -16,6 +16,7 @@ dist/
 checkpoints/
 *.pt
 *.bin
+!models/*.pt
 !tests/fixtures/*.bin
 experiments/*/checkpoints/
 experiments/*/*.pt

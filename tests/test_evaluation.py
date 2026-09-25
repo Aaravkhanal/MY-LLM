@@ -339,3 +339,13 @@ def test_stale_wordlist_cache_is_rebuilt(engine, tiny_run, tmp_path):
 
 
 import shutil                                                            # noqa: E402
+
+
+def test_natural_end_rate_counts_chat_stops_as_well_as_eot():
+    samples = [
+        {"text": "a b.", "tokens": [1, 2], "finish_reason": "eot", "entity": None, "prompt": "p"},
+        {"text": "c d.", "tokens": [3, 4], "finish_reason": "stop", "entity": None, "prompt": "p"},
+        {"text": "e f g", "tokens": [5, 6, 7], "finish_reason": "length", "entity": None, "prompt": "p"},
+    ]
+    r = M.summarize_generations(samples, {"a", "b", "c", "d", "e", "f", "g"})
+    assert r["natural_end_rate"] == pytest.approx(2 / 3) and r["eot_rate"] == pytest.approx(1 / 3)
