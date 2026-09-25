@@ -10,7 +10,7 @@ from aarav_lm.model.layers import (
     precompute_rope,
     apply_rope,
 )
-from aarav_lm.config.config import ModelConfig, cfg_5m, cfg_10m, cfg_20m, cfg_30m
+from aarav_lm.config.config import ModelConfig, cfg_5m, cfg_10m, cfg_20m, cfg_30m, cfg_small, cfg_tiny
 
 __all__ = [
     "AaravLM",
@@ -28,4 +28,6 @@ __all__ = [
     "cfg_10m",
     "cfg_20m",
     "cfg_30m",
+    "cfg_tiny",
+    "cfg_small",
 ]

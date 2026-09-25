@@ -21,7 +21,7 @@ from aarav_lm.data.chat_format import decode_answer, encode_pair, user_prompt
 from aarav_lm.model.core import AaravLM
 from aarav_lm.tokenizer.tokenizer import Tokenizer
 
-_ROOT = Path(__file__).resolve().parents[1]
+from aarav_lm.paths import CHECKPOINT_DIR, LEGACY_DATA_DIR
 
 
 def _load_rows(path: Path) -> list:
@@ -198,9 +198,9 @@ def _save(model, cfg, path: str, step: int, val: float) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fine-tune aarav-lm on instructions")
     parser.add_argument("--ckpt", required=True)
-    parser.add_argument("--train", default=str(_ROOT / "data" / "sft" / "train.jsonl"))
-    parser.add_argument("--val", default=str(_ROOT / "data" / "sft" / "val.jsonl"))
-    parser.add_argument("--out", default=str(_ROOT / "checkpoints" / "aarav_chat.pt"))
+    parser.add_argument("--train", default=str(LEGACY_DATA_DIR / "sft" / "train.jsonl"))
+    parser.add_argument("--val", default=str(LEGACY_DATA_DIR / "sft" / "val.jsonl"))
+    parser.add_argument("--out", default=str(CHECKPOINT_DIR / "aarav_chat.pt"))
     parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--grad_accum", type=int, default=8)

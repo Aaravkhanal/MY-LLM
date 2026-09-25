@@ -30,9 +30,9 @@ from aarav_lm.data.chat_format import decode_answer, messages_to_ids
 from aarav_lm.model.core import AaravLM
 from aarav_lm.tokenizer.tokenizer import Tokenizer
 
-ROOT = Path(__file__).resolve().parents[1]
-CKPT_DIR = (ROOT / "checkpoints").resolve()
-KEYS_FILE = ROOT / "secrets" / "api_keys.txt"
+from aarav_lm.paths import CHECKPOINT_DIR as _CKPT, REPO_ROOT as ROOT, SECRETS_DIR
+CKPT_DIR = _CKPT.resolve()
+KEYS_FILE = SECRETS_DIR / "api_keys.txt"
 CHAT_CKPT = CKPT_DIR / "aarav_chat.pt"
 DEFAULT_CKPT = CKPT_DIR / "aarav_lm_modern_5m_best.pt"
 

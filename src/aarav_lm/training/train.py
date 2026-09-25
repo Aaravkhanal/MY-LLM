@@ -29,7 +29,7 @@ from aarav_lm.model.core import AaravLM
 from aarav_lm.tokenizer.tokenizer import Tokenizer
 
 _PRESETS = {"5m": cfg_5m, "10m": cfg_10m, "20m": cfg_20m, "30m": cfg_30m}
-_ROOT = Path(__file__).resolve().parents[1]
+from aarav_lm.paths import CHECKPOINT_DIR, LEGACY_DATA_DIR
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Learning-rate schedule
@@ -98,8 +98,8 @@ def train(
     device_name:      Optional[str] = None,
     block_size:       int   = 0,
 ):
-    out_dir = out_dir or str(_ROOT / "checkpoints")
-    data_dir = data_dir or str(_ROOT / "data")
+    out_dir = out_dir or str(CHECKPOINT_DIR)
+    data_dir = data_dir or str(LEGACY_DATA_DIR)
     device = torch.device(device_name or ("mps" if torch.backends.mps.is_available() else "cpu"))
 
     print(f"\n{'='*55}")

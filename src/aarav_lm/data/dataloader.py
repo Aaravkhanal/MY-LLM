@@ -18,7 +18,7 @@ import torch
 
 _CACHE: Dict[str, np.memmap] = {}   # global memmap handle cache
 
-_HERE = Path(__file__).resolve().parent
+from aarav_lm.paths import LEGACY_DATA_DIR as _HERE
 
 
 def get_batch(

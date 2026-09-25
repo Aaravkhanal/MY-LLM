@@ -8,15 +8,18 @@ __pycache__/
 build/
 dist/
 
-# Binary data & weights
-data/*.bin
-data/shakespeare_raw.txt
+# Local virtualenv
+.venv/
+
+# Data artifacts, weights and run outputs stay local (rebuilt by the pipeline)
+/data/
 checkpoints/
 *.pt
+*.bin
+!tests/fixtures/*.bin
+experiments/*/checkpoints/
+experiments/*/*.pt
 
 # API keys for the local server
 secrets/
 
-# Prepared chat corpora (rebuilt by data/prepare_chat.py)
-data/pretrain/
-data/sft/

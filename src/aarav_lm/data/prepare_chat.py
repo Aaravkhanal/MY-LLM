@@ -17,9 +17,9 @@ from pathlib import Path
 import numpy as np
 import tiktoken
 
-ROOT = Path(__file__).resolve().parents[1]
-PRETRAIN = ROOT / "data" / "pretrain"
-SFT = ROOT / "data" / "sft"
+from aarav_lm.paths import LEGACY_DATA_DIR, REPO_ROOT as ROOT
+PRETRAIN = LEGACY_DATA_DIR / "pretrain"
+SFT = LEGACY_DATA_DIR / "sft"
 BLOCK = 256
 
 WIKI_URL = "https://raw.githubusercontent.com/salesforce/awd-lstm-lm/master/data/wikitext-2/wiki.train.tokens"

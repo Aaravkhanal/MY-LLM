@@ -215,15 +215,30 @@ class Attention(nn.Module):
             q = apply_rope(q, cos, sin)
             k = apply_rope(k, cos, sin)
 
+        offset = 0
         if cache is not None:
+            offset = cache.seen
             k, v = cache.update(self.layer_idx, k, v)
 
         k = repeat_kv(k, self.n_rep)
         v = repeat_kv(v, self.n_rep)
 
-        is_causal   = (cache is None or cache.seen == 0) and T > 1
-        dropout_p   = self.cfg.dropout if self.training else 0.0
-        out         = F.scaled_dot_product_attention(q, k, v, dropout_p=dropout_p, is_causal=is_causal)
+        # Three cases: fresh sequence -> plain causal; single new token -> attends
+        # to everything cached; chunk appended to a non-empty cache -> explicit
+        # mask so query i (absolute position offset+i) only sees keys <= offset+i.
+        attn_mask = None
+        is_causal = False
+        if offset == 0:
+            is_causal = T > 1
+        elif T > 1:
+            rows = torch.arange(offset, offset + T, device=x.device).unsqueeze(1)
+            cols = torch.arange(offset + T, device=x.device).unsqueeze(0)
+            attn_mask = cols <= rows
+
+        dropout_p = self.cfg.dropout if self.training else 0.0
+        out = F.scaled_dot_product_attention(
+            q, k, v, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal
+        )
         out         = out.transpose(1, 2).contiguous().view(B, T, -1)
         return self.drop(self.out(out))
 

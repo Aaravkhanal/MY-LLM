@@ -81,9 +81,10 @@ class AaravLM(nn.Module):
 
         # ── Weight initialisation ──────────────────────────────────────────
         self.apply(self._init_weights)
-        # Scale down residual projections — GPT-2 paper recommendation
+        # Scale down the projections that write into the residual stream
+        # (attention output, SwiGLU down, GELU-MLP proj) — GPT-2 paper recommendation
         for name, param in self.named_parameters():
-            if name.endswith(("out.weight", "down.weight", "c_proj.weight")):
+            if name.endswith(("attn.out.weight", "mlp.down.weight", "mlp.proj.weight")):
                 nn.init.normal_(param, mean=0.0, std=0.02 / math.sqrt(2 * cfg.n_layer))
 
     # ── Init ───────────────────────────────────────────────────────────────
@@ -96,30 +97,40 @@ class AaravLM(nn.Module):
             nn.init.normal_(m.weight, mean=0.0, std=0.02)
 
     # ── Parameter count ────────────────────────────────────────────────────
-    def num_params(self, exclude_embeddings: bool = True) -> int:
+    def num_params(self, exclude_embeddings: bool = False) -> int:
+        """Unique parameters (tied weights counted once).
+
+        exclude_embeddings drops the token (and learned position) tables, leaving
+        the transformer body — the number the presets are named after.
+        """
         n = sum(p.numel() for p in self.parameters())
-        if exclude_embeddings and self.pos_emb is not None:
-            n -= self.pos_emb.weight.numel()
+        if exclude_embeddings:
+            n -= self.token_emb.weight.numel()
+            if self.pos_emb is not None:
+                n -= self.pos_emb.weight.numel()
         return n
 
     # ── Forward ────────────────────────────────────────────────────────────
     def forward(
         self,
-        idx:     torch.Tensor,
-        targets: Optional[torch.Tensor] = None,
-        cache:   Optional[KVCache]      = None,
+        idx:       torch.Tensor,
+        targets:   Optional[torch.Tensor] = None,
+        cache:     Optional[KVCache]      = None,
+        last_only: bool                   = False,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
         """
         Parameters
         ----------
-        idx     : (B, T)  token indices
-        targets : (B, T)  next-token targets for loss; pass None during generation
-        cache   : KVCache instance for incremental decoding; None during training
+        idx       : (B, T)  token indices
+        targets   : (B, T)  next-token targets (-1 = ignored); None during generation
+        cache     : KVCache for incremental decoding; None during training
+        last_only : compute logits for the final position only (saves a
+                    T x vocab matmul and its memory when prefilling a prompt)
 
         Returns
         -------
-        logits : (B, T, V)  or  (B, 1, V) during cached generation
-        loss   : scalar cross-entropy loss when targets is not None, else None
+        logits : (B, T, V), or (B, 1, V) when last_only or decoding one token
+        loss   : scalar cross-entropy when targets is not None, else None
         """
         device = idx.device
         B, T   = idx.shape
@@ -152,8 +163,8 @@ class AaravLM(nn.Module):
                 ignore_index=-1,
             )
         else:
-            # During generation only compute logits for the final position
-            logits = self.lm_head(x[:, [-1], :]) if (cache is not None and cache.seen > 0) else self.lm_head(x)
+            # Generation only ever needs the next-token distribution
+            logits = self.lm_head(x[:, [-1], :]) if last_only else self.lm_head(x)
             loss   = None
 
         return logits, loss
@@ -164,36 +175,38 @@ class AaravLM(nn.Module):
         weight_decay: float,
         learning_rate: float,
         betas: Tuple[float, float],
-        device_type: str,
+        device_type: str = "cpu",
     ) -> torch.optim.AdamW:
         """
         AdamW with separate weight-decay groups:
-          - 2-D weight matrices  → decayed
-          - biases, norms, embed → NOT decayed
+          - matrices inside blocks / lm_head  → decayed
+          - embeddings, norm scales, biases   → NOT decayed
         """
-        params     = {n: p for n, p in self.named_parameters() if p.requires_grad}
-        decay      = [p for p in params.values() if p.dim() >= 2]
-        no_decay   = [p for p in params.values() if p.dim() < 2]
-        groups     = [
+        embed_ids = {id(m.weight) for m in self.modules() if isinstance(m, nn.Embedding)}
+        params    = [p for p in self.parameters() if p.requires_grad]
+        decay     = [p for p in params if p.dim() >= 2 and id(p) not in embed_ids]
+        no_decay  = [p for p in params if p.dim() < 2 or id(p) in embed_ids]
+        groups    = [
             {"params": decay,    "weight_decay": weight_decay},
             {"params": no_decay, "weight_decay": 0.0},
         ]
-        fused_ok   = "fused" in inspect.signature(torch.optim.AdamW).parameters
-        extra      = dict(fused=True) if (fused_ok and device_type == "cuda") else {}
+        fused_ok  = "fused" in inspect.signature(torch.optim.AdamW).parameters
+        extra     = dict(fused=True) if (fused_ok and device_type == "cuda") else {}
         return torch.optim.AdamW(groups, lr=learning_rate, betas=betas, **extra)
 
-    # ── MFU ────────────────────────────────────────────────────────────────
-    def estimate_mfu(self, iters_per_sec: float) -> float:
-        """Rough Model FLOPs Utilisation estimate (FLOP/s achieved)."""
-        N = self.num_params()
+    # ── Compute cost ───────────────────────────────────────────────────────
+    def flops_per_token(self) -> int:
+        """Training FLOPs per token: 6 * body params + attention score/value terms."""
         L, H, Q, T = (
             self.cfg.n_layer,
             self.cfg.n_head,
             self.cfg.n_embd // self.cfg.n_head,
             self.cfg.block_size,
         )
-        flops_per_token = 6 * N + 12 * L * H * Q * T
-        return flops_per_token * T * iters_per_sec
+        n_matmul = self.num_params(exclude_embeddings=True)
+        # the tied lm_head is a real matmul even though it shares the embedding table
+        n_matmul += self.cfg.vocab_size * self.cfg.n_embd
+        return 6 * n_matmul + 12 * L * H * Q * T
 
     # ── Generation ─────────────────────────────────────────────────────────
     @torch.no_grad()
@@ -234,11 +247,11 @@ class AaravLM(nn.Module):
                 device      = device,
                 dtype       = dtype,
             )
-            logits, _ = self.forward(idx, cache=cache)
+            logits, _ = self.forward(idx, cache=cache, last_only=True)
             cache.step(prompt_len)
         else:
             cache  = None
-            logits, _ = self.forward(idx)
+            logits, _ = self.forward(idx, last_only=True)
 
         for _ in range(max_new_tokens):
             if cache is not None and cache.seen >= self.cfg.block_size:
@@ -273,10 +286,10 @@ class AaravLM(nn.Module):
             idx = torch.cat([idx, idx_next], dim=1)
 
             if cache is not None:
-                logits, _ = self.forward(idx_next, cache=cache)
+                logits, _ = self.forward(idx_next, cache=cache, last_only=True)
                 cache.step(1)
             else:
                 cond   = idx if idx.size(1) <= self.cfg.block_size else idx[:, -self.cfg.block_size:]
-                logits, _ = self.forward(cond)
+                logits, _ = self.forward(cond, last_only=True)
 
         return idx

@@ -24,7 +24,7 @@ import requests
 import tiktoken
 from tqdm import tqdm
 
-_DATA_DIR = Path(__file__).resolve().parent
+from aarav_lm.paths import LEGACY_DATA_DIR as _DATA_DIR
 
 
 def _write_bin(ids: list, path: Path):

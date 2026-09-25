@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aarav-lm"
+version = "0.1.0"
+description = "A small decoder-only LLM built from scratch: data, tokenizer, model, training, evaluation, chat."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Aarav Khanal" }]
+dependencies = [
+    "torch>=2.2",
+    "numpy>=1.26",
+    "tokenizers>=0.19",
+    "pyyaml>=6",
+    "psutil>=5.9",
+]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.110", "uvicorn>=0.27", "pydantic>=2"]
+data = ["datasets>=2.18", "requests>=2.31"]
+dev = ["pytest>=7"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
