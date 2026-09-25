@@ -1,8 +1,12 @@
+# Runtime + dev dependencies (pyproject.toml is the source of truth: `pip install -e ".[api,data,dev]"`)
 torch>=2.2
-tiktoken>=0.7
+numpy>=1.26
+tokenizers>=0.19
+pyyaml>=6
+psutil>=5.9
 fastapi>=0.110
 uvicorn>=0.27
 pydantic>=2
-numpy>=1.26
-requests>=2.31
-tqdm>=4.66
+httpx>=0.27          # API tests
+pytest>=7
+datasets>=2.18       # optional: Hugging Face datasets

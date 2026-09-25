@@ -14,7 +14,7 @@ Key methods
 forward(idx, targets)       training / evaluation
 generate(idx, max_new_tokens) autoregressive sampling with optional KV-cache
 configure_optimizers(...)   AdamW with weight-decay split between 2-D and 1-D params
-estimate_mfu(...)           compute approximate Model FLOPs Utilisation per iteration
+flops_per_token()           training FLOPs per token (for throughput accounting)
 """
 
 import inspect

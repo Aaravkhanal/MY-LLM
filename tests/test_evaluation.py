@@ -277,3 +277,12 @@ def test_comparison_report(engine, tiny_run, small_sets, tmp_path):
                    "exp_001_demo", "exp_002_unevaluated", "not evaluated"):
         assert needle in md, needle
     assert "No experiments found" in render_markdown([])
+
+
+def test_bits_per_byte_is_derived_from_loss_and_dataset_bytes_per_token(engine, tiny_run, small_sets):
+    import math
+    res = _suite(engine, tiny_run, small_sets)
+    manifest = json.loads((Path(tiny_run["exp"].data.out_dir) / "manifest.json").read_text())
+    for split in ("val", "test"):
+        bpt = manifest["splits"][split]["bytes_per_token"]
+        assert res["loss"][split]["bits_per_byte"] == pytest.approx(res["loss"][split]["loss"] / math.log(2) / bpt)

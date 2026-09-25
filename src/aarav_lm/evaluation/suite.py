@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import time
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Set
@@ -58,7 +59,11 @@ def load_wordlist(data_dir: str | Path, engine: InferenceEngine, max_tokens: int
 
 
 def loss_section(engine: InferenceEngine, data_dir: Path, max_windows: int, batch_size: int = 16) -> Dict:
+    """Held-out metrics per split. bits_per_byte = loss / ln 2 / (bytes per token): unlike
+    perplexity it does not depend on the tokenizer, so it stays comparable across vocabularies."""
     out = {}
+    manifest_path = data_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     for split in ("val", "test"):
         ds = TokenDataset(Shard.open(data_dir / f"{split}.bin"), engine.block_size)
         n_batches = -(-min(max_windows, ds.n_windows) // batch_size)
@@ -68,6 +73,8 @@ def loss_section(engine: InferenceEngine, data_dir: Path, max_windows: int, batc
             **next_token_accuracy(engine.model, batches, engine.device),
             "windows": sum(x.shape[0] for x, _ in batches),
         }
+        bpt = (manifest.get("splits", {}).get(split) or {}).get("bytes_per_token")
+        out[split]["bits_per_byte"] = out[split]["loss"] / math.log(2) / bpt if bpt else None
     return out
 
 

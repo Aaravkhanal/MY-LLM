@@ -1,54 +1,17 @@
 # Open-source acknowledgements
 
-`aarav-lm` is my own project, but several well-known open-source works informed the design choices I made.
-Where I adopted a technique or algorithm from existing code I note it here.
+`aarav-lm` is my own project. The code in this repository is written for it; the following
+public works informed design decisions, and the original authors deserve the credit for the ideas.
 
----
+| Work | Author / licence | What it informed here |
+|---|---|---|
+| [nanoGPT](https://github.com/karpathy/nanoGPT) | A. Karpathy, MIT | Splitting AdamW parameters into decayed / non-decayed groups; scaled init of residual projections (GPT-2 paper); flat token files read through `np.memmap` |
+| [llama2.c](https://github.com/karpathy/llama2.c) | A. Karpathy, MIT | The Llama-style block: RMSNorm, RoPE, SwiGLU with a 2/3·4d hidden width, GQA head repetition |
+| [llm.c](https://github.com/karpathy/llm.c) | A. Karpathy, MIT | The idea of token shards with a fixed binary header and magic number; parity-testing habits |
+| [nanogpt-mps-lab](https://github.com/poting-lin/nanogpt-mps-lab) | P. Lin | Pre-shifting SFT targets with `-1` for masked positions; the KV-cache-on-Apple-Silicon approach |
+| Hugging Face [`tokenizers`](https://github.com/huggingface/tokenizers) | Apache-2.0 | The byte-level BPE trainer/encoder used for our own tokenizer (a runtime dependency) |
+| PyTorch | BSD-3 | Everything numerical |
 
-## nanoGPT
+## Datasets
 
-**Author**: Andrej Karpathy  
-**License**: MIT  
-**Repo**: https://github.com/karpathy/nanoGPT
-
-The idea of separating 2-D weight matrices from 1-D biases / norms when configuring AdamW
-came from nanoGPT's `configure_optimizers`.  The MFU estimation formula also follows the same
-approach.
-
----
-
-## llama2.c
-
-**Author**: Andrej Karpathy  
-**License**: MIT  
-**Repo**: https://github.com/karpathy/llama2.c
-
-The RoPE, RMSNorm, and SwiGLU formulations I used match those in `llama2.c/model.py`.
-GQA head-expansion (repeat_kv) also comes from there.
-
----
-
-## llm.c
-
-**Author**: Andrej Karpathy  
-**License**: MIT  
-**Repo**: https://github.com/karpathy/llm.c
-
-Used `train_llama3.py` as a reference for how the modern LLaMA-3 architecture
-differs from GPT-2, particularly around how SwiGLU hidden dimensions are computed.
-
----
-
-## nanogpt-mps-lab
-
-**License**: MIT  
-**Repo**: local clone
-
-The KVCache layout (pre-allocated tensor, index-slice writes) and the idea of
-using `torch.amp.autocast(device_type="mps", dtype=torch.bfloat16)` for training
-on Apple Silicon came from this repository.  The bits-per-byte evaluation idea
-also originates here.
-
----
-
-All four repositories are MIT-licensed.  Credit belongs to their respective authors.
+See [DATASETS.md](DATASETS.md).

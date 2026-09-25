@@ -28,3 +28,7 @@
 10:25:20 step    575/3000  loss 2.1501  lr 9.42e-04  gnorm max 0.70 (clipped 0/25)  8,852 tok/s  1856 ms/step  rss 140MB  mps 1228MB  free 1500MB  eta 1h15m
 10:26:08 step    600/3000  loss 2.1351  lr 9.36e-04  gnorm max 0.72 (clipped 0/25)  8,512 tok/s  1927 ms/step  rss 136MB  mps 1228MB  free 1567MB  eta 1h17m
 10:26:53 step    625/3000  loss 2.1164  lr 9.29e-04  gnorm max 0.68 (clipped 0/25)  9,435 tok/s  1752 ms/step  rss 145MB  mps 1228MB  free 1657MB  eta 1h09m
+10:27:36 step    650/3000  loss 2.0918  lr 9.23e-04  gnorm max 0.71 (clipped 0/25)  9,326 tok/s  1765 ms/step  rss 144MB  mps 1228MB  free 1580MB  eta 1h09m
+10:28:23 step    675/3000  loss 2.0988  lr 9.16e-04  gnorm max 0.67 (clipped 0/25)  8,672 tok/s  1892 ms/step  rss 129MB  mps 1228MB  free 1474MB  eta 1h13m
+10:29:10 step    700/3000  loss 2.0608  lr 9.09e-04  gnorm max 0.76 (clipped 0/25)  8,911 tok/s  1844 ms/step  rss 131MB  mps 1228MB  free 1573MB  eta 1h10m
+10:29:57 step    725/3000  loss 2.0496  lr 9.01e-04  gnorm max 0.67 (clipped 0/25)  8,766 tok/s  1872 ms/step  rss 123MB  mps 1226MB  free 1353MB  eta 1h10m
