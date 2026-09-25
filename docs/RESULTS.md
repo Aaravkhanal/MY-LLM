@@ -11,7 +11,7 @@ live in `experiments/exp_00N_*/` (config, environment, every logged metric, eval
 | **What** | pretrain from scratch | SFT (600 steps) from exp_001 | SFT (2,000 steps) from exp_001 |
 | Data | TinyStories 60 MB slice, 15.8M train tokens | 19.8k story-request conversations | same |
 | Steps / tokens | 3,000 / 49.2M (3.1 epochs) | 600 (≈1 epoch) | 2,000 (≈3.2 epochs) |
-| Wall time | 79 min | 6.5 min | 27 min |
+| Wall time | 79 min | 6.5 min | 24.8 min |
 | Val loss / perplexity | **1.642 / 5.17** (7.66 at init) | 1.421 / 4.14 (chat format, assistant tokens) | 1.441 / 4.22 |
 | Best step | 3,000 (still improving) | 600 | **1,750** (then overfits) |
 | Next-token top-1 / top-5 | 59.4% / 84.1% | 63.6% | – |
@@ -54,14 +54,15 @@ Fluent and structurally right; the plot logic breaks down at the end, which is w
 
 What worked:
 
-* The model learned the chat template, and replies stop by themselves at `<|end|>` (87–93% of
-  replies vs 77–93% for the base model's `<|endoftext|>`, depending on decoding).
+* The model learned the chat template and stops replies itself with `<|end|>`. That is a change of
+  mechanism, not of rate: replies end on their own 80–93% of the time, about the same as the base
+  model's `<|endoftext|>` endings (77–93%).
 * Named characters get **consistent genders** (the base model wrote "a little girl named Tom").
 * Names never seen in training ("Zoe", "Ruby") work.
 
 What did not:
 
-| Requested-word reuse, 25 prompts (20 name/topic-word checks + …) | greedy | sampled |
+| Requested name/topic word reused (25 prompts: 15 names, 10 topics) | greedy | sampled |
 |---|---|---|
 | Base model, request as plain text | 0.68 | 0.84 |
 | SFT, 600 steps | 0.72 | 0.76 |
