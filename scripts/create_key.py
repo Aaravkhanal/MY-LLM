@@ -1,22 +1,23 @@
-"""Create an API key and append it to secrets/api_keys.txt.
+"""Create an API key for the local server. The key is printed once; only its hash is stored.
 
-Prints the new key once. Restart the server after adding a key.
+    python scripts/create_key.py --label "my laptop"
 """
 
-import secrets
-from pathlib import Path
+import argparse
 
-ROOT = Path(__file__).resolve().parents[1]
-KEYS = ROOT / "secrets" / "api_keys.txt"
+from aarav_lm.api.auth import KeyStore
+from aarav_lm.paths import SECRETS_DIR
 
 
-def main() -> str:
-    KEYS.parent.mkdir(parents=True, exist_ok=True)
-    key = "ak-" + secrets.token_urlsafe(24)
-    with KEYS.open("a", encoding="utf-8") as handle:
-        handle.write(key + "\n")
-    print(key)
-    return key
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--label", default="", help="a note to remember what this key is for")
+    ap.add_argument("--keys-file", default=str(SECRETS_DIR / "api_keys.json"))
+    args = ap.parse_args()
+    key = KeyStore(args.keys_file).create(args.label)
+    print(f"API key (shown once, store it somewhere safe):\n\n  {key}\n")
+    print(f"Only its SHA-256 was saved to {args.keys_file}.")
+    print('Use it as:  curl -H "Authorization: Bearer <key>" http://127.0.0.1:8000/model')
 
 
 if __name__ == "__main__":

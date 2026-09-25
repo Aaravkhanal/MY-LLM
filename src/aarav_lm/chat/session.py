@@ -18,11 +18,9 @@ from dataclasses import asdict, replace
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional
 
-from aarav_lm.inference.chat_format import (
-    ChatFormatError, Message, fit_to_context, validate_messages,
-)
+from aarav_lm.inference.chat_format import ChatFormatError, Message, validate_messages
 from aarav_lm.inference.engine import GenerationConfig, InferenceEngine
-from aarav_lm.tokenizer import END_TURN
+from aarav_lm.inference.prompting import build_prompt, resolve_mode
 
 SESSION_VERSION = 1
 MAX_SESSION_FILE_BYTES = 5_000_000
@@ -42,7 +40,7 @@ class ChatSession:
     ):
         self.engine = engine
         self.gen_cfg = gen_cfg or GenerationConfig()
-        self.mode = self._resolve_mode(mode)
+        self.mode = resolve_mode(engine, mode)
         self.system_prompt = system_prompt
         self.messages: List[Message] = []
         self.turns = 0
@@ -50,13 +48,6 @@ class ChatSession:
         self.total_generated = 0
         self.last_tokens_per_sec = 0.0
         self.last_context_tokens = 0
-
-    def _resolve_mode(self, mode: str) -> str:
-        if mode == "auto":
-            return "chat" if self.engine.meta.get("stage") == "sft" else "completion"
-        if mode not in ("chat", "completion"):
-            raise ValueError("mode must be auto, chat or completion")
-        return mode
 
     # ── conversation ───────────────────────────────────────────────────────
     def _prompt_messages(self) -> List[Message]:
@@ -71,18 +62,12 @@ class ChatSession:
         if not user_text:
             raise ValueError("empty message")
         Message("user", user_text).validate()
-        eng, tok = self.engine, self.engine.tok
-        reserve = self.gen_cfg.max_new_tokens
-        max_prompt = max(8, eng.block_size - min(reserve, eng.block_size // 2))
-
-        if self.mode == "chat":
-            candidate = self._prompt_messages() + [Message("user", user_text)]
-            ids, dropped = fit_to_context(tok, candidate, max_prompt)
-            self.dropped_messages += dropped
-            cfg = replace(self.gen_cfg, stop_ids=tuple({*self.gen_cfg.stop_ids, tok.special_ids[END_TURN]}))
-        else:
-            ids = tok.encode(user_text)[-max_prompt:]
-            cfg = self.gen_cfg
+        eng = self.engine
+        candidate = self._prompt_messages() + [Message("user", user_text)]
+        prompt = build_prompt(eng, candidate, self.gen_cfg.max_new_tokens, self.mode)
+        ids = prompt.ids
+        self.dropped_messages += prompt.dropped
+        cfg = replace(self.gen_cfg, stop_ids=tuple({*self.gen_cfg.stop_ids, *prompt.stop_ids}))
 
         self.last_context_tokens = len(ids)
         with eng.lock:
