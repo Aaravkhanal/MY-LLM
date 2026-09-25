@@ -17,3 +17,9 @@ CHECKPOINT_DIR = REPO_ROOT / "checkpoints"
 EXPERIMENT_DIR = REPO_ROOT / "experiments"
 ARTIFACT_DIR = REPO_ROOT / "artifacts"     # tokenizers and other versioned outputs
 SECRETS_DIR = REPO_ROOT / "secrets"
+
+
+def resolve(path: "str | os.PathLike") -> Path:
+    """Relative paths in configs mean 'relative to the repo root', whatever the current directory is."""
+    p = Path(path).expanduser()
+    return p if p.is_absolute() else REPO_ROOT / p

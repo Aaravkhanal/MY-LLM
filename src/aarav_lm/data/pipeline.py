@@ -27,6 +27,7 @@ from aarav_lm.data.dedup import ExactDeduper
 from aarav_lm.data.ingest import IngestStats, expand_sources, iter_documents
 from aarav_lm.data.shards import Shard, ShardWriter
 from aarav_lm.data.split import split_of
+from aarav_lm.paths import resolve
 from aarav_lm.tokenizer import AaravTokenizer, train_tokenizer
 
 SPLITS = ("train", "val", "test")
@@ -105,8 +106,8 @@ def _length_summary(lens: np.ndarray) -> dict:
 def build_dataset(exp: ExperimentConfig, log: Callable[[str], None] = print, force_tokenizer: bool = False) -> dict:
     """Build tokenizer + token shards for `exp`. Returns the manifest."""
     t0 = time.time()
-    out_dir = Path(exp.data.out_dir)
-    tok_dir = Path(exp.tokenizer.artifact_dir)
+    out_dir = resolve(exp.data.out_dir)
+    tok_dir = resolve(exp.tokenizer.artifact_dir)
 
     log(f"[data] reading {len(expand_sources(exp.data.sources))} source file(s)")
     docs, counters = collect_documents(exp)

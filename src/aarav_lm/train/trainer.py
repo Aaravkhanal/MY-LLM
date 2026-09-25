@@ -37,6 +37,7 @@ from aarav_lm.data.pipeline import validate_dataset
 from aarav_lm.data.shards import Shard
 from aarav_lm.evaluation.loss import evaluate_loss
 from aarav_lm.model.core import AaravLM
+from aarav_lm.paths import resolve
 from aarav_lm.tokenizer import AaravTokenizer
 from aarav_lm.train import checkpoint as ckpt
 from aarav_lm.train.device import (
@@ -126,8 +127,8 @@ class Trainer:
             self.exp.to_yaml(self.run_dir / "config.yaml")
         seed_everything(self.cfg.seed)
 
-        self.tok = AaravTokenizer.load(self.exp.tokenizer.artifact_dir)
-        problems = validate_dataset(self.exp.data.out_dir, self.tok)
+        self.tok = AaravTokenizer.load(resolve(self.exp.tokenizer.artifact_dir))
+        problems = validate_dataset(resolve(self.exp.data.out_dir), self.tok)
         if problems:
             raise RuntimeError("dataset validation failed:\n  " + "\n  ".join(problems))
 
@@ -137,7 +138,7 @@ class Trainer:
                 f"model vocab {self.model_cfg.vocab_size} != tokenizer vocab {self.tok.vocab_size}"
             )
         seq_len = self.model_cfg.block_size
-        out = Path(self.exp.data.out_dir)
+        out = resolve(self.exp.data.out_dir)
         self.train_ds = TokenDataset(Shard.open(out / "train.bin"), seq_len)
         self.val_ds = TokenDataset(Shard.open(out / "val.bin"), seq_len)
         self.stream = BatchStream(self.train_ds, self.cfg.batch_size, seed=self.cfg.seed)

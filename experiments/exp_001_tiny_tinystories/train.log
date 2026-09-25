@@ -9,3 +9,17 @@
 10:12:34 step    150/3000  loss 3.2366  lr 9.99e-04  gnorm max 0.84 (clipped 0/25)  9,521 tok/s  1725 ms/step  rss 117MB  mps 1258MB  free 1131MB  eta 1h21m
 10:13:21 step    175/3000  loss 3.0521  lr 9.99e-04  gnorm max 0.84 (clipped 0/25)  8,597 tok/s  1964 ms/step  rss 58MB  mps 1258MB  free 976MB  eta 1h32m
 10:14:06 step    200/3000  loss 2.9058  lr 9.97e-04  gnorm max 0.80 (clipped 0/25)  9,187 tok/s  1798 ms/step  rss 104MB  mps 1258MB  free 1641MB  eta 1h23m
+10:14:50 step    225/3000  loss 2.7793  lr 9.96e-04  gnorm max 0.87 (clipped 0/25)  9,281 tok/s  1768 ms/step  rss 116MB  mps 1258MB  free 1634MB  eta 1h21m
+10:15:35 step    250/3000  loss 2.7101  lr 9.94e-04  gnorm max 0.78 (clipped 0/25)  9,105 tok/s  1801 ms/step  rss 123MB  mps 1258MB  free 1424MB  eta 1h22m
+10:15:39 [eval] step 250  val loss 2.6621  ppl 14.33  best 2.6621  ★ new best
+10:16:24 step    275/3000  loss 2.6117  lr 9.92e-04  gnorm max 0.77 (clipped 0/25)  9,253 tok/s  1779 ms/step  rss 131MB  mps 1226MB  free 1361MB  eta 1h20m
+10:17:07 step    300/3000  loss 2.5281  lr 9.90e-04  gnorm max 0.78 (clipped 0/25)  9,654 tok/s  1704 ms/step  rss 137MB  mps 1226MB  free 1484MB  eta 1h16m
+10:17:49 step    325/3000  loss 2.4970  lr 9.87e-04  gnorm max 0.74 (clipped 0/25)  9,847 tok/s  1676 ms/step  rss 141MB  mps 1226MB  free 1380MB  eta 1h14m
+10:18:30 step    350/3000  loss 2.4382  lr 9.84e-04  gnorm max 0.76 (clipped 0/25)  10,217 tok/s  1608 ms/step  rss 144MB  mps 1226MB  free 1519MB  eta 1h11m
+10:19:13 step    375/3000  loss 2.3879  lr 9.80e-04  gnorm max 0.79 (clipped 0/25)  9,445 tok/s  1745 ms/step  rss 139MB  mps 1226MB  free 1330MB  eta 1h16m
+10:19:57 step    400/3000  loss 2.3613  lr 9.77e-04  gnorm max 0.72 (clipped 0/25)  9,393 tok/s  1745 ms/step  rss 134MB  mps 1226MB  free 1369MB  eta 1h15m
+10:20:40 step    425/3000  loss 2.3157  lr 9.73e-04  gnorm max 0.73 (clipped 0/25)  9,435 tok/s  1738 ms/step  rss 128MB  mps 1226MB  free 1350MB  eta 1h14m
+10:21:26 step    450/3000  loss 2.2962  lr 9.68e-04  gnorm max 0.75 (clipped 0/25)  9,236 tok/s  1782 ms/step  rss 133MB  mps 1226MB  free 1661MB  eta 1h15m
+10:22:13 step    475/3000  loss 2.2563  lr 9.64e-04  gnorm max 0.75 (clipped 0/25)  8,817 tok/s  1866 ms/step  rss 128MB  mps 1226MB  free 1400MB  eta 1h18m
+10:23:00 step    500/3000  loss 2.2280  lr 9.59e-04  gnorm max 0.78 (clipped 0/25)  8,668 tok/s  1907 ms/step  rss 129MB  mps 1226MB  free 1727MB  eta 1h19m
+10:23:03 [eval] step 500  val loss 2.2226  ppl 9.23  best 2.2226  ★ new best

@@ -1,0 +1,55 @@
+{"category": "grammar", "prefix": "The dogs", "correct": " are", "incorrect": " is"}
+{"category": "grammar", "prefix": "The cat", "correct": " is", "incorrect": " are"}
+{"category": "grammar", "prefix": "Tom and Mia", "correct": " are", "incorrect": " is"}
+{"category": "grammar", "prefix": "She", "correct": " was", "incorrect": " were"}
+{"category": "grammar", "prefix": "They", "correct": " were", "incorrect": " was"}
+{"category": "grammar", "prefix": "I", "correct": " am", "incorrect": " is"}
+{"category": "grammar", "prefix": "The children", "correct": " were", "incorrect": " was"}
+{"category": "grammar", "prefix": "The flowers", "correct": " are", "incorrect": " is"}
+{"category": "grammar", "prefix": "We", "correct": " are", "incorrect": " is"}
+{"category": "grammar", "prefix": "You", "correct": " are", "incorrect": " is"}
+{"category": "grammar", "prefix": "It", "correct": " is", "incorrect": " are"}
+{"category": "grammar", "prefix": "Mia and Sam", "correct": " were", "incorrect": " was"}
+{"category": "grammar", "prefix": "The boy", "correct": " has", "incorrect": " have"}
+{"category": "grammar", "prefix": "The boys", "correct": " have", "incorrect": " has"}
+{"category": "grammar", "prefix": "She", "correct": " has", "incorrect": " have"}
+{"category": "grammar", "prefix": "They", "correct": " have", "incorrect": " has"}
+{"category": "grammar", "prefix": "This", "correct": " is", "incorrect": " are"}
+{"category": "grammar", "prefix": "These", "correct": " are", "incorrect": " is"}
+{"category": "grammar", "prefix": "He", "correct": " was", "incorrect": " were"}
+{"category": "grammar", "prefix": "The birds", "correct": " were", "incorrect": " was"}
+{"category": "grammar", "prefix": "Yesterday, they", "correct": " played", "incorrect": " play"}
+{"category": "grammar", "prefix": "Tomorrow, we will", "correct": " play", "incorrect": " played"}
+{"category": "grammar", "prefix": "Mia looked at", "correct": " herself", "incorrect": " himself"}
+{"category": "grammar", "prefix": "Tom looked at", "correct": " himself", "incorrect": " herself"}
+{"category": "grammar", "prefix": "The girl said she", "correct": " was", "incorrect": " were"}
+{"category": "grammar", "prefix": "He", "correct": " likes", "incorrect": " like"}
+{"category": "commonsense", "prefix": "The sun is very", "correct": " hot", "incorrect": " cold"}
+{"category": "commonsense", "prefix": "Ice is very", "correct": " cold", "incorrect": " hot"}
+{"category": "commonsense", "prefix": "A fire is", "correct": " hot", "incorrect": " cold"}
+{"category": "commonsense", "prefix": "Fish live in the", "correct": " water", "incorrect": " sky"}
+{"category": "commonsense", "prefix": "Birds fly in the", "correct": " sky", "incorrect": " water"}
+{"category": "commonsense", "prefix": "A fish can", "correct": " swim", "incorrect": " fly"}
+{"category": "commonsense", "prefix": "We see with our", "correct": " eyes", "incorrect": " nose"}
+{"category": "commonsense", "prefix": "We smell with our", "correct": " nose", "incorrect": " eyes"}
+{"category": "commonsense", "prefix": "Grass is", "correct": " green", "incorrect": " purple"}
+{"category": "commonsense", "prefix": "The sky is", "correct": " blue", "incorrect": " green"}
+{"category": "commonsense", "prefix": "Snow is", "correct": " white", "incorrect": " black"}
+{"category": "commonsense", "prefix": "When it rains, the ground gets", "correct": " wet", "incorrect": " dry"}
+{"category": "commonsense", "prefix": "She was hungry, so she ate some", "correct": " food", "incorrect": " rocks"}
+{"category": "commonsense", "prefix": "He was sleepy, so he went to", "correct": " bed", "incorrect": " swim"}
+{"category": "commonsense", "prefix": "The water was cold, so she felt", "correct": " cold", "incorrect": " hot"}
+{"category": "commonsense", "prefix": "We use a spoon to eat", "correct": " soup", "incorrect": " rocks"}
+{"category": "commonsense", "prefix": "A baby is very", "correct": " small", "incorrect": " old"}
+{"category": "commonsense", "prefix": "The elephant is very", "correct": " big", "incorrect": " tiny"}
+{"category": "commonsense", "prefix": "An ant is very", "correct": " small", "incorrect": " big"}
+{"category": "story_logic", "prefix": "Tom lost his toy and he felt", "correct": " sad", "incorrect": " happy"}
+{"category": "story_logic", "prefix": "Mia got a big present and she felt", "correct": " happy", "incorrect": " sad"}
+{"category": "story_logic", "prefix": "The dog was thirsty, so he drank some", "correct": " water", "incorrect": " sand"}
+{"category": "story_logic", "prefix": "Ben was tired, so he took a", "correct": " nap", "incorrect": " run"}
+{"category": "story_logic", "prefix": "Sam fell down and he started to", "correct": " cry", "incorrect": " dance"}
+{"category": "story_logic", "prefix": "Anna won the game and she felt", "correct": " proud", "incorrect": " sad"}
+{"category": "story_logic", "prefix": "The boy was scared, so he ran to his", "correct": " mom", "incorrect": " toy"}
+{"category": "story_logic", "prefix": "It was dark, so she turned on the", "correct": " light", "incorrect": " sun"}
+{"category": "story_logic", "prefix": "He was very hungry, so he wanted to", "correct": " eat", "incorrect": " sleep"}
+{"category": "story_logic", "prefix": "She was very sleepy, so she wanted to", "correct": " sleep", "incorrect": " run"}

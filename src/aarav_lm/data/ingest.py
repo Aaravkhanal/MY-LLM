@@ -23,6 +23,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterator, List, Sequence
 
+from aarav_lm.paths import resolve
+
 CHUNK_BYTES = 8 * 1024 * 1024
 
 
@@ -44,7 +46,7 @@ def expand_sources(sources: Sequence[str | Path]) -> List[Path]:
     """Resolve files/directories to a sorted, de-duplicated list of readable files."""
     out: List[Path] = []
     for s in sources:
-        p = Path(s)
+        p = resolve(s)
         if not p.exists():
             raise FileNotFoundError(f"data source not found: {p}")
         if p.is_dir():

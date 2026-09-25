@@ -22,7 +22,7 @@ import yaml
 
 from aarav_lm.chat.session import ChatSession, SessionFileError
 from aarav_lm.inference.engine import GenerationConfig, InferenceEngine
-from aarav_lm.paths import EXPERIMENT_DIR, REPO_ROOT
+from aarav_lm.paths import EXPERIMENT_DIR, resolve
 
 HELP = """\
   /help                          show this help
@@ -55,12 +55,11 @@ def find_checkpoint(explicit: Optional[str]) -> Path:
 
 def tokenizer_dir_for(ckpt: Path, override: Optional[str]) -> Path:
     if override:
-        return Path(override)
+        return resolve(override)
     cfg_file = ckpt.parent.parent / "config.yaml"
     if not cfg_file.exists():
         raise SystemExit(f"cannot locate the tokenizer: {cfg_file} is missing; pass --tokenizer")
-    d = Path(yaml.safe_load(cfg_file.read_text())["tokenizer"]["artifact_dir"])
-    return d if d.is_absolute() else REPO_ROOT / d
+    return resolve(yaml.safe_load(cfg_file.read_text())["tokenizer"]["artifact_dir"])
 
 
 def apply_set(session: ChatSession, name: str, raw: str) -> str:

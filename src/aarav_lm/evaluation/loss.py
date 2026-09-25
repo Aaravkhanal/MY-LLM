@@ -44,3 +44,29 @@ def evaluate_loss(
         raise ValueError("evaluate_loss received no scored tokens")
     mean = total / count
     return {"loss": mean, "perplexity": math.exp(min(mean, 50.0)), "tokens": count}
+
+
+@torch.no_grad()
+def next_token_accuracy(
+    model: AaravLM,
+    batches: Iterable[Tuple[torch.Tensor, torch.Tensor]],
+    device: torch.device,
+    ks: Tuple[int, ...] = (1, 5),
+) -> Dict[str, float]:
+    """Top-k accuracy of the next-token prediction over scored positions."""
+    was_training = model.training
+    model.eval()
+    hits = {k: 0 for k in ks}
+    count = 0
+    for x, y in batches:
+        x, y = x.to(device), y.to(device)
+        logits, _ = model(x)
+        mask = y != -1
+        top = logits.topk(max(ks), dim=-1).indices
+        for k in ks:
+            hits[k] += int(((top[..., :k] == y[..., None]).any(-1) & mask).sum())
+        count += int(mask.sum())
+    model.train(was_training)
+    if count == 0:
+        raise ValueError("next_token_accuracy received no scored tokens")
+    return {f"top{k}": hits[k] / count for k in ks}
