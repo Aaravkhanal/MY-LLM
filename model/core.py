@@ -205,6 +205,7 @@ class AaravLM(nn.Module):
         top_k:          Optional[int]  = None,
         top_p:          Optional[float] = None,
         use_cache:      bool            = True,
+        stop_ids:       Optional[list]  = None,
     ) -> torch.Tensor:
         """
         Auto-regressive text generation.
@@ -217,6 +218,7 @@ class AaravLM(nn.Module):
         top_k          : keep only top-k logits before sampling
         top_p          : nucleus sampling threshold
         use_cache      : whether to use pre-allocated KV-cache for speed
+        stop_ids       : token ids that end generation and are not appended
         """
         B, prompt_len = idx.shape
         device = idx.device
@@ -264,6 +266,9 @@ class AaravLM(nn.Module):
 
                 probs = F.softmax(next_logits, dim=-1)
                 idx_next = torch.multinomial(probs, num_samples=1)
+
+            if stop_ids and int(idx_next.view(-1)[0]) in stop_ids:
+                break
 
             idx = torch.cat([idx, idx_next], dim=1)
 

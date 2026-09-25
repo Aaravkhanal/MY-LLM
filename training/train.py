@@ -29,6 +29,7 @@ from aarav_lm.model.core import AaravLM
 from aarav_lm.tokenizer.tokenizer import Tokenizer
 
 _PRESETS = {"5m": cfg_5m, "10m": cfg_10m, "20m": cfg_20m, "30m": cfg_30m}
+_ROOT = Path(__file__).resolve().parents[1]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Learning-rate schedule
@@ -92,10 +93,13 @@ def train(
     warmup_iters:     int   = 20,
     eval_interval:    int   = 50,
     eval_iters:       int   = 5,
-    out_dir:          str   = "aarav-lm/checkpoints",
-    data_dir:         str   = "aarav-lm/data",
+    out_dir:          str   = "",
+    data_dir:         str   = "",
     device_name:      Optional[str] = None,
+    block_size:       int   = 0,
 ):
+    out_dir = out_dir or str(_ROOT / "checkpoints")
+    data_dir = data_dir or str(_ROOT / "data")
     device = torch.device(device_name or ("mps" if torch.backends.mps.is_available() else "cpu"))
 
     print(f"\n{'='*55}")
@@ -108,6 +112,8 @@ def train(
 
     tok = Tokenizer()
     cfg = _PRESETS[size](arch=arch, vocab_size=tok.vocab_size)
+    if block_size:
+        cfg.block_size = block_size
     model = AaravLM(cfg).to(device)
 
     total_p   = sum(p.numel() for p in model.parameters())
@@ -198,8 +204,9 @@ if __name__ == "__main__":
     ap.add_argument("--batch_size",       type=int,   default=16)
     ap.add_argument("--grad_accum_steps", type=int,   default=2)
     ap.add_argument("--lr",               type=float, default=8e-4)
-    ap.add_argument("--out_dir",          type=str,   default="aarav-lm/checkpoints")
-    ap.add_argument("--data_dir",         type=str,   default="aarav-lm/data")
+    ap.add_argument("--out_dir",          type=str,   default="")
+    ap.add_argument("--data_dir",         type=str,   default="")
+    ap.add_argument("--block_size",       type=int,   default=0)
     args = ap.parse_args()
 
     train(
@@ -211,4 +218,5 @@ if __name__ == "__main__":
         peak_lr=args.lr,
         out_dir=args.out_dir,
         data_dir=args.data_dir,
+        block_size=args.block_size,
     )

@@ -13,3 +13,10 @@ data/*.bin
 data/shakespeare_raw.txt
 checkpoints/
 *.pt
+
+# API keys for the local server
+secrets/
+
+# Prepared chat corpora (rebuilt by data/prepare_chat.py)
+data/pretrain/
+data/sft/

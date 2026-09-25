@@ -1,0 +1,8 @@
+torch>=2.2
+tiktoken>=0.7
+fastapi>=0.110
+uvicorn>=0.27
+pydantic>=2
+numpy>=1.26
+requests>=2.31
+tqdm>=4.66

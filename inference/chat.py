@@ -10,7 +10,7 @@ import sys
 import time
 import torch
 
-from aarav_lm.config.config import ModelConfig
+from aarav_lm.data.chat_format import decode_answer, messages_to_ids
 from aarav_lm.model.core import AaravLM
 from aarav_lm.tokenizer.tokenizer import Tokenizer
 
@@ -31,7 +31,7 @@ def chat(ckpt_path: str, temperature: float = 0.7, top_k: int = 40, top_p: float
     model.eval()
 
     tok = Tokenizer()
-    conversation_history = ""
+    history = []
 
     while True:
         try:
@@ -46,23 +46,21 @@ def chat(ckpt_path: str, temperature: float = 0.7, top_k: int = 40, top_p: float
             print("Goodbye!")
             break
 
-        prompt = f"{conversation_history}\nUser: {user_input}\nAssistant: "
-        ids = tok.encode(prompt)
-        if len(ids) > cfg.block_size - 64:
-            # Truncate oldest history if context limit reached
-            ids = ids[-(cfg.block_size - 64):]
+        history.append({"role": "user", "content": user_input})
+        ids = messages_to_ids(tok, history)
+        room = cfg.block_size - 64
+        if len(ids) > room:
+            ids = ids[-room:]
 
         idx = torch.tensor([ids], dtype=torch.long, device=device)
-
         print("Assistant > ", end="", flush=True)
-        t0 = time.time()
-        out = model.generate(idx, max_new_tokens=80, temperature=temperature, top_k=top_k, top_p=top_p, use_cache=True)
-        dt = time.time() - t0
-
-        response = tok.decode(out[0][len(ids):].tolist())
+        out = model.generate(
+            idx, max_new_tokens=80, temperature=temperature, top_k=top_k, top_p=top_p,
+            use_cache=True, stop_ids=[tok.eot],
+        )
+        response = decode_answer(tok, out[0, len(ids):].tolist())
         print(response)
-
-        conversation_history = prompt + response
+        history.append({"role": "assistant", "content": response})
 
 
 if __name__ == "__main__":
