@@ -1,4 +1,4 @@
-# aarav-lm
+# AARAV-LLM
 
 A small decoder-only language model **and the whole stack around it**, built from scratch and run on a
 MacBook Air M3 with 8 GB of memory: tokenizer, data pipeline, trainer, evaluation, fine-tuning,
