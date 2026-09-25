@@ -198,6 +198,7 @@ def main() -> int:
         @check("apple gpu (mps): 3 training steps run and stay finite")
         def _():
             assert torch.backends.mps.is_available(), "MPS not available"
+            (root / "mps_data").mkdir()
             exp = tiny_experiment(root / "mps_data", max_steps=3, device="mps", eval_interval=3, ckpt_interval=3)
             s = Trainer(exp, root / "mps_run", log=quiet).run()
             assert s["best_val_loss"] is not None and s["best_val_loss"] == s["best_val_loss"]
