@@ -21,10 +21,13 @@ dependencies = [
 [project.optional-dependencies]
 api = ["fastapi>=0.110", "uvicorn>=0.27", "pydantic>=2"]
 data = ["datasets>=2.18", "requests>=2.31"]
-dev = ["pytest>=7"]
+dev = ["pytest>=7", "httpx>=0.27"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+aarav_lm = ["web/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -48,6 +48,7 @@ def main() -> None:
     print(f"serving {Path(ck).parent.parent.name}/{Path(ck).name}: {info['params']/1e6:.1f}M params, "
           f"context {info['context_length']}, device {info['device']}")
     print(f"listening on http://{args.host}:{args.port}   auth: {'off' if args.no_auth else 'API key required'}")
+    print(f"web chat: http://{args.host}:{args.port}/")
     import uvicorn
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
 

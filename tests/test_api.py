@@ -3,6 +3,7 @@ import os
 import stat
 import threading
 import time
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -204,3 +205,66 @@ def test_concurrent_requests_are_serialised_and_all_succeed(engine, keys):
     assert len(results) == 5 and len(set(results)) == 1          # same greedy output, no cross-request state leak
     assert engine.lock.acquire(blocking=False)                    # lock was released
     engine.lock.release()
+
+
+# ── web UI ───────────────────────────────────────────────────────────────────
+
+WEB = Path(__file__).resolve().parents[1] / "src/aarav_lm/web"
+
+
+def test_web_ui_is_served_without_a_key_with_strict_headers(engine, keys):
+    c = TestClient(create_app(engine, keys[0]))                      # auth ON: the static shell holds no data
+    for path, ctype in (("/", "text/html"), ("/app.js", "text/javascript"), ("/style.css", "text/css")):
+        r = c.get(path)
+        assert r.status_code == 200 and r.headers["content-type"].startswith(ctype), path
+        csp = r.headers["content-security-policy"]
+        assert "default-src 'none'" in csp and "script-src 'self'" in csp and "unsafe-inline" not in csp
+        assert r.headers["x-content-type-options"] == "nosniff"
+    assert "<title>aarav-lm chat</title>" in c.get("/").text
+
+
+def test_only_whitelisted_web_files_are_served(engine, keys):
+    c = TestClient(create_app(engine, keys[0]))
+    for path in ("/index.html", "/../secrets/api_keys.json", "/%2e%2e/pyproject.toml", "/web/app.js", "/static/app.js"):
+        assert c.get(path).status_code in (404, 405), path
+
+
+def test_web_ui_can_be_disabled(engine, keys):
+    assert TestClient(create_app(engine, keys[0], serve_web=False)).get("/").status_code == 404
+
+
+def test_ui_never_writes_model_output_as_html():
+    js = (WEB / "app.js").read_text()
+    for banned in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write", "eval(", "new Function"):
+        assert banned not in js, banned
+    assert "<script" not in (WEB / "index.html").read_text().replace('<script src="/app.js"></script>', "")
+
+
+def test_ui_javascript_parses():
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node not installed")
+    r = subprocess.run([node, "--check", str(WEB / "app.js")], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+
+
+def test_ui_references_only_same_origin_assets():
+    import re
+    html = (WEB / "index.html").read_text()
+    urls = re.findall(r'(?:src|href)="([^"]+)"', html)
+    # same-origin paths, or the empty inline icon (data:,) — never a third-party host
+    assert urls and all((u.startswith("/") and not u.startswith("//")) or u == "data:," for u in urls), urls
+
+
+def test_ui_has_the_requested_features():
+    """Guards the feature list: history, streaming, clear, system prompt, model info, params, loading, errors."""
+    html, js = (WEB / "index.html").read_text(), (WEB / "app.js").read_text()
+    for element in ('id="messages"', 'id="clear"', 'id="system"', 'id="model-info"', 'id="temperature"', 'id="top_p"',
+                    'id="top_k"', 'id="max_tokens"', 'id="repetition_penalty"', 'id="seed"', 'id="stop"', 'id="banner"'):
+        assert element in html, element
+    for behaviour in ("stream: true", "getReader", "AbortController", "state.history", "describeError", "dots"):
+        assert behaviour in js, behaviour
+    for status in ("401", "429", "503", "422"):
+        assert status in js, f"no handling for HTTP {status}"

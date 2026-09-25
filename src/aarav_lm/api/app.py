@@ -24,11 +24,12 @@ import threading
 import time
 from contextlib import contextmanager
 from dataclasses import replace
+from pathlib import Path
 from typing import Iterator, List, Literal, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 from aarav_lm.api.auth import KeyStore, RateLimiter
@@ -38,6 +39,19 @@ from aarav_lm.inference.prompting import build_prompt, resolve_mode
 
 MAX_BODY_BYTES = 1_000_000
 MAX_TEXT_CHARS = 20_000
+
+WEB_DIR = Path(__file__).resolve().parents[1] / "web"
+# Only these files are ever served (no directory listing, no path traversal surface).
+WEB_FILES = {
+    "/": ("index.html", "text/html; charset=utf-8"),
+    "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+    "/style.css": ("style.css", "text/css; charset=utf-8"),
+}
+SECURITY_HEADERS = {
+    "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
+                               "img-src 'self' data:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+    "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "Cache-Control": "no-cache",
+}
 
 
 class Sampling(BaseModel):
@@ -103,6 +117,7 @@ def create_app(
     cors_origins: tuple = (),
     model_name: str = "aarav-lm",
     mode: str = "auto",
+    serve_web: bool = True,
 ) -> FastAPI:
     if require_auth and (key_store is None or len(key_store) == 0):
         raise RuntimeError("authentication is on but there are no API keys — run scripts/create_key.py "
@@ -201,6 +216,17 @@ def create_app(
 
         return StreamingResponse(events(), media_type="text/event-stream",
                                  headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+    if serve_web:
+        def web_route(filename: str, media_type: str):
+            body = (WEB_DIR / filename).read_bytes()          # read once at start-up; assets are static
+
+            def handler() -> Response:
+                return Response(body, media_type=media_type, headers=SECURITY_HEADERS)
+            return handler
+
+        for route, (filename, media_type) in WEB_FILES.items():
+            app.add_api_route(route, web_route(filename, media_type), methods=["GET"], include_in_schema=False)
 
     @app.get("/health")
     def health():
