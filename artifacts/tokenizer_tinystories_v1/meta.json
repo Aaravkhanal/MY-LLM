@@ -1,0 +1,19 @@
+{
+  "corpus": {
+    "data_seed": 1337,
+    "n_train_docs": 71764
+  },
+  "format_version": 1,
+  "kind": "byte_level_bpe",
+  "requested_vocab_size": 2048,
+  "sha256": "d342233120927a9806b00f2a4c4031a5d0a0b59e2f9bb2b7575671b2783e7395",
+  "special_tokens": [
+    "<|endoftext|>",
+    "<|pad|>",
+    "<|system|>",
+    "<|user|>",
+    "<|assistant|>",
+    "<|end|>"
+  ],
+  "vocab_size": 2048
+}

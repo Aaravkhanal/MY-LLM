@@ -36,6 +36,7 @@ class DataConfig:
     sources: List[str] = field(default_factory=list)   # .txt / .jsonl files or dirs
     format: str = "auto"              # auto | txt | jsonl
     text_field: str = "text"          # field to read from JSONL records
+    doc_separator: str = "<|endoftext|>"   # splits .txt files into documents ("" = whole file)
     out_dir: str = "data/processed"   # where token shards + stats are written
     val_fraction: float = 0.01
     test_fraction: float = 0.01

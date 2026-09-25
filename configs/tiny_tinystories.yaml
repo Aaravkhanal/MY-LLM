@@ -1,0 +1,40 @@
+# First milestone: ~5M-parameter model on a 60 MB slice of TinyStories (V2, GPT-4 generated).
+# Source: https://huggingface.co/datasets/roneneldan/TinyStories  (CDLA-Sharing-1.0)
+name: tiny_tinystories
+description: Tiny Llama-style model, byte-level BPE (2048), TinyStories 60MB slice.
+model_preset: tiny
+
+tokenizer:
+  kind: bpe
+  vocab_size: 2048
+  artifact_dir: artifacts/tokenizer_tinystories_v1
+
+data:
+  sources: [data/raw/tinystories_v2_head.txt]
+  format: txt
+  doc_separator: "<|endoftext|>"
+  out_dir: data/processed/tinystories_v1
+  val_fraction: 0.01
+  test_fraction: 0.01
+  min_chars: 100
+  max_chars: 20000
+  dedup: true
+  seed: 1337
+
+train:
+  seed: 1337
+  device: auto
+  precision: fp32
+  max_steps: 3000
+  batch_size: 32
+  grad_accum: 2
+  lr: 0.001
+  min_lr_ratio: 0.1
+  warmup_steps: 100
+  weight_decay: 0.1
+  grad_clip: 1.0
+  eval_interval: 250
+  eval_iters: 20
+  log_interval: 25
+  ckpt_interval: 250
+  early_stop_patience: 0
