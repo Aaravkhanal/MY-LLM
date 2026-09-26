@@ -370,3 +370,15 @@ def test_length_boost_shifts_the_task_mix_and_is_a_no_op_at_one():
     a = list(make_conversations(stories, 500, seed=2))
     b = list(make_conversations(stories, 500, seed=2, length_boost=1.0))
     assert json.dumps(a, sort_keys=True) == json.dumps(b, sort_keys=True)
+
+
+def test_two_topic_requests_need_both_words_to_be_prominent_when_filtering():
+    from aarav_lm.data.instruct_data import _prominent
+    from aarav_lm.data.instruct_tasks import extract_features
+    both = extract_features("A dog and a cat lived in a house. The dog ran. The cat sat. The dog and the cat were friends.")
+    one = extract_features("A dog lived in a house. The dog ran. The dog barked. Late in the day a cat walked past the house.")
+    assert both.topic2_mentions >= 2 and both.topic2_first <= 4
+    assert _prominent("two_topics", both, 2, 20)
+    assert not _prominent("two_topics", one, 2, 20)                     # the cat is a passing mention (once, and late)
+    assert _prominent("topic", one, 2, 20)                              # a one-topic request only needs its own word
+    assert _prominent("two_topics", one, 1, None)                       # filters off: unchanged behaviour

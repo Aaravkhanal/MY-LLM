@@ -213,6 +213,47 @@ What this does and does not establish:
   instead of 35, so the model no longer memorises the template and does not learn the concept in one epoch.
 * **What is still unsolved:** two-topic requests (8%), "short" on unseen wording, and long stories.
 
+### exp_008 and exp_009: the data recipe is at its noise floor
+
+Two more single-change experiments on top of exp_007 (same base, seed, steps and learning rate; only the conversations differ):
+
+* **exp_008** (`configs/sft_small_instruct_v5.yaml`, `--length-boost 3`): length requests sampled three times as often. The
+  hypothesis was that many wordings had diluted the length signal. **Not supported.** Greedy `long` stayed at 0% even in-template
+  and `short` got worse (in-template 50 → 17%, paired p = 0.009); topic requests on the final set fell (88 → 71%, p = 0.022). Under
+  *sampled* decoding a length signal exists (in-template `long` 29 → 54%), so the model has it but greedy decoding falls back to its
+  default length. Length control and content control appear to compete for capacity in one epoch at 14M parameters.
+* **exp_009** (`configs/sft_small_instruct_v6.yaml`, exp_008's data plus: both words of a two-topic request must be prominent
+  and early). Two-topic requests moved the right way (unseen wording 8 → 25%, in-template 42 → 54%) but not significantly, and
+  some length control came back in-template (`short` 75%, `long` 21%).
+
+All aggregate pass rates (% of scored requests; chance 10.5–10.6%). The **final set** was scored once per model, so this is the
+complete table, not a selection:
+
+| | base 004 | SFT 006 | SFT 007 | SFT 008 | SFT 009 |
+|---|---|---|---|---|---|
+| **final set**, greedy | 39.9 | 43.1 | 48.3 | 45.5 | 46.5 [37–56] |
+| **final set**, sampled | 34.7 | 34.4 | 40.3 | 39.6 | **41.7** [34–49] |
+| dev, unseen wording, greedy | 40.6 | 37.5 | 49.3 | 44.4 | **50.3** |
+| dev, unseen wording, sampled | 35.1 | 29.9 | 39.6 | 41.3 | **44.8** |
+| dev, in-template, greedy | 41.7 | 56.9 | 62.2 | 60.8 | **64.2** |
+| dev, in-template, sampled | 45.1 | 43.1 | 56.2 | 58.0 | 56.9 |
+
+What the paired tests say:
+
+* **007, 008 and 009 cannot be told apart** on the final set (009 vs 007: −1.7 [−9.5, +5.7] greedy, +1.4 [−4.5, +7.3] sampled; 008 vs
+  007: −2.8 [−11.0, +5.3]). The only established difference among them is exp_009 over exp_007 on unseen wording with sampled
+  decoding (+5.2 [+0.9, +9.7], p = 0.022) on the development set, which did not repeat on the final set.
+* **The v4-family recipes beat exp_006 where it matters.** exp_009 vs exp_006 on the final set: +7.3 [+1.0, +13.7] sampled (p = 0.025),
+  +3.5 [−8.4, +14.7] greedy. exp_006's only advantage is length control it had memorised (`long` 75% vs 12.5%, p = 0.028).
+* **Against the untuned model** every fine-tuned recipe is ahead by 4–8 points on fresh wording, but with 197 distinct prompts the
+  intervals still include zero for greedy decoding (009: +6.6 [−6.2, +19.3]).
+
+So the honest state: the fine-tuned models follow requests clearly better than chance, and far better on wording they were trained
+on, but on entirely new wording the gain over an untuned model is modest and not statistically established at this evaluation size.
+**Tuning the data recipe further has reached the noise floor of this evaluation.** The remaining lever is the base model, which is
+what the long pretraining run (exp_010: exp_004 plus 147M further tokens) tests. **exp_009's recipe (v6) is the current best and is
+what will be re-applied to the better base.** Its records are in `experiments/exp_00{8,9}_*/`.
+
 Reproduce: `python scripts/make_eval_controls.py --eval evals/instruct_v3.jsonl --stories <TinyStories file>`,
 then `python scripts/eval_instruct.py --checkpoint <run>/checkpoints/best.pt --instruct evals/instruct_v3.jsonl
 evals/instruct_v3.intemplate.jsonl` and `python scripts/compare_instruct.py A.json B.json`.

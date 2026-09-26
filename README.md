@@ -52,17 +52,19 @@ pronouns sometimes disagree, greedy decoding loops in 12.5% of `tiny` samples (s
 common-sense facts are shaky. Each knows one domain. **It is not a general assistant**: it has no world
 knowledge and cannot reason, summarise, answer questions, write code or do maths.
 
-**Instruction following is the open problem, and it is measured carefully.** Requests are scored by rule (name
-present, at most 90 words, has dialogue, ...) on held-out stories, always next to *chance* (a story that ignores
-the request passes 10.6% of the time) with paired confidence intervals. The best fine-tuned model (exp_006) follows
-requests worded like its training data far better than the untuned model (56.9% vs 41.7%, +15.3 points, 95% CI
-+7.4 to +22.8; short 100%, dialogue 100%, long 75%, names 79%), but on **unseen wording** it is no better than the
-base model (37.5% vs 40.6%, not significant), and topic, place and emotion requests are its weak spot. The
-first attempt failed because each length request had only three phrasings, which the model memorised;
-fixing that was worth +8.7 points on unseen wording (p = 0.002). The details, including the numbers that
-don't flatter the model, are in [docs/RESULTS.md](docs/RESULTS.md); how the evaluation itself was made
-trustworthy is in [docs/CORRECTNESS.md](docs/CORRECTNESS.md); the full audit and plan are in
-[docs/AUDIT.md](docs/AUDIT.md).
+**Instruction following is the open problem, and it is measured carefully.** Requests are scored by rule (name present, at most
+90 words, has dialogue, ...) on held-out stories, always next to *chance* (a story that ignores the request passes 10.6% of the time)
+and with paired confidence intervals. The fine-tuned models follow requests worded like their training data far better than the
+untuned model (in-template: 64% for exp_009 and 62% for exp_007 vs 42% untuned; for exp_007 names 92%, topics 92%, emotions 96%,
+places 79%), but on **entirely new wording** the
+gain is modest and not statistically established: on a final evaluation set written before any model was scored on it, the
+best models pass 46–48% (greedy) against 40% untuned and 10.5% chance. Length control, learned by memorising three phrasings in the
+first attempt, was lost when the data became more varied. Along the way: fixing memorisation was worth +8.7 points (p = 0.002), the
+data changes that make a story dwell on what was asked for raised topic requests from 62% to 88%, and three further data
+experiments landed inside the evaluation's noise, which is why the next step is a better base model (a longer pretraining run is in
+progress). The details, including the negative results and the numbers that don't flatter the model, are in
+[docs/RESULTS.md](docs/RESULTS.md); how the evaluation itself was made trustworthy is in [docs/CORRECTNESS.md](docs/CORRECTNESS.md);
+the full audit and plan are in [docs/AUDIT.md](docs/AUDIT.md).
 
 ## Quick start
 

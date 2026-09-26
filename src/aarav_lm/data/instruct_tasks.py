@@ -237,6 +237,8 @@ class Features:
     topic_first: int = 10**9      # word index of the first mention (small = the story opens with it)
     place_first: int = 10**9
     emotion_first: int = 10**9
+    topic2_mentions: int = 0      # the SECOND topic word, for two-topic requests (both must be things the story dwells on)
+    topic2_first: int = 10**9
 
 
 def extract_features(story: str) -> Features:
@@ -254,7 +256,9 @@ def extract_features(story: str) -> Features:
                     (counts[topics[0]] + counts[topics[0] + "s"]) if topics else 0,
                     counts[place] if place else 0, counts[emotion] if emotion else 0,
                     min(first.get(topics[0], never), first.get(topics[0] + "s", never)) if topics else never,
-                    first.get(place, never) if place else never, first.get(emotion, never) if emotion else never)
+                    first.get(place, never) if place else never, first.get(emotion, never) if emotion else never,
+                    (counts[topics[1]] + counts[topics[1] + "s"]) if len(topics) > 1 else 0,
+                    min(first.get(topics[1], never), first.get(topics[1] + "s", never)) if len(topics) > 1 else never)
 
 
 def applicable_tasks(f: Features) -> List[str]:

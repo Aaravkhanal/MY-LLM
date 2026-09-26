@@ -63,7 +63,7 @@ names), `--augment p` (casual typing: lowercase, no final punctuation; names kee
 gain holds on the pre-registered final set (topic 62 → 88%, emotion 71 → 83%, place 17 → 62%; in-template place 21 → 79%,
 emotion 25 → 96%), but length control was lost (long 75 → 0%), and the overall gain is not statistically established
 (+5.2 [−5.4, +15.3] on the final set). The options were applied together, so the individual contributions are not separated;
-exp_008 tests one hypothesis about the length loss.
+exp_008 tested the length hypothesis and rejected it (length requests sampled 3x as often did not restore greedy length control); exp_009 added a two-topic fix. The recipes v4, v5 and v6 are statistically indistinguishable on the fresh final set, i.e. the data recipe has reached the noise floor of the evaluation (RESULTS.md).
 
 ---
 

@@ -64,6 +64,9 @@ def _prominent(kind: str, f, min_mentions: int, first_mention_max: Optional[int]
     fox" the same thing, a link a small model can actually learn."""
     if kind in ("topic", "short_topic", "long_topic", "name_topic", "two_topics"):
         count, first = f.topic_mentions, f.topic_first
+        if kind == "two_topics" and not (f.topic2_mentions >= min_mentions
+                                        and (first_mention_max is None or f.topic2_first <= first_mention_max)):
+            return False                                        # both requested words must be prominent, not just the first
     elif kind == "place":
         count, first = f.place_mentions, f.place_first
     elif kind in ("emotion", "name_emotion"):
