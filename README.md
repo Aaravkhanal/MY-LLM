@@ -220,7 +220,7 @@ The `small` preset is trained (above). Its pretraining loss was still falling, a
 instruction data. On 8 GB, roughly 30–50M parameters is the practical ceiling for pretraining; anything
 larger needs rented GPU time.
 
-Not built: email verification and password reset, preference tuning (DPO), continuous
+Serving many users at once: `--batch-size N` decodes concurrent requests together (exact; tested against solo generation). Not built: email verification and password reset, preference tuning (DPO), continuous
 batching, real int8 kernels, multi-GPU training, cloud deployment. The order they will be tackled in,
 and what has to be true first, is in [docs/AUDIT.md](docs/AUDIT.md).
 

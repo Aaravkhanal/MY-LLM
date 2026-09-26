@@ -173,8 +173,7 @@ Built: `InferenceEngine` (checkpoint → text; temperature, top-k, top-p, repeti
 n-gram, stop sequences, streaming, KV cache, int8-file loading), separate from the trainer.
 Measured (`tiny`): CPU 732 tok/s vs MPS 148 tok/s at batch 1, so small models default to CPU; KV cache
 ~6× over recompute. Not yet measured for `small`: tokens/s, time-to-first-token, context-length impact
-(`scripts/benchmark.py` supports it). Next: benchmark `small`; batched decoding only when concurrency
-demands it; real int8 kernels only when serving cost matters (MPS/PyTorch have none).
+(`scripts/benchmark.py` supports it). Batched decoding across users is built (`--batch-size`, exact, tested; [PERFORMANCE.md](PERFORMANCE.md)). Next: benchmark `small` and batching on an idle machine; real int8 kernels only when serving cost matters (MPS/PyTorch have none).
 
 ## H. Deployment plan
 

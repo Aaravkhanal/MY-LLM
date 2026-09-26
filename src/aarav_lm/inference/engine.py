@@ -69,6 +69,49 @@ class GenerationConfig:
         return self
 
 
+class TextEmitter:
+    """Turns generated token ids into text deltas for ONE generation: holds back an incomplete UTF-8 tail and enough characters
+    that a stop sequence still forming cannot leak, and cuts at a stop sequence. Shared by the single-request stream and the
+    batched engine, so both produce exactly the same text."""
+
+    def __init__(self, tok, stop_sequences: Sequence[str] = ()):
+        self.tok, self.stops = tok, tuple(stop_sequences)
+        self.hold = max((len(x) for x in self.stops), default=1) - 1
+        self.ids: List[int] = []
+        self.emitted = 0                                   # characters of decoded text already yielded
+        self.stopped = False                               # a stop sequence matched
+
+    def push(self, token_id: int) -> str:
+        """Add one generated token; returns the newly safe text ('' if none)."""
+        self.ids.append(token_id)
+        text = self.tok.decode(self.ids)
+        if self.stops:
+            cut = min((i for i in (text.find(x, max(0, self.emitted - self.hold)) for x in self.stops) if i != -1), default=-1)
+            if cut != -1:
+                delta = text[self.emitted:cut] if cut > self.emitted else ""
+                self.emitted, self.stopped = cut, True
+                return delta
+        # Hold back (a) an incomplete UTF-8 tail (shown as U+FFFD) and (b) enough characters before it that a stop sequence
+        # still forming can't leak. Both apply together, so subtract both.
+        incomplete = len(text) - len(text.rstrip("\N{REPLACEMENT CHARACTER}"))
+        safe = len(text) - incomplete - self.hold
+        if safe > self.emitted:
+            delta = text[self.emitted:safe]
+            self.emitted = safe
+            return delta
+        return ""
+
+    def finish(self, reason: str) -> tuple:
+        """(final text, the tail not yet yielded). Call once, after the last token."""
+        final = self.tok.decode(self.ids)
+        if reason == "stop" and self.stops:
+            cut = min((i for i in (final.find(x) for x in self.stops) if i != -1), default=-1)
+            if cut != -1:
+                final = final[:cut]
+        tail = final[self.emitted:] if len(final) > self.emitted else ""
+        return final, tail
+
+
 @dataclass
 class GenerationResult:
     text: str = ""
@@ -186,8 +229,7 @@ class InferenceEngine:
 
         result = GenerationResult(prompt_tokens=len(prompt_ids))
         gen_ids: List[int] = []
-        emitted = 0                                                    # chars of decoded text already yielded
-        hold = max((len(s) for s in cfg.stop_sequences), default=1) - 1
+        emitter = TextEmitter(self.tok, cfg.stop_sequences)
         logits = self._prefill(ids, cache)
         finish = "length"
 
@@ -205,22 +247,12 @@ class InferenceEngine:
             gen_ids.append(nxt)
             ids.append(nxt)
 
-            text = self.tok.decode(gen_ids)
-            if cfg.stop_sequences:
-                cut = min((i for i in (text.find(s, max(0, emitted - hold)) for s in cfg.stop_sequences) if i != -1),
-                          default=-1)
-                if cut != -1:
-                    if cut > emitted:
-                        yield text[emitted:cut]
-                    emitted, finish = cut, "stop"
-                    break
-            # Hold back (a) an incomplete UTF-8 tail (shown as U+FFFD) and (b) enough characters before
-            # it that a stop sequence still forming can't leak. Both apply together, so subtract both.
-            incomplete = len(text) - len(text.rstrip("\N{REPLACEMENT CHARACTER}"))
-            safe = len(text) - incomplete - hold
-            if safe > emitted:
-                yield text[emitted:safe]
-                emitted = safe
+            delta = emitter.push(nxt)
+            if delta:
+                yield delta
+            if emitter.stopped:
+                finish = "stop"
+                break
 
             if cache.seen + 1 > self.block_size:                       # window full: rebuild from the latest half
                 ids = ids[-(self.block_size // 2):]
@@ -231,13 +263,9 @@ class InferenceEngine:
                 cache.step(1)
                 logits = out[0, -1]
 
-        final_text = self.tok.decode(gen_ids)
-        if finish == "stop" and cfg.stop_sequences:
-            cut = min((i for i in (final_text.find(s) for s in cfg.stop_sequences) if i != -1), default=-1)
-            if cut != -1:
-                final_text = final_text[:cut]
-        if len(final_text) > emitted:
-            yield final_text[emitted:]
+        final_text, tail = emitter.finish(finish)
+        if tail:
+            yield tail
         result.text = final_text
         result.token_ids = gen_ids
         result.finish_reason = finish

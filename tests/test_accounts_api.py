@@ -75,7 +75,10 @@ def test_one_usage_row_per_request_with_endpoint_tokens_and_status(server):
     assert [g["endpoint"] for g in got] == ["/v1/chat/completions", "/generate", "/chat", "/v1/completions"]
     assert all(g["status"] == 200 and g["error_type"] is None and g["model_id"] == "exp_test" for g in got)
     assert (got[0]["prompt_tokens"], got[0]["completion_tokens"]) == (u["prompt_tokens"], u["completion_tokens"])
-    assert all(g["duration_ms"] >= 0 and g["completion_tokens"] >= 1 for g in got)
+    for row, resp in zip(got, responses):                    # every row records exactly what its own response reported
+        usage = resp.json()["usage"]
+        assert (row["prompt_tokens"], row["completion_tokens"]) == (usage["prompt_tokens"], usage["completion_tokens"])
+        assert row["duration_ms"] >= 0                       # (a reply may legitimately be empty: unseeded sampling can end at once)
 
 
 def test_streaming_requests_are_recorded_once_with_their_real_token_counts(server):

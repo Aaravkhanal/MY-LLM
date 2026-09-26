@@ -44,7 +44,9 @@ server refuses cleanly when full (503 with Retry-After, never a hang or a 500) i
 Per-user limits keep one person from using it all: a signed-in browser or a self-made key gets **20 requests and 30,000 tokens
 per minute** by default (`--web-rpm/--web-tpm/--key-rpm/--key-tpm`), five active keys per person. Twenty requests a minute is a
 new story every three seconds, so with the model producing roughly one story per second or two, **a handful of people chatting at
-the same time is comfortable; dozens is not** until decoding is batched across users (not built: [AUDIT.md](AUDIT.md)).
+the same time is comfortable; dozens is not** without batching. Batched decoding across users is built (`--batch-size 8`, exact and
+tested; about 2-2.5x throughput at 16 concurrent users in a contended measurement, [PERFORMANCE.md](PERFORMANCE.md)); it is off by
+default until measured on an idle machine.
 
 ## Path A: your Mac and a Cloudflare quick tunnel
 
@@ -117,7 +119,7 @@ run**. The YAML parses and every flag they pass exists; treat the first `docker 
 
 | Missing | Matters when |
 |---|---|
-| Batched decoding across users | more than a handful of people chat at the same time |
+| Continuous batching (new requests joining a wave already running) and vectorised sampling | many users at once, when waves are long |
 | Postgres and a shared rate limiter | more than one server process, or managed containers |
 | Email verification and password reset | you open signup to strangers (an email service is needed) |
 | Metrics and alerting beyond `/health` and `/stats` | anything you depend on |

@@ -73,3 +73,32 @@ Not adopted. Every component already runs on PyTorch/MPS, throughput is limited 
 than the framework, and the one place MLX could matter — small-batch decode — is already fast on the
 CPU. Reconsider MLX for (a) quantised inference kernels, or (b) training a model large enough that
 MPS overheads stop dominating.
+
+## Batched serving (`--batch-size N`)
+
+By default the server generates one reply at a time. With `--batch-size N` concurrent requests are decoded together, one model
+call per step for up to N users (`inference/batching.py`, `inference/scheduler.py`). It is exact: prompts are left-padded to one
+length and the padding is masked, which changes nothing for a RoPE model because attention depends only on relative positions
+(`tests/test_batched_model.py` compares logits row by row; `tests/test_batching.py` compares whole generations, greedy and seeded
+sampling, stop sequences and per-request limits, against running each request alone, whoever else is in the batch). A learned-
+position model, or a request whose prompt plus output does not fit the context, is served alone instead.
+
+Measured on the 14M model, CPU, **while a training run was using the machine** (so absolute numbers are low and noisy; the ratios are
+what to read, and they need re-measuring on an idle machine):
+
+| Batch | Tokens/s, 16 requests × 48 tokens | Speedup | Outputs identical to solo |
+|---|---|---|---|
+| one at a time | 112 | 1.0× | – |
+| 4 | 118 | 1.05× | yes |
+| 8 | 124 | 1.1× | yes |
+| 16 | 279 | 2.5× | yes |
+
+Per decode step, one thread (`scripts/benchmark_batching.py` is the repeatable version): the forward pass costs 5.6 ms for 1 row and
+38 ms for 16, so each row is about **2.1× cheaper batched** (5.97 → 2.82 ms per row including sampling). That is real but far from the
+ideal 16×: at this model size the CPU forward is closer to compute-bound than to per-call-overhead-bound, so batching pays off
+only at larger batches. Sampling is done per row in Python (0.4 ms per row per step) and is the next thing to vectorise.
+
+What this means for hosting: a wave of 16 users takes about 2.7 s for 48 tokens (each user gets their reply in that time), against
+about 0.45 s each one after another (7 s for the last). Batching raises throughput when many users arrive together and costs a few
+milliseconds of waiting (`--batch-wait-ms`, default 15) when they do not. **It is off by default** until it has been measured
+on an idle machine; enable it with `--batch-size 8` for multi-user hosting.

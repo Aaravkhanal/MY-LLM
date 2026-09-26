@@ -41,6 +41,10 @@ def main() -> None:
     ap.add_argument("--db", help="account database (scripts/manage_keys.py): per-key limits, usage records, revocation. "
                                  "Overrides --keys-file.")
     ap.add_argument("--max-tokens-cap", type=int, default=512)
+    ap.add_argument("--batch-size", type=int, default=1,
+                    help="serve up to N requests per decode step (batched, exact for RoPE models); 1 = one at a time")
+    ap.add_argument("--batch-wait-ms", type=float, default=15.0,
+                    help="how long a batch waits for more requests to join once the first arrives")
     ap.add_argument("--request-timeout", type=float, default=60.0,
                     help="wall-clock seconds one generation may take before it is cut off with finish_reason \"timeout\" (0 = no limit)")
     ap.add_argument("--rate-limit-per-min", type=float, default=60.0)
@@ -66,7 +70,7 @@ def main() -> None:
     ck = find_checkpoint(args.checkpoint)
     engine = InferenceEngine.from_checkpoint(ck, tokenizer_dir_for(ck, args.tokenizer), args.device)
     app = create_app(
-        engine, AccountStore(args.db) if args.db else KeyStore(args.keys_file), require_auth=not args.no_auth, max_tokens_cap=args.max_tokens_cap, request_timeout=args.request_timeout,
+        engine, AccountStore(args.db) if args.db else KeyStore(args.keys_file), require_auth=not args.no_auth, max_tokens_cap=args.max_tokens_cap, request_timeout=args.request_timeout, batch_size=args.batch_size, batch_wait_ms=args.batch_wait_ms,
         signup_code=args.signup_code, open_signup=args.open_signup, web_rpm=args.web_rpm, web_tpm=args.web_tpm,
         default_key_rpm=args.key_rpm, default_key_tpm=args.key_tpm, max_keys_per_user=args.max_keys,
         cookie_secure=args.cookie_secure, trust_proxy=args.trust_proxy,

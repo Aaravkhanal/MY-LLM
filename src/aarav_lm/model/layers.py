@@ -204,6 +204,7 @@ class Attention(nn.Module):
         cos:     Optional[torch.Tensor] = None,
         sin:     Optional[torch.Tensor] = None,
         cache:   Optional[KVCache]      = None,
+        key_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         B, T, _ = x.shape
 
@@ -235,6 +236,17 @@ class Attention(nn.Module):
             cols = torch.arange(offset + T, device=x.device).unsqueeze(0)
             attn_mask = cols <= rows
 
+        if key_mask is not None:
+            # Batched decoding of sequences of different lengths, left-padded to one common length: every row shares the
+            # cache position, and `key_mask` (B, offset+T; True = a real token) hides the padding. With RoPE, scores depend
+            # only on relative positions, so shifting a sequence right by its padding changes nothing for its real tokens.
+            Tk = k.shape[2]
+            rows = torch.arange(offset, offset + T, device=x.device).unsqueeze(1)          # absolute query positions
+            cols = torch.arange(Tk, device=x.device).unsqueeze(0)
+            allowed = (cols <= rows)[None, None] & key_mask[:, None, None, :Tk]            # (B, 1, T, Tk)
+            allowed = allowed | ((~allowed.any(-1, keepdim=True)) & (cols == rows)[None, None])   # padded query: see itself, no NaNs
+            attn_mask, is_causal = allowed, False
+
         dropout_p = self.cfg.dropout if self.training else 0.0
         out = F.scaled_dot_product_attention(
             q, k, v, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal
@@ -265,7 +277,8 @@ class Block(nn.Module):
         cos:   Optional[torch.Tensor] = None,
         sin:   Optional[torch.Tensor] = None,
         cache: Optional[KVCache]      = None,
+        key_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
-        x = x + self.attn(self.norm1(x), cos=cos, sin=sin, cache=cache)
+        x = x + self.attn(self.norm1(x), cos=cos, sin=sin, cache=cache, key_mask=key_mask)
         x = x + self.mlp(self.norm2(x))
         return x

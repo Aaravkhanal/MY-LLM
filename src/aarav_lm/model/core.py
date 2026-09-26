@@ -117,6 +117,7 @@ class AaravLM(nn.Module):
         targets:   Optional[torch.Tensor] = None,
         cache:     Optional[KVCache]      = None,
         last_only: bool                   = False,
+        key_mask:  Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
         """
         Parameters
@@ -126,6 +127,8 @@ class AaravLM(nn.Module):
         cache     : KVCache for incremental decoding; None during training
         last_only : compute logits for the final position only (saves a
                     T x vocab matmul and its memory when prefilling a prompt)
+        key_mask  : (B, cache.seen + T) bool, True = real token; for batched decoding of left-padded
+                    sequences (RoPE models only, see Attention). None = every position is real.
 
         Returns
         -------
@@ -151,7 +154,7 @@ class AaravLM(nn.Module):
             sin      = self.rope_sin[offset : offset + T].to(device)
 
         for block in self.blocks:
-            x = block(x, cos=cos, sin=sin, cache=cache)
+            x = block(x, cos=cos, sin=sin, cache=cache, key_mask=key_mask)
 
         x = self.final_norm(x)
 

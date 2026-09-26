@@ -19,6 +19,7 @@ auth is explicitly disabled.
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 import json
 import threading
 import time
@@ -37,6 +38,7 @@ from aarav_lm.api.auth import Caller, KeyStore, RateLimiter
 from aarav_lm.api.openai_compat import add_openai_routes
 from aarav_lm.inference.chat_format import ChatFormatError, Message
 from aarav_lm.inference.engine import GenerationConfig, InferenceEngine
+from aarav_lm.inference.scheduler import BatchScheduler, QueueFull
 from aarav_lm.inference.prompting import build_prompt, resolve_mode
 
 MAX_BODY_BYTES = 1_000_000
@@ -208,13 +210,24 @@ def create_app(
     max_keys_per_user: int = 5,
     cookie_secure: Optional[bool] = None,
     trust_proxy: bool = False,
+    batch_size: int = 1,
+    batch_wait_ms: float = 15.0,
+    batch_queue: int = 64,
 ) -> FastAPI:
     can_sign_up = bool(signup_code) or open_signup
     has_users = key_store is not None and hasattr(key_store, "user_count") and key_store.user_count() > 0
     if require_auth and (key_store is None or (len(key_store) == 0 and not can_sign_up and not has_users)):
         raise RuntimeError("authentication is on but there are no API keys — run scripts/create_key.py "
                            "or start the server with --no-auth (localhost only)")
-    app = FastAPI(title="aarav-lm", version="0.1.0", docs_url=None, redoc_url=None)
+    shutdown_hooks: List = []                                      # things to close when the server stops (the batch scheduler)
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI):
+        yield
+        for hook in shutdown_hooks:
+            hook()
+
+    app = FastAPI(title="aarav-lm", version="0.1.0", docs_url=None, redoc_url=None, lifespan=lifespan)
     stats = Stats()
     limiter = RateLimiter(rate_limit_per_min, rate_limit_burst)
     chat_mode = resolve_mode(engine, mode)
@@ -309,6 +322,107 @@ def create_app(
         stats.add(in_flight=-1)
         engine.lock.release()
 
+    # Batched serving (--batch-size > 1): concurrent requests share each decode step (inference/batching.py). A learned-position
+    # model cannot be batched exactly, so it silently keeps the single-request path.
+    scheduler = None
+    if batch_size > 1 and engine.model.cfg.arch != "gpt2":
+        scheduler = BatchScheduler(engine, max_batch=batch_size, max_wait=batch_wait_ms / 1000.0, max_queue=batch_queue)
+        shutdown_hooks.append(scheduler.close)
+
+    def begin(ticket, state: dict) -> None:
+        """Wait (bounded) for the ticket's wave to start. Runs in a worker thread, like acquire_slot."""
+        got = ticket.wait_started(queue_timeout)
+        state["begun"] = True
+        with stats._lock:
+            stats.waiting -= 1
+        if not got:
+            ticket.cancel()
+            stats.add(rejected=1)
+            raise HTTPException(503, "model is busy, try again shortly", headers={"Retry-After": "5"})
+        stats.add(in_flight=1)
+        state["running"] = True
+
+    def submit_ticket(prompt_ids: List[int], cfg: GenerationConfig, log_usage):
+        try:
+            ticket = scheduler.submit(prompt_ids, cfg)
+        except QueueFull:
+            stats.add(rejected=1)
+            log_usage(503, "busy")
+            raise HTTPException(503, "too many requests waiting, try again shortly", headers={"Retry-After": "5"}) from None
+        stats.add(waiting=1)
+        return ticket
+
+    def run_batched(prompt_ids: List[int], cfg: GenerationConfig, stream: bool, fmt, log_usage, finish):
+        ticket = submit_ticket(prompt_ids, cfg, log_usage)
+        state = {"begun": False, "running": False}
+
+        def cleanup() -> None:
+            ticket.cancel()
+            if not state["begun"]:
+                stats.add(waiting=-1)
+            if state["running"]:
+                stats.add(in_flight=-1)
+
+        def done_ok(result) -> str:
+            return "timeout" if result.finish_reason == "timeout" else None
+
+        if not stream:
+            try:
+                try:
+                    begin(ticket, state)
+                except HTTPException as e:
+                    log_usage(e.status_code, "busy")
+                    raise
+                try:
+                    for _ in ticket.deltas():
+                        pass
+                    result = ticket.result
+                    if result is None:
+                        raise RuntimeError("no result")
+                except Exception:                                    # noqa: BLE001
+                    stats.add(errors=1)
+                    log_usage(500, "generation_failed")
+                    raise HTTPException(500, "generation failed") from None
+            finally:
+                cleanup()
+            log_usage(200, done_ok(result), result.generated_tokens)
+            return fmt.final(result.text, finish(result))
+
+        end = object()
+
+        async def events():
+            it = None
+            try:
+                await anyio.to_thread.run_sync(begin, ticket, state)
+                it = ticket.deltas()
+                if hasattr(fmt, "first"):
+                    yield fmt.first()
+                while True:
+                    delta = await anyio.to_thread.run_sync(next, it, end)
+                    if delta is end:
+                        break
+                    yield fmt.chunk(delta)
+                result = ticket.result
+                if result is None:
+                    raise RuntimeError("no result")
+                log_usage(200, done_ok(result), result.generated_tokens)
+                yield fmt.done(finish(result))
+            except HTTPException as e:
+                log_usage(e.status_code, "busy" if e.status_code == 503 else "error")
+                yield fmt.error(e.detail, e.status_code)
+            except Exception:                                        # noqa: BLE001
+                stats.add(errors=1)
+                log_usage(500, "generation_failed")
+                yield fmt.error("generation failed", 500)
+            finally:
+                log_usage(499, "client_disconnected")               # no-op unless the stream ended without finishing
+                if it is not None:
+                    it.close()
+                cleanup()
+
+        return StreamingResponse(events(), media_type="text/event-stream",
+                                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
     def run(prompt_ids: List[int], cfg: GenerationConfig, stream: bool, extra: dict, fmt=None, caller=None, endpoint: str = ""):
         fmt = fmt or NativeFormat()
         stats.add(requests=1, prompt_tokens=len(prompt_ids))
@@ -329,6 +443,9 @@ def create_app(
                 "usage": {"prompt_tokens": len(prompt_ids), "completion_tokens": result.generated_tokens},
                 "tokens_per_sec": round(result.tokens_per_sec, 1), "model": model_name, **extra,
             }
+
+        if scheduler is not None:
+            return run_batched(prompt_ids, cfg, stream, fmt, log_usage, finish)
 
         if not stream:
             try:
@@ -428,7 +545,10 @@ def create_app(
 
     @app.get("/stats")
     async def get_stats(_: str = Depends(identify)):
-        return stats.snapshot()
+        snap = stats.snapshot()
+        if scheduler is not None:
+            snap["batching"] = {"max_batch": batch_size, **scheduler.stats()}
+        return snap
 
     @app.get("/v1/usage")
     async def my_usage(days: float = 30.0, caller: Caller = Depends(identify)):
