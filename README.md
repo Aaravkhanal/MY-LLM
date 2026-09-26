@@ -226,6 +226,7 @@ throttles, so measurements vary ±30% and checkpointing often is the right defau
 | [docs/AUDIT.md](docs/AUDIT.md) | audit of the whole project: architecture, model and dataset reports, gap matrix, risk register, phased plan |
 | [docs/CORRECTNESS.md](docs/CORRECTNESS.md) | running log of scientific problems found in training/evaluation: evidence, fix, test, what is still unmeasured |
 | [docs/RESULTS.md](docs/RESULTS.md) | every experiment, what worked, what didn't |
+| [docs/MODEL_CARD.md](docs/MODEL_CARD.md) | what the 14M model is: architecture, data, training, results, limits, intended use |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | design decisions and why, checkpoint format, data flow |
 | [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | measured throughput, memory, int8, thermal behaviour |
 | [docs/PLATFORM.md](docs/PLATFORM.md) | the web app and accounts: sign-up, chat, self-service API keys, usage; the design rules (minimal, no blue or purple) and how they are tested |
@@ -239,10 +240,11 @@ throttles, so measurements vary ±30% and checkpointing often is the right defau
 
 ## Scaling path and what is not built
 
-The `small` preset is trained (above). Its pretraining loss was still falling, and only ~1/5 of the
-2.2 GB TinyStories file has been used, so more tokens are the cheapest next gain, followed by better
-instruction data. On 8 GB, roughly 30–50M parameters is the practical ceiling for pretraining; anything
-larger needs rented GPU time.
+The `small` preset is trained (above), and its pretraining has been extended once: 237M tokens in all (exp_010), about 0.9 GB of text and
+roughly 40% of the 2.2 GB TinyStories file (at 3.96 bytes per token, from the measured bits per byte). That was the "cheapest next gain" for language modelling (validation loss 1.404 to 1.288) but **not for
+following requests** (exp_011), so more tokens alone are not the way forward for the instruction skills. What is untested: instruction data
+that teaches length explicitly and stays varied, a second fine-tuning epoch (exp_012 is testing it), and a larger model. On 8 GB, roughly
+30-50M parameters is the practical ceiling for pretraining; anything larger needs rented GPU time.
 
 Serving many users at once: `--batch-size N` decodes concurrent requests together (exact; tested against solo generation). Not built: email verification and password reset, preference tuning (DPO), continuous
 batching, real int8 kernels, multi-GPU training, cloud deployment. The order they will be tackled in,
