@@ -163,9 +163,55 @@ scored on different conversation sets, so this is **not** a comparison of the tw
 ([CORRECTNESS.md](CORRECTNESS.md), entry 1). Per-conversation and per-prompt outcomes are in
 `experiments/exp_00{4,5,6}_*/eval/`.
 
-Next: exp_007 tests data fixes aimed at the weak spots (more request wordings, requested words that the story
-actually dwells on and introduces early, balanced sampling across rare places and topics, casual typing); it is
-judged on a *fresh* held-out set so that iterating against the current one cannot flatter it.
+### exp_007: the v4 data (content control up, length control lost)
+
+The weak spots above pointed at the data, so exp_007 keeps exp_006's recipe (same base, seed, steps and learning rate) and
+changes only the training conversations (`configs/sft_small_instruct_v4.yaml`): 23 request wordings instead of 8, the requested
+word must occur at least twice in the story and first appear within 40 words, sampling is balanced across rare places, topics
+and names (`park` falls from 40% to 19% of place requests, `library` rises from 14 to 100 examples), and 15% of requests are
+typed casually. Its results are also on the **final set**, whose wording and stories no design decision ever saw
+(`evals/instruct_v4_final.jsonl`, committed before anything was scored on it). All four models were scored on it once; the
+table is complete, not selected. Greedy decoding, pass rate %:
+
+| | | **FINAL set (fresh wording and stories)** | | | | **dev: unseen wording** | | **dev: in-template** | |
+| Request kind | chance | base 004 | SFT 005 | SFT 006 | SFT 007 | 006 | 007 | 006 | 007 |
+|---|---|---|---|---|---|---|---|---|---|
+| dialogue | 66.8 | 83 | 100 | 100 | 100 | 100 | 75 | 100 | 92 |
+| short | 1.4 | 67 | 17 | 33 | 17 | 0 | 58 | 100 | 50 |
+| long | 11.6 | 0 | 12 | 75 | 0 | 58 | 0 | 75 | 0 |
+| name | 6.2 | 29 | 62 | 54 | 67 | 67 | 75 | 79 | 92 |
+| name + topic | 0.4 | 25 | 42 | 54 | 67 | 42 | 58 | 71 | 79 |
+| topic | 5.7 | 67 | 62 | 62 | 88 | 46 | 67 | 83 | 92 |
+| place | 10.2 | 54 | 17 | 17 | 62 | 21 | 58 | 21 | 79 |
+| emotion | 19.3 | 42 | 46 | 71 | 83 | 46 | 75 | 25 | 96 |
+| **all scored kinds** | 10.5 | 39.9 | 31.9 | 43.1 | 48.3 | 37.5 | 49.3 | 56.9 | 62.2 |
+| 95% CI (clustered) | | 30–49 | 23–41 | 33–53 | 39–58 | 27–48 | 39–59 | 51–63 | 57–68 |
+
+Paired differences on identical prompts (greedy; points, 95% interval):
+
+| SFT 007 vs | final set | dev: unseen wording | dev: in-template |
+|---|---|---|---|
+| SFT 006 | +5.2 [−5.4, +15.3] | +11.8 [−1.0, +25.0] | +5.2 [−2.1, +12.5] |
+| base 004 | +8.3 [−3.3, +19.4] | +8.7 [−1.8, +19.3] | – |
+
+With sampled decoding the aggregate gain over exp_006 is +5.9 on the final set ([−0.7, +12.6]), +9.7 on unseen wording
+([+3.4, +16.5], p = 0.002) and +13.2 in-template ([+6.7, +19.8], p = 0.001).
+
+What this does and does not establish:
+
+* **Content requests improved a lot, and it holds on the fresh set.** Topic 62 → 88% (paired +25 points, p = 0.002), emotion
+  71 → 83% (and 42 → 83% against the base model, p = 0.001), place 17 → 62%, name + topic 54 → 67%. In-template, emotion
+  goes 25 → 96% and place 21 → 79%. The changes that target these (a story that dwells on and opens with what was asked for,
+  balanced rare values) did what they were designed to do.
+* **The overall gain is not statistically established.** On every set the aggregate is higher than exp_006's and the base
+  model's, but only the sampled-decoding differences on the development sets have intervals that exclude zero. The final set,
+  with 197 distinct prompts, gives +5.2 [−5.4, +15.3] against exp_006 and +8.3 [−3.3, +19.4] against the base model. It is
+  reported as "probably better, not proven".
+* **It broke length control, even in-template.** `long` fell from 75% to 0% (final set: paired −75 points, p = 0.003) and
+  in-template `short` from 100% to 50%. The replies to long requests are 130–150 words, the model's default length. The
+  likely cause (a hypothesis, tested by exp_008): with 240 wordings per length kind each wording is seen about 12 times
+  instead of 35, so the model no longer memorises the template and does not learn the concept in one epoch.
+* **What is still unsolved:** two-topic requests (8%), "short" on unseen wording, and long stories.
 
 Reproduce: `python scripts/make_eval_controls.py --eval evals/instruct_v3.jsonl --stories <TinyStories file>`,
 then `python scripts/eval_instruct.py --checkpoint <run>/checkpoints/best.pt --instruct evals/instruct_v3.jsonl

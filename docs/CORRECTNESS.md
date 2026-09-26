@@ -7,7 +7,7 @@ only if a test proves it, and says **measured** only if the number came from a r
 | # | Problem | Status |
 |---|---|---|
 | 7 | The new training diagnostics crashed a run (exp_007, step ~625) | **fixed** (tests), found by a real run |
-| 6 | Content requests (topic, place, emotion) are barely learnable from the data as generated | **found**; opt-in data fixes added, effect not yet measured |
+| 6 | Content requests (topic, place, emotion) are barely learnable from the data as generated | **fixed** by data changes (exp_007), at the cost of length control |
 | 5 | One pass rate hid two different failures: not learning the task vs not generalising to new wording | **measured**; in-template control added |
 | 4 | No layer-wise gradient health, spike/overfit detection or plots during training | **added** (tests), thresholds not yet validated on a real run |
 | 3 | Instruction-following pass rates had no chance-level control, inflated sample sizes and no paired test | **fixed** (tests) |
@@ -59,7 +59,11 @@ wording), `--min-mentions N` (the requested word must occur at least N times), `
 within W words), `--balance-alpha a` (sample values with probability ∝ count^a, flattening rare places/topics/
 names), `--augment p` (casual typing: lowercase, no final punctuation; names keep their capital).
 
-**Not yet measured.** Whether any of it helps. That is exp_007, judged on a fresh held-out set.
+**Measured (exp_007, all four options together; see [RESULTS.md](RESULTS.md)).** Content requests improved sharply and the
+gain holds on the pre-registered final set (topic 62 → 88%, emotion 71 → 83%, place 17 → 62%; in-template place 21 → 79%,
+emotion 25 → 96%), but length control was lost (long 75 → 0%), and the overall gain is not statistically established
+(+5.2 [−5.4, +15.3] on the final set). The options were applied together, so the individual contributions are not separated;
+exp_008 tests one hypothesis about the length loss.
 
 ---
 
