@@ -19,6 +19,13 @@ from aarav_lm.chat.cli import find_checkpoint, tokenizer_dir_for
 from aarav_lm.inference.engine import InferenceEngine
 from aarav_lm.paths import SECRETS_DIR
 
+def model_name_for(checkpoint) -> str:
+    """The experiment's name for a run's checkpoint (experiments/exp_x/checkpoints/best.pt), else the file's name without extension
+    (a packaged models/x.pt): never empty, since clients see it as the model id."""
+    p = Path(checkpoint).resolve()
+    return p.parent.parent.name if p.parent.name == "checkpoints" else p.stem
+
+
 LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
 
@@ -64,10 +71,10 @@ def main() -> None:
         default_key_rpm=args.key_rpm, default_key_tpm=args.key_tpm, max_keys_per_user=args.max_keys,
         cookie_secure=args.cookie_secure, trust_proxy=args.trust_proxy,
         rate_limit_per_min=args.rate_limit_per_min, cors_origins=tuple(args.cors_origin),
-        model_name=Path(ck).parent.parent.name,
+        model_name=model_name_for(ck),
     )
     info = engine.info()
-    print(f"serving {Path(ck).parent.parent.name}/{Path(ck).name}: {info['params']/1e6:.1f}M params, "
+    print(f"serving {model_name_for(ck)}/{Path(ck).name}: {info['params']/1e6:.1f}M params, "
           f"context {info['context_length']}, device {info['device']}")
     print(f"listening on http://{args.host}:{args.port}   auth: {'off' if args.no_auth else 'API key required'}")
     print(f"web chat: http://{args.host}:{args.port}/")

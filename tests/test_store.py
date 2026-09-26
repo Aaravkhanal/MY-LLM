@@ -1,6 +1,7 @@
 """Accounts, keys and usage in SQLite: keys are never stored, and every lifecycle rule is enforced."""
 
 import os
+from pathlib import Path
 import sqlite3
 import stat
 import time
@@ -232,3 +233,34 @@ def test_usage_daily_is_zero_filled_and_per_user(store):
     days = store.usage_daily(a, 7)
     assert len(days) == 7 and sum(d["tokens"] for d in days) == 7 and days[-1]["requests"] == 1 and days[0]["requests"] == 0
     assert store.tokens_used_by_user_since(a, 60) == 7 and store.count_active_keys(a) == 0
+
+
+# ── backups ──────────────────────────────────────────────────────────────────
+
+def test_backup_is_a_consistent_private_copy_that_works_while_the_database_is_in_use(store, tmp_path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("backup_db", Path(__file__).resolve().parents[1] / "scripts" / "backup_db.py")
+    mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+    uid = store.signup("b@example.com", "long enough password")
+    key = store.create_key(uid, "svc")
+    store.record_usage(key_id=None, user_id=uid, model_id="m", endpoint="/x", prompt_tokens=1, completion_tokens=1)
+    copy = mod.backup(tmp_path / "accounts.db", tmp_path / "bk")                              # store is still open
+    assert stat.S_IMODE(os.stat(copy).st_mode) == 0o600
+    restored = AccountStore(copy)
+    assert restored.check_password("b@example.com", "long enough password") == uid and restored.lookup(key) is not None
+    assert restored.usage_summary(user_id=uid)["requests"] == 1
+    restored.close()
+    with pytest.raises(FileNotFoundError):
+        mod.backup(tmp_path / "missing.db", tmp_path / "bk")
+
+
+def test_backup_keeps_only_the_newest_n(store, tmp_path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("backup_db", Path(__file__).resolve().parents[1] / "scripts" / "backup_db.py")
+    mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+    out = tmp_path / "bk"; out.mkdir()
+    for d in ("2020-01-01-000000", "2020-01-02-000000", "2020-01-03-000000"):
+        (out / f"accounts-{d}.db").write_bytes(b"old")
+    new = mod.backup(tmp_path / "accounts.db", out, keep=2)
+    left = sorted(p.name for p in out.glob("accounts-*.db"))
+    assert len(left) == 2 and new.name in left and "accounts-2020-01-01-000000.db" not in left

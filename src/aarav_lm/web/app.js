@@ -1,186 +1,513 @@
 "use strict";
-// aarav-lm web chat. Talks to the same-origin API. Model output is only ever inserted with
-// textContent, never as HTML, so generated text cannot inject markup or script.
+/* aarav web app: chat, keys, usage, docs and sign-in in one small single-page app.
+   Everything is built with DOM calls and textContent, never HTML strings: model output and server messages can never
+   become markup (tests/test_api.py::test_ui_never_writes_model_output_as_html). Same-origin only, no libraries. */
 
-const $ = (id) => document.getElementById(id);
-const els = {
-  messages: $("messages"), input: $("input"), send: $("send"), stop: $("stop"), form: $("composer"),
-  banner: $("banner"), info: $("model-info"), settings: $("settings"), toggle: $("settings-toggle"),
-  clear: $("clear"), key: $("api-key"), system: $("system"),
+const state = {
+  config: { auth: "none", signup: "closed", model: "", limits: {} },
+  me: null,                       // {email, csrf_token} when signed in with an account
+  apiKey: "",                     // legacy key mode: kept for this tab only
+  history: [],                    // [{role, content}] sent with every request (the server is stateless)
+  busy: false,
+  controller: null,
+  modelInfo: null,
 };
-const numFields = ["temperature", "top_p", "top_k", "max_tokens", "repetition_penalty", "seed"];
 
-const state = { history: [], busy: false, controller: null, instructionTuned: false, maxTokensCap: 512, baseNote: "" };
+try { state.apiKey = sessionStorage.getItem("aarav_key") || ""; } catch (e) { /* private mode: keep it in memory */ }
 
-function banner(text, kind) {
-  els.banner.hidden = !text;
-  els.banner.textContent = text || "";
-  els.banner.className = "banner" + (kind ? " " + kind : "");
+const SETTINGS_DEFAULTS = { system: "", temperature: 0.8, top_p: 0.95, top_k: 50, max_tokens: 150, repetition_penalty: 1.1, seed: "" };
+function loadSettings() {
+  try { return { ...SETTINGS_DEFAULTS, ...JSON.parse(localStorage.getItem("aarav_settings") || "{}") }; } catch (e) { return { ...SETTINGS_DEFAULTS }; }
+}
+function saveSettings(s) { try { localStorage.setItem("aarav_settings", JSON.stringify(s)); } catch (e) { /* not fatal */ } }
+let settings = loadSettings();
+
+/* ── tiny DOM helpers ──────────────────────────────────────────────────── */
+
+function el(tag, props, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v === false || v === null || v === undefined) continue;
+    if (k === "class") n.className = v;
+    else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (v === true) n.setAttribute(k, "");
+    else n.setAttribute(k, v);
+  }
+  for (const kid of kids.flat(Infinity)) {
+    if (kid === null || kid === undefined || kid === false) continue;
+    n.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return n;
+}
+const SVG_NS = "http://www.w3.org/2000/svg";
+function svg(tag, attrs, ...kids) {
+  const n = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v);
+  for (const kid of kids.flat(Infinity)) if (kid) n.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  return n;
+}
+const view = () => document.getElementById("view");
+function mount(...nodes) { const v = view(); v.replaceChildren(...nodes.flat(Infinity).filter(Boolean)); return v; }
+const fmt = (n) => Number(n).toLocaleString("en-US");
+const short = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "k" : String(n));
+function when(iso) { if (!iso) return "never"; const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+
+/* ── talking to the server ─────────────────────────────────────────────── */
+
+class ApiError extends Error {
+  constructor(status, data, retryAfter) {
+    super(describeError(status, data, retryAfter));
+    this.status = status;
+  }
 }
 
-// Clear transient errors but keep the standing "base model" notice visible.
-function resetBanner() { banner(state.baseNote, state.baseNote ? "warn" : ""); }
+function serverMessage(data) {
+  if (!data) return "";
+  if (typeof data.detail === "string") return data.detail;
+  if (data.error && typeof data.error === "object") return data.error.message || "";
+  if (typeof data.error === "string") return data.error;
+  return "";
+}
 
-function authHeaders() {
-  const h = { "Content-Type": "application/json" };
-  const key = els.key.value.trim();
-  if (key) h["Authorization"] = "Bearer " + key;
+function describeError(status, data, retryAfter) {
+  const msg = serverMessage(data);
+  if (status === 401) return state.config.auth === "account" ? "Please sign in." : "That key was not accepted. Check it and try again.";
+  if (status === 403) return msg || "That request was not allowed.";
+  if (status === 429) return (msg || "Slow down a little") + (retryAfter ? ` (try again in ${retryAfter}s).` : ".");
+  if (status === 503) return "The model is busy with someone else's request. Try again in a few seconds.";
+  if (status === 422 || status === 400) return msg || "The request was not valid.";
+  if (status === 413) return "That message is too large.";
+  if (status === 409 || status === 404) return msg || "That did not work.";
+  return msg || `The server returned an error (${status}).`;
+}
+
+function headers(hasBody) {
+  const h = { Accept: "application/json" };
+  if (hasBody) h["Content-Type"] = "application/json";
+  if (state.me) h["X-CSRF-Token"] = state.me.csrf_token;
+  else if (state.apiKey) h["Authorization"] = "Bearer " + state.apiKey;
   return h;
 }
 
-function addMessage(role, text, extraClass) {
-  const div = document.createElement("div");
-  div.className = "msg " + role + (extraClass ? " " + extraClass : "");
-  div.textContent = text;
-  els.messages.appendChild(div);
-  els.messages.scrollTop = els.messages.scrollHeight;
-  return div;
+async function call(path, { method = "GET", body, signal } = {}) {
+  return fetch(path, { method, headers: headers(body !== undefined), body: body === undefined ? undefined : JSON.stringify(body), signal, credentials: "same-origin" });
 }
 
-function readSettings() {
-  const num = (id, int) => {
-    const raw = $(id).value.trim();
-    if (raw === "") return undefined;
-    const v = int ? parseInt(raw, 10) : parseFloat(raw);
-    return Number.isFinite(v) ? v : undefined;
-  };
-  const body = {
-    temperature: num("temperature"), top_p: num("top_p"), top_k: num("top_k", true),
-    max_tokens: Math.min(num("max_tokens", true) || 150, state.maxTokensCap),
-    repetition_penalty: num("repetition_penalty"), seed: num("seed", true),
-  };
-  for (const k of Object.keys(body)) if (body[k] === undefined) delete body[k];
-  return body;
+async function json(path, opts) {
+  const res = await call(path, opts);
+  let data = null;
+  try { data = await res.json(); } catch (e) { /* empty body */ }
+  if (!res.ok) throw new ApiError(res.status, data, res.headers.get("retry-after"));
+  return data;
 }
 
-function describeError(status, detail, retryAfter) {
-  if (status === 401) return "The server needs a valid API key. Open Settings and paste one (scripts/create_key.py makes keys).";
-  if (status === 429) return "Rate limit reached. Try again in " + (retryAfter || "a few") + " seconds.";
-  if (status === 503) return "The model is busy with another request. Try again in a moment.";
-  if (status === 413) return "That message is too large.";
-  if (status === 422) return "The request was rejected: " + (typeof detail === "string" ? detail : JSON.stringify(detail));
-  return "Server error (" + status + ")" + (detail ? ": " + detail : "") + ".";
+/* ── router and frame ──────────────────────────────────────────────────── */
+
+const ROUTES = { chat: viewChat, keys: viewKeys, usage: viewUsage, docs: viewDocs, signin: viewSignin };
+
+function currentRoute() {
+  const r = (location.hash.replace(/^#\/?/, "") || "chat").split("?")[0];
+  return ROUTES[r] ? r : "chat";
 }
 
-async function loadModelInfo() {
-  try {
-    const r = await fetch("/model", { headers: authHeaders() });
-    if (r.status === 401) { els.info.textContent = "API key required"; banner(describeError(401), "warn"); return; }
-    if (!r.ok) throw new Error("status " + r.status);
-    const m = await r.json();
-    state.instructionTuned = !!m.instruction_tuned;
-    state.maxTokensCap = m.max_tokens_cap || 512;
-    $("max_tokens").max = state.maxTokensCap;
-    els.info.textContent = `${m.name} · ${(m.params / 1e6).toFixed(1)}M params · ctx ${m.context_length} · ${m.device}` +
-      (m.instruction_tuned ? "" : " · base model");
-    state.baseNote = m.instruction_tuned ? "" :
-      "Base model (no instruction tuning): each message is treated as the start of a text to continue, e.g. \"Once upon a time, there was a little dog named Max.\"";
-    resetBanner();
-  } catch (e) {
-    els.info.textContent = "model unavailable";
-    banner("Could not reach the server: " + e.message, "error");
+function navigate(name) { location.hash = "#/" + name; }
+
+function needsAccount(r) { return state.config.auth === "account" && !state.me && r !== "docs"; }
+
+function renderFrame() {
+  const r = currentRoute();
+  const links = needsAccount("chat") ? [] : [["chat", "chat"]];
+  if (state.config.auth === "account" && state.me) links.push(["keys", "keys"], ["usage", "usage"]);
+  links.push(["docs", "docs"]);
+  document.getElementById("nav").replaceChildren(...links.map(([name, label]) =>
+    el("a", { href: "#/" + name, text: label, "aria-current": r === name ? "page" : false })));
+  const who = document.getElementById("who");
+  if (state.me) {
+    who.replaceChildren(el("span", { text: state.me.email }), el("button", { type: "button", class: "quiet", text: "sign out", onclick: signOut }));
+  } else if (state.config.auth === "account") {
+    who.replaceChildren(el("a", { href: "#/signin", text: "sign in" }));
+  } else {
+    who.replaceChildren();
   }
 }
 
-function setBusy(busy) {
-  state.busy = busy;
-  els.send.hidden = busy; els.stop.hidden = !busy; els.input.disabled = busy;
-  if (!busy) els.input.focus();
+async function route() {
+  const r = needsAccount(currentRoute()) ? "signin" : currentRoute();
+  if (r !== currentRoute()) { history.replaceState(null, "", "#/signin"); }
+  renderFrame();
+  if (state.controller) { state.controller.abort(); }
+  await ROUTES[r]();
+  view().focus({ preventScroll: true });
 }
 
-async function send(text) {
-  resetBanner();
-  state.history.push({ role: "user", content: text });
-  addMessage("user", text);
-  const bubble = addMessage("assistant", "", "dots");
-  setBusy(true);
-  state.controller = new AbortController();
-  let reply = "", finish = "", usage = null, failed = false;
+async function signOut() {
+  try { await json("/account/logout", { method: "POST", body: {} }); } catch (e) { /* the cookie is gone either way */ }
+  state.me = null; state.history = [];
+  navigate("signin");
+  route();
+}
 
-  const messages = [];
-  const sys = els.system.value.trim();
-  if (sys && state.instructionTuned) messages.push({ role: "system", content: sys });
-  messages.push(...state.history);
+/* ── sign in / create account ──────────────────────────────────────────── */
 
-  try {
-    const r = await fetch("/chat", {
-      method: "POST", headers: authHeaders(), signal: state.controller.signal,
-      body: JSON.stringify({ messages, stream: true, ...readSettings() }),
-    });
-    if (!r.ok) {
-      let detail = ""; try { detail = (await r.json()).detail; } catch (_) { /* not JSON */ }
-      throw new Error(describeError(r.status, detail, r.headers.get("Retry-After")));
+function viewSignin() {
+  let creating = false;
+  const c = state.config;
+  const canCreate = c.signup === "invite" || c.signup === "open";
+  const err = el("p", { class: "error", role: "alert", hidden: true });
+  const email = el("input", { id: "email", type: "email", autocomplete: "username", required: true, spellcheck: "false" });
+  const pass = el("input", { id: "password", type: "password", autocomplete: "current-password", required: true, minlength: "10", maxlength: "128" });
+  const code = el("input", { id: "invite", type: "text", autocomplete: "off", spellcheck: "false" });
+  const codeLabel = el("label", { hidden: true }, "Invite code", code);
+  const heading = el("h1", { text: "Sign in" });
+  const submit = el("button", { type: "submit", text: "Sign in →" });
+  const toggle = canCreate ? el("button", { type: "button", class: "quiet", text: "Create an account", onclick: () => {
+    creating = !creating;
+    heading.textContent = creating ? "Create an account" : "Sign in";
+    submit.textContent = creating ? "Create account →" : "Sign in →";
+    toggle.textContent = creating ? "I already have an account" : "Create an account";
+    pass.setAttribute("autocomplete", creating ? "new-password" : "current-password");
+    codeLabel.hidden = !(creating && c.signup === "invite");
+    err.hidden = true;
+  } }) : null;
+  const form = el("form", { onsubmit: async (e) => {
+    e.preventDefault();
+    err.hidden = true; submit.disabled = true;
+    try {
+      const body = { email: email.value, password: pass.value };
+      if (creating) body.invite_code = code.value;
+      state.me = await json(creating ? "/account/signup" : "/account/login", { method: "POST", body });
+      navigate("chat");
+    } catch (ex) {
+      err.textContent = ex.message; err.hidden = false;
+    } finally { submit.disabled = false; }
+  } },
+  el("label", null, "Email", email), el("label", null, "Password", pass), codeLabel, err,
+  el("p", { class: "small inline" }, submit, toggle));
+  mount(heading, el("p", { class: "muted", text: c.signup === "closed" ? "Accounts are by invitation. Ask the owner for one." : "Free to use while capacity lasts." }), form);
+  email.focus();
+}
+
+/* ── chat ──────────────────────────────────────────────────────────────── */
+
+const EXAMPLES = ["Tell me a story about a dragon named Zara.", "Write a short story about a fox and a moon.", "A long story about a robot who feels sad."];
+
+async function viewChat() {
+  const list = el("div", { id: "messages", "aria-live": "polite" });
+  const banner = el("p", { id: "banner", class: "error", role: "status", hidden: true });
+  const info = el("span", { id: "model-info", text: "loading model…" });
+  const input = el("textarea", { id: "input", rows: "1", placeholder: "Message aarav…  (Enter to send, Shift+Enter for a new line)", required: true, "aria-label": "Message" });
+  const send = el("button", { id: "send", type: "submit", text: "send →" });
+  const stop = el("button", { id: "stop", type: "button", class: "quiet", text: "stop", hidden: true });
+
+  const numberField = (id, label, key, min, max, step) => el("label", null, label,
+    el("input", { id, type: "number", min, max, step, value: settings[key], oninput: (e) => { settings[key] = e.target.value; saveSettings(settings); } }));
+  const rangeField = (id, label, key, min, max, step) => {
+    const out = el("output", { id: id + "-out", text: settings[key] });
+    return el("label", null, label, out, el("input", { id, type: "range", min, max, step, value: settings[key], oninput: (e) => {
+      settings[key] = Number(e.target.value); out.textContent = e.target.value; saveSettings(settings);
+    } }));
+  };
+  const settingsPane = el("div", { id: "settings", hidden: true },
+    el("label", null, "System prompt (instruction-tuned models)", el("textarea", { id: "system", rows: "2", placeholder: "You are a friendly storyteller for children.",
+      oninput: (e) => { settings.system = e.target.value; saveSettings(settings); } }, "")),
+    el("div", { class: "grid" },
+      rangeField("temperature", "Temperature", "temperature", 0, 2, 0.05), rangeField("top_p", "Top-p", "top_p", 0.05, 1, 0.05),
+      numberField("top_k", "Top-k", "top_k", 1, 2048, 1), numberField("max_tokens", "Max tokens", "max_tokens", 1, 512, 1),
+      numberField("repetition_penalty", "Repetition penalty", "repetition_penalty", 0.5, 2, 0.05), numberField("seed", "Seed (blank = random)", "seed", 0, "", 1)));
+  settingsPane.querySelector("#system").value = settings.system;
+
+  const toggleSettings = el("button", { id: "settings-toggle", type: "button", class: "quiet", text: "settings", "aria-expanded": "false", "aria-controls": "settings", onclick: () => {
+    settingsPane.hidden = !settingsPane.hidden;
+    toggleSettings.setAttribute("aria-expanded", String(!settingsPane.hidden));
+  } });
+  const clear = el("button", { id: "clear", type: "button", class: "quiet", text: "clear", onclick: () => { if (!state.busy) { state.history = []; renderList(); banner.hidden = true; input.focus(); } } });
+
+  const keyForm = state.config.auth === "key" && !state.apiKey ? keyPrompt(() => route()) : null;
+  const form = el("form", { id: "composer", autocomplete: "off" }, input, send, stop);
+
+  function renderList() {
+    if (!state.history.length) {
+      list.replaceChildren(el("div", { class: "empty" }, el("p", { text: "Ask for a story. It writes short children's stories, and it is a small model: it is not a general assistant." }),
+        el("ul", null, EXAMPLES.map((t) => el("li", null, el("button", { type: "button", text: t, onclick: () => { input.value = t; autosize(); input.focus(); } }))))));
+      return;
     }
-    const reader = r.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
+    list.replaceChildren(...state.history.map((m) => message(m.role, m.content)));
+    window.scrollTo({ top: document.body.scrollHeight });
+  }
+  const autosize = () => { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 160) + "px"; };
+  input.addEventListener("input", autosize);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
+  stop.addEventListener("click", () => { if (state.controller) state.controller.abort(); });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text || state.busy) return;
+    if (state.config.auth === "key" && !state.apiKey) { banner.textContent = "Enter your API key first."; banner.hidden = false; return; }
+    banner.hidden = true;
+    state.history.push({ role: "user", content: text });
+    input.value = ""; autosize();
+    renderList();
+    const reply = message("assistant", "");
+    reply.querySelector(".body").classList.add("dots");
+    list.append(reply);
+    window.scrollTo({ top: document.body.scrollHeight });
+    setBusy(true);
+    let answer = "";
+    try {
+      answer = await streamChat(state.history, (delta) => {
+        const body = reply.querySelector(".body");
+        body.classList.remove("dots");
+        body.textContent += delta;
+        window.scrollTo({ top: document.body.scrollHeight });
+      });
+      if (answer) state.history.push({ role: "assistant", content: answer });
+      else { state.history.pop(); reply.remove(); banner.textContent = "The model returned nothing. Try rephrasing."; banner.hidden = false; }
+    } catch (ex) {
+      const partial = reply.querySelector(".body").textContent;
+      if (ex.name === "AbortError") { if (partial) state.history.push({ role: "assistant", content: partial }); else { state.history.pop(); reply.remove(); } }
+      else {
+        state.history.pop(); reply.remove();
+        banner.textContent = ex instanceof ApiError ? ex.message : "Could not reach the server. Check your connection.";
+        banner.hidden = false;
+        if (ex.status === 401 && state.config.auth === "account") { state.me = null; navigate("signin"); route(); }
+      }
+    } finally { setBusy(false); input.focus(); }
+  });
+
+  function setBusy(b) {
+    state.busy = b; send.hidden = b; stop.hidden = !b; input.disabled = b; clear.disabled = b;
+  }
+
+  mount(el("div", { class: "chat-meta" }, info, el("span", { class: "spacer" }), toggleSettings, clear), settingsPane, keyForm, banner, list, form);
+  renderList(); autosize(); input.focus();
+  try {
+    const m = state.modelInfo || (await json("/v1/models")).data[0];
+    state.modelInfo = m;
+    info.textContent = `${m.id} · ${(m.parameters / 1e6).toFixed(1)}M parameters · context ${m.context_length}${m.instruction_tuned ? " · chat-tuned" : " · text continuation"}`;
+  } catch (ex) { info.textContent = ex.status === 401 ? "" : "model unavailable"; }
+}
+
+function keyPrompt(done) {
+  const key = el("input", { type: "password", autocomplete: "off", spellcheck: "false", placeholder: "aak_…", "aria-label": "API key" });
+  return el("form", { onsubmit: (e) => { e.preventDefault(); state.apiKey = key.value.trim(); try { sessionStorage.setItem("aarav_key", state.apiKey); } catch (x) { /* memory only */ } done(); } },
+    el("label", null, "API key (kept in this tab only)", key), el("p", { class: "small" }, el("button", { type: "submit", text: "Use this key →" })));
+}
+
+function message(role, text) {
+  return el("article", { class: "msg " + role }, el("h3", { class: "role", text: role === "user" ? "you" : "aarav" }), el("p", { class: "body", text }));
+}
+
+function chatPayload(history) {
+  const msgs = [];
+  if (settings.system.trim()) msgs.push({ role: "system", content: settings.system.trim() });
+  msgs.push(...history);
+  const p = { model: state.modelInfo ? state.modelInfo.id : "aarav-lm", messages: msgs, stream: true, temperature: Number(settings.temperature),
+    top_p: Number(settings.top_p), top_k: Number(settings.top_k), max_tokens: Number(settings.max_tokens), repetition_penalty: Number(settings.repetition_penalty) };
+  if (settings.seed !== "" && settings.seed !== null) p.seed = Number(settings.seed);
+  return p;
+}
+
+/* Real streaming: each frame is a token the model actually produced (nothing is faked or delayed here). */
+async function streamChat(history, onDelta) {
+  state.controller = new AbortController();
+  try {
+    const res = await call("/v1/chat/completions", { method: "POST", body: chatPayload(history), signal: state.controller.signal });
+    if (!res.ok) { let d = null; try { d = await res.json(); } catch (e) { /* no body */ } throw new ApiError(res.status, d, res.headers.get("retry-after")); }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "", out = "";
     for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      let idx;
-      while ((idx = buffer.indexOf("\n\n")) !== -1) {
-        const line = buffer.slice(0, idx).trim(); buffer = buffer.slice(idx + 2);
-        if (!line.startsWith("data:")) continue;
-        const evt = JSON.parse(line.slice(5));
-        if (evt.error) throw new Error(describeError(evt.status || 500, evt.error));
-        if (evt.delta) {
-          reply += evt.delta;
-          bubble.classList.remove("dots");
-          bubble.textContent = reply;
-          els.messages.scrollTop = els.messages.scrollHeight;
-        }
-        if (evt.done) { finish = evt.finish_reason; usage = evt.usage; }
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf("\n\n")) !== -1) {
+        const frame = buf.slice(0, i).trim(); buf = buf.slice(i + 2);
+        if (!frame.startsWith("data:")) continue;
+        const payload = frame.slice(5).trim();
+        if (payload === "[DONE]") return out;
+        let obj; try { obj = JSON.parse(payload); } catch (e) { continue; }
+        if (obj.error) throw new ApiError(obj.error.code === "server_busy" ? 503 : 500, obj);
+        const delta = obj.choices && obj.choices[0] && obj.choices[0].delta && obj.choices[0].delta.content;
+        if (delta) { out += delta; onDelta(delta); }
       }
     }
-  } catch (e) {
-    failed = true;
-    if (e.name === "AbortError") banner("Stopped.", "warn");
-    else banner(e.message || String(e), "error");
-  } finally {
-    bubble.classList.remove("dots");
-    if (!reply) bubble.textContent = failed ? "(no reply)" : "(empty reply)";
-    if (usage) {
-      const meta = document.createElement("span");
-      meta.className = "meta";
-      meta.textContent = `${usage.completion_tokens} tokens · ${finish}`;
-      bubble.appendChild(meta);
-    }
-    if (reply) state.history.push({ role: "assistant", content: reply.trim() });
-    else state.history.pop();            // drop the unanswered user message so the next request is valid
-    state.controller = null;
-    setBusy(false);
-  }
+    return out;
+  } finally { state.controller = null; }
 }
 
-els.form.addEventListener("submit", (ev) => {
-  ev.preventDefault();
-  const text = els.input.value.trim();
-  if (!text || state.busy) return;
-  els.input.value = "";
-  send(text);
-});
-els.input.addEventListener("keydown", (ev) => {
-  if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); els.form.requestSubmit(); }
-});
-els.stop.addEventListener("click", () => state.controller && state.controller.abort());
-els.clear.addEventListener("click", () => {
-  if (state.controller) state.controller.abort();
-  state.history = []; els.messages.replaceChildren(); resetBanner();
-});
-els.toggle.addEventListener("click", () => {
-  els.settings.hidden = !els.settings.hidden;
-  els.toggle.setAttribute("aria-expanded", String(!els.settings.hidden));
-});
-for (const id of ["temperature", "top_p"]) {
-  const out = $(id + "-out"), input = $(id);
-  const sync = () => { out.textContent = input.value; };
-  input.addEventListener("input", sync); sync();
+/* ── keys ──────────────────────────────────────────────────────────────── */
+
+async function viewKeys() {
+  const shown = el("div");
+  const listEl = el("div", { class: "rows" });
+  const err = el("p", { class: "error", role: "alert", hidden: true });
+  const label = el("input", { id: "key-label", type: "text", maxlength: "40", placeholder: "what it is for, e.g. my laptop", autocomplete: "off" });
+  const create = el("button", { type: "submit", text: "Create key →" });
+
+  async function refresh() {
+    try {
+      const keys = await json("/account/keys");
+      const head = el("div", { class: "row head" }, el("span", { text: "key" }), el("span", { text: "label" }), el("span", { class: "hide-sm", text: "created" }), el("span", { class: "hide-sm", text: "last used" }), el("span"));
+      if (!keys.length) { listEl.replaceChildren(el("p", { class: "muted", text: "No keys yet. Create one to use the API from your own code." })); return; }
+      listEl.replaceChildren(head, ...keys.slice().reverse().map((k) => el("div", { class: "row" + (k.active ? "" : " gone") },
+        el("span", { class: "mono", text: k.prefix }), el("span", { text: k.label || "(no label)" + (k.active ? "" : " · " + (k.revoked_at ? "revoked" : "expired")) }),
+        el("span", { class: "hide-sm", text: when(k.created_at) }), el("span", { class: "hide-sm", text: when(k.last_used_at) }),
+        el("span", { class: "actions" }, k.active ? [
+          el("button", { type: "button", text: "rotate", onclick: () => act(k.id, "rotate") }),
+          el("button", { type: "button", class: "danger", text: "revoke", onclick: () => { if (confirm("Revoke this key? Anything using it stops working immediately.")) act(k.id, "revoke"); } }),
+        ] : null))));
+    } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+  }
+  async function act(id, what) {
+    err.hidden = true;
+    try {
+      const r = await json(`/account/keys/${id}/${what}`, { method: "POST", body: {} });
+      if (what === "rotate") revealKey(r.key, "Here is the replacement. The old key no longer works.");
+      await refresh();
+    } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+  }
+  function revealKey(key, note) {
+    shown.replaceChildren(el("div", { class: "secret" }, el("p", { class: "small muted", text: note + " It is shown once; copy it now." }),
+      el("span", { class: "mono", text: key }), el("p", { class: "small" }, el("button", { type: "button", text: "copy", onclick: (e) => copyText(key, e.target) }))));
+  }
+  const form = el("form", { onsubmit: async (e) => {
+    e.preventDefault(); err.hidden = true; create.disabled = true;
+    try { const r = await json("/account/keys", { method: "POST", body: { label: label.value } }); label.value = ""; revealKey(r.key, "Your new key."); await refresh(); }
+    catch (ex) { err.textContent = ex.message; err.hidden = false; } finally { create.disabled = false; }
+  } }, el("div", { class: "field-row" }, el("label", null, "Label", label), el("span", null, create)));
+
+  const lim = state.config.limits || {};
+  mount(el("h1", { text: "API keys" }),
+    el("p", { class: "muted", text: "Use a key with any OpenAI-compatible client. Keys are stored only as hashes, so a lost key cannot be recovered; make a new one." }),
+    form, err, shown,
+    el("h2", { text: "Your keys" }), listEl,
+    lim.key_requests_per_minute ? el("p", { class: "small muted", text: `Each key: ${lim.key_requests_per_minute} requests and ${fmt(lim.key_tokens_per_minute)} tokens per minute; up to ${lim.max_keys} active keys.` }) : null,
+    el("h2", { text: "Account" }), passwordForm());
+  await refresh();
 }
-try { els.key.value = sessionStorage.getItem("aarav_key") || ""; } catch (_) { /* storage blocked */ }
-document.getElementById("key-form").addEventListener("submit", (ev) => ev.preventDefault());
-els.key.addEventListener("change", () => {
-  try { sessionStorage.setItem("aarav_key", els.key.value.trim()); } catch (_) { /* ignore */ }
-  loadModelInfo();
-});
-loadModelInfo();
+
+function passwordForm() {
+  const msg = el("p", { class: "notice", role: "status", hidden: true });
+  const cur = el("input", { type: "password", autocomplete: "current-password", required: true, maxlength: "128" });
+  const nxt = el("input", { type: "password", autocomplete: "new-password", required: true, minlength: "10", maxlength: "128" });
+  return el("form", { onsubmit: async (e) => {
+    e.preventDefault(); msg.hidden = true;
+    try { await json("/account/password", { method: "POST", body: { current: cur.value, new: nxt.value } }); cur.value = ""; nxt.value = "";
+      msg.className = "notice"; msg.textContent = "Password changed. Other devices were signed out."; }
+    catch (ex) { msg.className = "error"; msg.textContent = ex.message; }
+    msg.hidden = false;
+  } }, el("div", { class: "field-row" }, el("label", null, "Current password", cur), el("label", null, "New password (10+ characters)", nxt), el("span", null, el("button", { type: "submit", text: "Change password" }))), msg);
+}
+
+async function copyText(text, button) {
+  const old = button.textContent;
+  try { await navigator.clipboard.writeText(text); button.textContent = "copied"; }
+  catch (e) { button.textContent = "select and copy manually"; }
+  setTimeout(() => { button.textContent = old; }, 1600);
+}
+
+/* ── usage ─────────────────────────────────────────────────────────────── */
+
+async function viewUsage() {
+  mount(el("h1", { text: "Usage" }), el("p", { class: "muted", text: "loading…" }));
+  let u;
+  try { u = await json("/account/usage?days=14"); } catch (ex) { mount(el("h1", { text: "Usage" }), el("p", { class: "error", text: ex.message })); return; }
+  const t = u.totals;
+  const figure = (n, l) => el("div", { class: "figure" }, el("div", { class: "n", text: fmt(n) }), el("div", { class: "l", text: l }));
+  const chart = el("div", { class: "chart" });
+  const table = el("div", { hidden: true });
+  const toggle = el("button", { type: "button", class: "quiet", text: "view as table", "aria-expanded": "false", onclick: () => {
+    table.hidden = !table.hidden; chart.hidden = !table.hidden; toggle.textContent = table.hidden ? "view as table" : "view as chart";
+    toggle.setAttribute("aria-expanded", String(!table.hidden));
+  } });
+  const empty = t.requests === 0;
+  if (!empty) drawBars(chart, u.daily);
+  table.replaceChildren(el("table", null, el("thead", null, el("tr", null, el("th", { text: "day" }), el("th", { class: "num", text: "requests" }), el("th", { class: "num", text: "tokens" }))),
+    el("tbody", null, u.daily.slice().reverse().map((d) => el("tr", null, el("td", { text: d.date }), el("td", { class: "num", text: fmt(d.requests) }), el("td", { class: "num", text: fmt(d.tokens) }))))));
+  mount(el("h1", { text: "Usage" }), el("p", { class: "muted", text: "The last 14 days, counted in tokens. Prompts and replies are never stored, only the counts." }),
+    el("div", { class: "figures" }, figure(t.requests, "requests"), figure(t.total_tokens, "tokens"), figure(t.errors, "errors")),
+    empty ? el("p", { class: "muted", text: "Nothing yet. Send a message in chat, or use a key, and it shows up here." }) : [el("h2", { text: "Tokens per day" }), chart, table, el("p", { class: "small" }, toggle)],
+    el("p", { class: "small muted", text: `Browser chat is limited to ${fmt(u.limits.requests_per_minute)} requests and ${fmt(u.limits.tokens_per_minute)} tokens per minute.` }));
+}
+
+function niceMax(v) {
+  if (v <= 0) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+}
+
+function drawBars(host, days) {
+  const W = 640, H = 210, L = 44, B = 26, T = 8, plotH = H - B - T, plotW = W - L;
+  const max = niceMax(Math.max(...days.map((d) => d.tokens)));
+  const slot = plotW / days.length, bw = Math.max(8, Math.min(22, slot * 0.55));
+  const y = (v) => T + plotH - (v / max) * plotH;
+  const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `Tokens per day for the last ${days.length} days; use "view as table" for the numbers.` });
+  const grid = svg("g", { class: "grid" }), axis = svg("g", { class: "axis" });
+  for (let i = 0; i <= 2; i++) {                                   // 0, half, top: round numbers because max is 1, 2 or 5 x 10^k
+    const v = (max * i) / 2, yy = y(v);
+    grid.append(svg("line", { x1: L, x2: W, y1: yy, y2: yy }));
+    axis.append(svg("text", { x: L - 8, y: yy + 4, "text-anchor": "end" }, short(Math.round(v))));
+  }
+  s.append(grid, axis);
+  const tip = el("div", { class: "tip", hidden: true });
+  days.forEach((d, i) => {
+    const cx = L + slot * i + slot / 2, top = y(d.tokens), h = T + plotH - top;
+    const label = new Date(d.date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    if (i % 3 === 0 || i === days.length - 1) axis.append(svg("text", { x: cx, y: H - 6, "text-anchor": "middle" }, label));
+    const hit = svg("rect", { class: "hit", x: L + slot * i, y: T, width: slot, height: plotH, tabindex: "0", role: "img", "aria-label": `${label}: ${fmt(d.tokens)} tokens, ${fmt(d.requests)} requests` });
+    const show = () => { tip.textContent = `${label} · ${fmt(d.tokens)} tokens · ${fmt(d.requests)} requests`; tip.style.left = Math.min(88, Math.max(12, (cx / W) * 100)) + "%"; tip.style.top = (Math.max(top, 30) / H) * 100 + "%"; tip.hidden = false; };
+    hit.addEventListener("mouseenter", show); hit.addEventListener("focus", show);
+    hit.addEventListener("mouseleave", () => { tip.hidden = true; }); hit.addEventListener("blur", () => { tip.hidden = true; });
+    // a bar with 4px rounded data-end, square at the baseline
+    const r = Math.min(4, bw / 2, h);
+    const path = d.tokens > 0
+      ? `M${cx - bw / 2},${T + plotH} V${top + r} Q${cx - bw / 2},${top} ${cx - bw / 2 + r},${top} H${cx + bw / 2 - r} Q${cx + bw / 2},${top} ${cx + bw / 2},${top + r} V${T + plotH} Z`
+      : `M${cx - bw / 2},${T + plotH - 2} H${cx + bw / 2} V${T + plotH} H${cx - bw / 2} Z`;
+    s.append(hit, svg("path", { class: "bar" + (d.tokens > 0 ? "" : " zero"), d: path }));
+  });
+  host.replaceChildren(s, tip);
+}
+
+/* ── docs ──────────────────────────────────────────────────────────────── */
+
+async function viewDocs() {
+  const base = location.origin + "/v1";
+  const snippets = [
+    ["curl", `curl ${base}/chat/completions \\\n  -H "Authorization: Bearer $AARAV_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"aarav-lm","max_tokens":150,\n       "messages":[{"role":"user","content":"Tell me a story about a fox named Kip."}]}'`],
+    ["python", `from openai import OpenAI\n\nclient = OpenAI(base_url="${base}", api_key="aak_...")\nr = client.chat.completions.create(\n    model="aarav-lm",\n    messages=[{"role": "user", "content": "Tell me a story about a fox named Kip."}],\n    max_tokens=150,\n)\nprint(r.choices[0].message.content)`],
+    ["javascript", `const r = await fetch("${base}/chat/completions", {\n  method: "POST",\n  headers: { Authorization: "Bearer " + KEY, "Content-Type": "application/json" },\n  body: JSON.stringify({ model: "aarav-lm", max_tokens: 150,\n    messages: [{ role: "user", content: "Tell me a story about a fox named Kip." }] }),\n});\nconsole.log((await r.json()).choices[0].message.content);`],
+  ];
+  const lim = state.config.limits || {};
+  let m = state.modelInfo;
+  if (!m) { try { m = (await json("/v1/models")).data[0]; state.modelInfo = m; } catch (e) { m = null; } }
+  const size = m ? `${(m.parameters / 1e6).toFixed(1)}-million-parameter` : "small";
+  mount(el("h1", { text: "Docs" }),
+    el("p", { class: "muted", text: "An OpenAI-compatible API. Point any OpenAI client at the base URL below and use one of your keys." }),
+    el("h2", { text: "Base URL" }), el("pre", null, el("code", { text: base })),
+    el("h2", { text: "Quickstart" }),
+    state.config.auth === "account" ? el("p", null, state.me ? el("a", { href: "#/keys", text: "Create a key" }) : el("a", { href: "#/signin", text: "Sign in" }), " first, then:") : el("p", { text: "Then:" }),
+    snippets.map(([name, code]) => [el("div", { class: "snippet-head" }, el("span", { text: name }), el("button", { type: "button", class: "quiet", text: "copy", onclick: (e) => copyText(code, e.target) })), el("pre", null, el("code", { text: code }))]),
+    el("h2", { text: "Endpoints" }),
+    el("pre", null, el("code", { text: "GET  /v1/models\nPOST /v1/chat/completions   stream: true supported\nPOST /v1/completions        raw text continuation\nGET  /v1/usage              your key's own totals" })),
+    el("h2", { text: "Limits" }),
+    el("p", { class: "muted", text: lim.key_requests_per_minute ? `${lim.key_requests_per_minute} requests and ${fmt(lim.key_tokens_per_minute)} tokens per minute per key. Requests over a limit get 429 with Retry-After. One generation runs at a time; a busy server answers 503 with Retry-After. Each generation is cut off after 60 seconds.` : "Rate limits apply; a 429 or 503 response carries Retry-After." }),
+    el("h2", { text: "What this model is" }),
+    el("p", { class: "muted", text: `A ${size} language model trained from scratch on simple children's stories. It writes short stories and follows simple requests (a name, a topic, a place, a feeling, a length) far better than chance, but not reliably. It has no world knowledge and cannot answer questions, write code or do maths. Treat it as a small, honest research model.` }),
+    el("p", { class: "small muted" }, "Errors are OpenAI-shaped: ", el("span", { class: "mono", text: '{"error": {"message", "type", "code"}}' }), "."));
+}
+
+/* ── start ─────────────────────────────────────────────────────────────── */
+
+async function init() {
+  try { state.config = await json("/app/config"); } catch (e) { /* keep the defaults: no accounts */ }
+  if (state.config.auth === "account") {
+    try { const s = await json("/account/session"); state.me = s.signed_in ? { email: s.email, csrf_token: s.csrf_token } : null; } catch (e) { state.me = null; }
+  }
+  window.addEventListener("hashchange", route);
+  await route();
+}
+
+init();

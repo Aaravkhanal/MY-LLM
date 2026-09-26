@@ -220,7 +220,7 @@ def test_web_ui_is_served_without_a_key_with_strict_headers(engine, keys):
         csp = r.headers["content-security-policy"]
         assert "default-src 'none'" in csp and "script-src 'self'" in csp and "unsafe-inline" not in csp
         assert r.headers["x-content-type-options"] == "nosniff"
-    assert "<title>aarav-lm chat</title>" in c.get("/").text
+    assert "<title>aarav</title>" in c.get("/").text
 
 
 def test_only_whitelisted_web_files_are_served(engine, keys):
@@ -254,17 +254,20 @@ def test_ui_references_only_same_origin_assets():
     import re
     html = (WEB / "index.html").read_text()
     urls = re.findall(r'(?:src|href)="([^"]+)"', html)
-    # same-origin paths, or the empty inline icon (data:,) — never a third-party host
-    assert urls and all((u.startswith("/") and not u.startswith("//")) or u == "data:," for u in urls), urls
+    # same-origin paths, in-page anchors, or the empty inline icon (data:,) — never a third-party host
+    assert urls and all((u.startswith("/") and not u.startswith("//")) or u.startswith("#") or u == "data:," for u in urls), urls
+    js = (WEB / "app.js").read_text()
+    assert not re.search(r"https?://(?!\$\{)", js.replace("http://www.w3.org/2000/svg", ""))             # the SVG namespace is an identifier, never fetched       # the JS calls no third-party host either
 
 
 def test_ui_has_the_requested_features():
-    """Guards the feature list: history, streaming, clear, system prompt, model info, params, loading, errors."""
-    html, js = (WEB / "index.html").read_text(), (WEB / "app.js").read_text()
-    for element in ('id="messages"', 'id="clear"', 'id="system"', 'id="model-info"', 'id="temperature"', 'id="top_p"',
-                    'id="top_k"', 'id="max_tokens"', 'id="repetition_penalty"', 'id="seed"', 'id="stop"', 'id="banner"'):
-        assert element in html, element
-    for behaviour in ("stream: true", "getReader", "AbortController", "state.history", "describeError", "dots"):
+    """Guards the feature list: history, streaming, clear, system prompt, model info, params, loading, errors, accounts, keys."""
+    js = (WEB / "app.js").read_text()
+    for name in ("messages", "clear", "system", "model-info", "temperature", "top_p", "top_k", "max_tokens", "repetition_penalty",
+                 "seed", "stop", "banner", "composer", "settings-toggle"):
+        assert f'"{name}"' in js, name
+    for behaviour in ("stream: true", "getReader", "AbortController", "state.history", "describeError", "dots",
+                      "/account/login", "/account/signup", "/account/keys", "/account/usage", "X-CSRF-Token", "/v1/chat/completions"):
         assert behaviour in js, behaviour
     for status in ("401", "429", "503", "422"):
         assert status in js, f"no handling for HTTP {status}"

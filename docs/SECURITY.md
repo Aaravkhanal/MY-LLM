@@ -21,16 +21,20 @@ constant-time comparison, and `weights_only` checkpoint loading in the API path.
 | Client disconnect frees the model | async event generator; regression test against a real socket |
 | No code execution from checkpoints | `torch.load(weights_only=True)`; tokenizer text can't inject special tokens |
 | Safe-by-default binding | `127.0.0.1`; `--no-auth` refused on any other host |
+| Web accounts | scrypt password hashes, equal-time login for unknown emails, sign-in/signup rate limits, invite-gated signup, HttpOnly + SameSite=Strict + Secure cookies with only the session hash stored, CSRF token on every state-changing request, other users' keys look like missing ones, 5 active keys per user (`tests/test_web_accounts.py`) |
 | Browser hardening for the bundled UI | strict CSP, `nosniff`, `no-referrer`, `frame-ancestors 'none'`; only three static files are served |
 | CORS | off unless `--cors-origin` is given; then only those origins, `GET`/`POST`, `Authorization`/`Content-Type` |
 | Secrets in logs | keys are only ever in the `Authorization` header, which uvicorn's access log does not print; request bodies are not logged |
 
 ## Known gaps (do not expose publicly until these are closed)
 
-1. **No TLS.** The server speaks plain HTTP; a reverse proxy must terminate HTTPS.
+1. **No TLS in the server itself.** It speaks plain HTTP; a reverse proxy terminates HTTPS. `deploy/Caddyfile` and
+   `docker-compose.yml` do that with automatic certificates, but **they have not been built or run** (no Docker on the
+   development machine): see [HOSTING.md](HOSTING.md).
 2. ~~Keys are a JSON file.~~ **Closed with `--db`**: users, per-key rpm/tpm limits, expiry, revoke/rotate (effective on
-   the next request), last-used. Not closed: there is no self-service HTTP signup or key management; the owner uses
-   `scripts/manage_keys.py`. The JSON key file remains as the simple mode.
+   the next request), last-used, and self-service signup, sign-in and key management over HTTP with cookie sessions and CSRF
+   protection ([PLATFORM.md](PLATFORM.md)). Not closed: no email verification or password reset (signup is gated by an invite
+   code instead). The JSON key file remains as the simple mode.
 3. **Rate limit is per process and in memory**; it resets on restart and does not span replicas.
 4. ~~No tokens-per-minute limit~~ **Closed with `--db`** (per-key `tpm_limit`). The per-request wall-clock timeout is also
    closed (`--request-timeout`, default 60 s).

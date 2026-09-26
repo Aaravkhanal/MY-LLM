@@ -115,7 +115,21 @@ python scripts/benchmark.py                      # throughput and memory on your
 
 Any config value can be overridden on the command line: `train.lr=5e-4 train.max_steps=500`.
 
-### Serve it
+### Serve it, with accounts and a web app
+
+```bash
+python scripts/manage_keys.py user add you@example.com --password
+AARAV_SIGNUP_CODE='an-invite-code' python scripts/serve.py --db secrets/accounts.db      # http://127.0.0.1:8000
+```
+
+People sign up with the invite code, chat in the browser, create their own API keys and see their usage; the same server is
+an OpenAI-compatible API. The interface is deliberately minimal: type and whitespace only, no boxes, warm neutrals and one green,
+no blue or purple (tests enforce it). See [docs/PLATFORM.md](docs/PLATFORM.md) and, for putting it online,
+[docs/HOSTING.md](docs/HOSTING.md).
+
+![chat](docs/img/chat.png)
+
+### Serve it (simplest)
 
 ```bash
 python scripts/create_key.py --label laptop            # key shown once; only its hash is stored
@@ -188,6 +202,8 @@ throttles, so measurements vary ±30% and checkpointing often is the right defau
 | [docs/RESULTS.md](docs/RESULTS.md) | every experiment, what worked, what didn't |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | design decisions and why, checkpoint format, data flow |
 | [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | measured throughput, memory, int8, thermal behaviour |
+| [docs/PLATFORM.md](docs/PLATFORM.md) | the web app and accounts: sign-up, chat, self-service API keys, usage; the design rules (minimal, no blue or purple) and how they are tested |
+| [docs/HOSTING.md](docs/HOSTING.md) | putting it online for other people: options, capacity, Docker + HTTPS files, backups, a pre-launch checklist |
 | [docs/API.md](docs/API.md) | the HTTP API as it exists today: endpoints, fields, errors, streaming |
 | [docs/SECURITY.md](docs/SECURITY.md) | controls that exist, known gaps, what must close before going public |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | plan for serving other people (design only; nothing deployed) |
@@ -202,7 +218,7 @@ The `small` preset is trained (above). Its pretraining loss was still falling, a
 instruction data. On 8 GB, roughly 30–50M parameters is the practical ceiling for pretraining; anything
 larger needs rented GPU time.
 
-Not built: self-service signup and key management over HTTP, preference tuning (DPO), continuous
+Not built: email verification and password reset, preference tuning (DPO), continuous
 batching, real int8 kernels, multi-GPU training, cloud deployment. The order they will be tackled in,
 and what has to be true first, is in [docs/AUDIT.md](docs/AUDIT.md).
 

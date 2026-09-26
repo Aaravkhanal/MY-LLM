@@ -252,3 +252,13 @@ def test_passwords_never_appear_in_any_response(client):
     r = client.post("/account/login", json={"email": "a@example.com", "password": PW})
     assert PW not in r.text and PW not in str(dict(r.headers))
     assert PW not in client.get("/account/me").text
+
+
+def test_session_endpoint_always_answers_200_so_a_first_page_load_has_no_error(engine, accounts, client):
+    anon = make(engine, accounts)
+    r = anon.get("/account/session")
+    assert r.status_code == 200 and r.json() == {"signed_in": False}
+    signed = client.get("/account/session").json()
+    assert signed["signed_in"] is True and signed["email"] == "a@example.com" and signed["csrf_token"]
+    client.post("/account/logout", headers=csrf(client))
+    assert client.get("/account/session").json() == {"signed_in": False}

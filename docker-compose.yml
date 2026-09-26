@@ -1,0 +1,36 @@
+# Public deployment: the app behind Caddy, which gets and renews the HTTPS certificate by itself.
+#   cp deploy/env.example .env     # set DOMAIN and AARAV_SIGNUP_CODE
+#   docker compose up -d --build
+# NOT RUN on the development machine (no Docker there): treat the first `up` as a test. See docs/HOSTING.md.
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      AARAV_SIGNUP_CODE: ${AARAV_SIGNUP_CODE:-}          # empty = signup closed
+    command: ["--checkpoint", "${AARAV_CHECKPOINT:-models/tiny-tinystories-v1-sft-int8.pt}",
+              "--request-timeout", "60", "--max-tokens-cap", "300"]
+    volumes:
+      - aarav-data:/data                                  # the account database: back it up (scripts/backup_db.py)
+      - ./models:/app/models:ro                           # model files: drop a new checkpoint here
+    expose: ["8000"]                                      # reachable by Caddy only, never published
+    mem_limit: 2g
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [app]
+
+volumes:
+  aarav-data:
+  caddy-data:
+  caddy-config:

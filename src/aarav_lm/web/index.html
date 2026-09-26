@@ -3,53 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>aarav-lm chat</title>
+  <meta name="color-scheme" content="light dark">
+  <title>aarav</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header>
-    <h1>aarav-lm</h1>
-    <div id="model-info" class="chip" title="Loaded model">loading model…</div>
-    <div class="spacer"></div>
-    <button id="settings-toggle" type="button" aria-expanded="false" aria-controls="settings">Settings</button>
-    <button id="clear" type="button">Clear</button>
+  <a class="skip" href="#view">Skip to content</a>
+  <header class="top">
+    <a class="brand" href="#/chat">aarav</a>
+    <nav id="nav" aria-label="Primary"></nav>
+    <div class="who" id="who"></div>
   </header>
-
-  <div id="banner" class="banner" role="status" hidden></div>
-
-  <aside id="settings" hidden>
-    <form id="key-form" autocomplete="off">
-      <label>API key <span class="hint">(kept for this browser tab only; not needed with --no-auth)</span>
-        <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="aak_…">
-      </label>
-    </form>
-    <label>System prompt <span class="hint">(instruction-tuned models)</span>
-      <textarea id="system" rows="2" placeholder="You are a friendly storyteller for children."></textarea>
-    </label>
-    <div class="grid">
-      <label>Temperature <output id="temperature-out"></output>
-        <input id="temperature" type="range" min="0" max="2" step="0.05" value="0.8"></label>
-      <label>Top-p <output id="top_p-out"></output>
-        <input id="top_p" type="range" min="0.05" max="1" step="0.05" value="0.95"></label>
-      <label>Top-k
-        <input id="top_k" type="number" min="1" max="2048" step="1" value="50"></label>
-      <label>Max tokens
-        <input id="max_tokens" type="number" min="1" max="512" step="1" value="150"></label>
-      <label>Repetition penalty
-        <input id="repetition_penalty" type="number" min="0.5" max="2" step="0.05" value="1.1"></label>
-      <label>Seed <span class="hint">(blank = random)</span>
-        <input id="seed" type="number" min="0" step="1" placeholder="random"></label>
-    </div>
-  </aside>
-
-  <main id="messages" aria-live="polite"></main>
-
-  <form id="composer" autocomplete="off">
-    <textarea id="input" rows="2" placeholder="Type a message…  (Enter to send, Shift+Enter for a new line)" required></textarea>
-    <button id="send" type="submit">Send</button>
-    <button id="stop" type="button" hidden>Stop</button>
-  </form>
+  <main id="view" tabindex="-1"></main>
   <script src="/app.js"></script>
 </body>
 </html>

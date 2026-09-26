@@ -208,7 +208,14 @@ With `--db` the server uses the account database instead of the JSON key file (`
 * `GET /v1/usage?days=7` returns the caller's own totals: `{"object": "usage", "key_id", "requests", "prompt_tokens",
   "completion_tokens", "total_tokens", "errors", "mean_duration_ms"}`. With the JSON key file it is a 404.
 
+## Account endpoints (the web app's)
+
+Used by the browser app; documented in [PLATFORM.md](PLATFORM.md): `GET /app/config`, `GET /account/session`, `POST
+/account/signup|login|logout|password`, `GET|POST /account/keys`, `POST /account/keys/{id}/revoke|rotate`, `GET
+/account/usage`. They authenticate with a session cookie and require an `X-CSRF-Token` header on every POST; the API routes
+above authenticate with `Authorization: Bearer`, or with the same session cookie from a signed-in browser.
+
 ## Not built yet
 
-Self-service signup and key management over HTTP (today the owner uses `scripts/manage_keys.py`); several concurrent generations (one runs at a time); a shared rate-limit store for more than one
-server process.
+Email verification and password reset; several concurrent generations (one runs at a time); a shared rate-limit store for
+more than one server process.

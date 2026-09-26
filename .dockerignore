@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+.pytest_cache
+__pycache__
+*.pyc
+data
+checkpoints
+experiments
+secrets
+backups
+tests
+docs
+evals

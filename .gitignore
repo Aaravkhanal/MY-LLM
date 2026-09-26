@@ -24,3 +24,7 @@ experiments/*/*.pt
 # API keys for the local server
 secrets/
 
+
+# deployment secrets and backups
+.env
+backups/

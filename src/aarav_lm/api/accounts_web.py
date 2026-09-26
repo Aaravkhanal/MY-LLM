@@ -5,7 +5,8 @@ aarav-lm · Web accounts: signup, login, sessions, and self-service API keys
     POST /account/signup          {email, password, invite_code}   -> session cookie
     POST /account/login           {email, password}                -> session cookie
     POST /account/logout
-    GET  /account/me              {email, csrf_token}
+    GET  /account/session         always 200: {signed_in: false} or {signed_in: true, email, csrf_token}
+    GET  /account/me              {email, csrf_token}, or 401
     POST /account/password        {current, new}                   ends every other session
     GET  /account/keys            the caller's keys (never the secrets)
     POST /account/keys            {label}   -> the new key, shown once
@@ -158,6 +159,13 @@ def add_account_routes(
         store.end_session(request.cookies[COOKIE])
         response.delete_cookie(COOKIE, path="/")
         return {"ok": True}
+
+    @app.get("/account/session")
+    def session_state(request: Request):
+        """Always 200: whether this browser is signed in. (`/account/me` answers 401 when it is not, which the browser
+        logs as a console error on every first page load.)"""
+        s = session_from(request, store)
+        return {"signed_in": True, **me_json(s)} if s else {"signed_in": False}
 
     @app.get("/account/me")
     def me(s: SessionInfo = Depends(need_session)):

@@ -1,0 +1,12 @@
+# TLS certificates are obtained and renewed automatically for {$DOMAIN} (its DNS record must point at this machine, and
+# ports 80 and 443 must be open).
+{$DOMAIN} {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	# flush_interval -1: send each streamed token to the browser immediately instead of buffering the response.
+	reverse_proxy app:8000 {
+		flush_interval -1
+	}
+}
