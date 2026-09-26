@@ -18,6 +18,25 @@ Model: Once upon a time, there was a little girl named Zoe. Zoe was very enthusi
 play with her toys in the kitchen. One day, she found a big box in the kitchen. …
 ```
 
+## Highlights
+
+* **Built from scratch, end to end, on an 8 GB laptop.** A byte-level BPE tokenizer, a Llama-style transformer (RoPE, RMSNorm,
+  SwiGLU, grouped-query attention, KV cache), a trainer whose resume is bit-for-bit identical to an uninterrupted run, SFT and LoRA,
+  and two trained models (5M and 14M parameters; the 14M one on 103M tokens). No pretrained weights, no external model calls.
+* **Evaluation you can trust, and the receipts.** Every score sits next to chance level and a confidence interval, models are
+  compared on identical prompts, and the final test set was committed before any model was scored on it. Seven scientific problems
+  in the project's own pipeline were found, fixed and tested (a subset-noise validation loss, an unweighted loss under masking, a
+  metric that hid two different failures, a diagnostic that crashed a run, ...), and negative results are reported as such
+  ([CORRECTNESS.md](docs/CORRECTNESS.md), [RESULTS.md](docs/RESULTS.md)).
+* **Serves other people.** An OpenAI-compatible API (checked with the official `openai` SDK), accounts with self-service API keys,
+  per-key limits, usage records that never store prompts, request timeouts, and **exact batched decoding** so concurrent users share
+  each model step (outputs verified identical to running each alone). Backups and a load tester included
+  ([PLATFORM.md](docs/PLATFORM.md), [HOSTING.md](docs/HOSTING.md), [API.md](docs/API.md)).
+* **A minimal web app** (chat, keys, usage, docs) with no boxes, blue or purple, and tests that enforce those rules and the
+  accessibility contrast ratios.
+* **Engineering discipline.** 476 tests, CI on every push, a script that re-runs CI on a fresh clone (it caught a real production bug
+  before it shipped), and honest limits stated everywhere: this is a small story model, not a general assistant.
+
 ## What was built, and what came out
 
 Two models have been trained from random initialisation on the M3, each with the same pipeline:
@@ -34,7 +53,7 @@ Two models have been trained from random initialisation on the M3, each with the
 | **Size** | 19.8 MB fp32, **5.06 MB int8** (+0.01% loss) — packaged in `models/` | 54 MB fp32 (not packaged yet) |
 
 Around them: SFT and LoRA fine-tuning, an evaluation suite with a regression gate, terminal chat, an
-HTTP API with hashed keys and rate limiting, and a web chat page. **369 pytest tests** (run in CI on every push) plus a 12-check
+HTTP API with hashed keys and rate limiting, and a web chat page. **476 pytest tests** (run in CI on every push) plus a 12-check
 end-to-end smoke test (~10 s).
 
 Token counts are not parameter counts: the corpus is 103M *tokens*, the model 14.2M *parameters*
