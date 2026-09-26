@@ -170,6 +170,7 @@ throttles, so measurements vary ±30% and checkpointing often is the right defau
 | | |
 |---|---|
 | [docs/AUDIT.md](docs/AUDIT.md) | audit of the whole project: architecture, model and dataset reports, gap matrix, risk register, phased plan |
+| [docs/CORRECTNESS.md](docs/CORRECTNESS.md) | running log of scientific problems found in training/evaluation: evidence, fix, test, what is still unmeasured |
 | [docs/RESULTS.md](docs/RESULTS.md) | every experiment, what worked, what didn't |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | design decisions and why, checkpoint format, data flow |
 | [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | measured throughput, memory, int8, thermal behaviour |

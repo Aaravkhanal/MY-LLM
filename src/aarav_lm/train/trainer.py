@@ -274,6 +274,35 @@ class Trainer:
         empty_cache(self.device)
         return res
 
+    # ── one optimiser step's forward/backward ──────────────────────────────
+    def _accumulate(self):
+        """Forward/backward over `grad_accum` micro-batches; returns (step loss tensor, tokens fed).
+
+        The gradient left in `.grad` is that of the **token-weighted** mean loss over the whole step:
+        each micro-batch's mean is weighted by its share of the scored (non-masked) targets. This is
+        the same quantity `evaluate_loss` reports. Averaging the micro-batch means instead would give
+        a short-answer micro-batch the same say as a long-answer one whenever the loss mask makes the
+        counts differ (SFT). With no masking every micro-batch has the same count and this reduces
+        exactly to `loss / grad_accum`, which is what pretraining has always used.
+        """
+        batches = [self.stream.next_batch() for _ in range(self.cfg.grad_accum)]
+        counts = [int((y != -1).sum()) for _, y in batches]
+        total = sum(counts)
+        if total == 0:
+            raise ValueError(f"step {self.step}: every target in this step's batches is masked")
+        even = len(set(counts)) == 1
+        step_loss = torch.zeros((), device=self.device)
+        step_tokens = 0
+        for (x, y), n in zip(batches, counts):
+            step_tokens += x.numel()
+            x, y = x.to(self.device), y.to(self.device)
+            with self.ctx():
+                _, loss = self.model(x, targets=y)
+            weighted = loss / self.cfg.grad_accum if even else loss * (n / total)
+            weighted.backward()
+            step_loss += weighted.detach()
+        return step_loss, step_tokens
+
     # ── main loop ──────────────────────────────────────────────────────────
     def _handle_signal(self, signum, frame) -> None:                # noqa: ARG002
         if self._interrupted:
@@ -300,16 +329,7 @@ class Trainer:
                 for g in self.optimizer.param_groups:
                     g["lr"] = lr
 
-                step_loss = torch.zeros((), device=self.device)
-                step_tokens = 0
-                for _ in range(self.cfg.grad_accum):
-                    x, y = self.stream.next_batch()
-                    step_tokens += x.numel()
-                    x, y = x.to(self.device), y.to(self.device)
-                    with self.ctx():
-                        _, loss = self.model(x, targets=y)
-                    (loss / self.cfg.grad_accum).backward()
-                    step_loss += loss.detach() / self.cfg.grad_accum
+                step_loss, step_tokens = self._accumulate()
                 loss_val = float(step_loss)                          # single device sync per step
                 if not math.isfinite(loss_val):
                     raise FloatingPointError(

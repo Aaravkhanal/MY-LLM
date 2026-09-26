@@ -208,3 +208,79 @@ def test_eval_batch_size_is_independent_of_the_training_micro_batch(tmp_path):
     d["train"]["eval_batch_size"] = -1
     with pytest.raises(ValueError):
         ExperimentConfig.from_dict(d)
+
+
+# ── token-weighted gradient accumulation ─────────────────────────────────────
+
+def _accum_trainer(model, batches):
+    import types
+    from contextlib import nullcontext
+    t = Trainer.__new__(Trainer)
+    it = iter(batches)
+    t.stream = types.SimpleNamespace(next_batch=lambda: next(it))
+    t.cfg = types.SimpleNamespace(grad_accum=len(batches))
+    t.model, t.device, t.ctx, t.step = model, torch.device("cpu"), nullcontext, 0
+    return t
+
+
+def _masked_batches(counts, seed=0, width=16, vocab=500):
+    """Micro-batches whose loss masks leave a different number of scored targets in each."""
+    g = torch.Generator().manual_seed(seed)
+    out = []
+    for n in counts:
+        x = torch.randint(0, vocab, (2, width), generator=g)
+        y = torch.randint(0, vocab, (2, width), generator=g)
+        y.view(-1)[n:] = -1                                   # exactly n scored targets
+        out.append((x, y))
+    return out
+
+
+def _grads(model):
+    return torch.cat([p.grad.flatten() for p in model.parameters() if p.grad is not None])
+
+
+def test_accumulation_equals_one_big_batch_when_masks_differ():
+    from aarav_lm.config.config import cfg_5m
+    from aarav_lm.model.core import AaravLM
+    torch.manual_seed(0)
+    model = AaravLM(cfg_5m(arch="modern", vocab_size=500, block_size=16)).eval()   # eval: no dropout noise
+    batches = _masked_batches([30, 4, 17])                    # very unequal scored-token counts
+
+    loss, _ = _accum_trainer(model, batches)._accumulate()
+    got = _grads(model).clone()
+    model.zero_grad()
+    _, big = model(torch.cat([x for x, _ in batches]), targets=torch.cat([y for _, y in batches]))
+    big.backward()                                            # mean over ALL scored tokens
+    want = _grads(model).clone()
+
+    assert torch.allclose(got, want, atol=1e-6, rtol=1e-4)
+    assert abs(loss.item() - big.item()) < 1e-5
+
+    # the naive average of micro-batch means (the previous behaviour) is a different gradient here
+    model.zero_grad()
+    for x, y in batches:
+        (model(x, targets=y)[1] / len(batches)).backward()
+    assert not torch.allclose(_grads(model), want, atol=1e-6, rtol=1e-4)
+
+
+def test_accumulation_is_unchanged_without_masking():
+    """Equal counts (all pretraining) must reproduce loss/grad_accum exactly, so old runs stay comparable."""
+    from aarav_lm.config.config import cfg_5m
+    from aarav_lm.model.core import AaravLM
+    torch.manual_seed(1)
+    model = AaravLM(cfg_5m(arch="modern", vocab_size=500, block_size=16)).eval()
+    batches = _masked_batches([32, 32, 32])
+    _accum_trainer(model, batches)._accumulate()
+    got = _grads(model).clone()
+    model.zero_grad()
+    for x, y in batches:
+        (model(x, targets=y)[1] / 3).backward()
+    assert torch.equal(got, _grads(model))
+
+
+def test_a_step_with_every_target_masked_is_an_error_not_nan():
+    from aarav_lm.config.config import cfg_5m
+    from aarav_lm.model.core import AaravLM
+    model = AaravLM(cfg_5m(arch="modern", vocab_size=500, block_size=16))
+    with pytest.raises(ValueError, match="masked"):
+        _accum_trainer(model, _masked_batches([0, 0]))._accumulate()
