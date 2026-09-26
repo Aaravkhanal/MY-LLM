@@ -90,7 +90,7 @@ def csrf_ok(request: Request, session: SessionInfo) -> bool:
 def add_account_routes(
     app: FastAPI, store: AccountStore, *, model_name: str, auth_mode: str, signup_code: Optional[str], open_signup: bool,
     default_key_rpm: float, default_key_tpm: int, web_rpm: float, web_tpm: int, max_keys_per_user: int,
-    cookie_secure: Optional[bool], trust_proxy: bool,
+    cookie_secure: Optional[bool], trust_proxy: bool, model_info: Optional[Callable[[], dict]] = None,
 ) -> None:
     login_by_ip = RateLimiter(per_minute=10, burst=10)
     login_by_email = RateLimiter(per_minute=0.5, burst=5)             # five tries, then one every two minutes
@@ -129,7 +129,7 @@ def add_account_routes(
         return {"auth": auth_mode, "signup": signup, "model": model_name,
                 "limits": {"web_requests_per_minute": web_rpm, "web_tokens_per_minute": web_tpm,
                            "key_requests_per_minute": default_key_rpm, "key_tokens_per_minute": default_key_tpm,
-                           "max_keys": max_keys_per_user}}
+                           "max_keys": max_keys_per_user}, "model_info": model_info() if model_info else {}}
 
     @app.post("/account/signup")
     def signup(body: SignupBody, request: Request, response: Response):

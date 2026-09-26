@@ -150,6 +150,8 @@ an OpenAI-compatible API. The interface is deliberately minimal: type and whites
 no blue or purple (tests enforce it). See [docs/PLATFORM.md](docs/PLATFORM.md) and, for putting it online,
 [docs/HOSTING.md](docs/HOSTING.md).
 
+![home page](docs/img/home.png)
+
 ![chat](docs/img/chat.png)
 
 ### Serve it (simplest)

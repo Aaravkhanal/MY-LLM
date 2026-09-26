@@ -16,6 +16,22 @@ python scripts/serve.py --db secrets/accounts.db --checkpoint models/tiny-tinyst
 | Key file | default | asks for one API key (kept in the tab only); chat and docs |
 | No auth | `--no-auth` (localhost only) | chat and docs |
 
+## The website
+
+The front page is public (no sign-in) and is itself interactive:
+
+| | |
+|---|---|
+| ![home page](img/home.png) | ![home page on a phone](img/home-mobile.png) |
+
+* **Results explorer.** Pick which wording (new or trained), decoding (greedy or sampled) and kind of request; every model appears with its
+  95% interval and the chance level, plus a one-sentence reading generated from the numbers (it says when intervals overlap and
+  warns when a kind has fewer than ten distinct prompts). The data is `src/aarav_lm/web/results.json`, generated from the evaluation
+  files by `scripts/build_site_data.py`; a test rebuilds it and fails if the committed file differs.
+* **How it was built:** six steps that open on click, one at a time. **Use it from code:** curl / Python / JavaScript tabs (arrow
+  keys work), each with a copy button. **What is stored** and **Honest limits** are stated in plain words.
+* A line at the top states what is running right now (parameters, context, chat-tuned), read from the server.
+
 ## What you see
 
 Chat (light and dark) and the keys and usage pages, in the real app:

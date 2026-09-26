@@ -50,6 +50,7 @@ WEB_FILES = {
     "/": ("index.html", "text/html; charset=utf-8"),
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
     "/style.css": ("style.css", "text/css; charset=utf-8"),
+    "/results.json": ("results.json", "application/json"),
 }
 SECURITY_HEADERS = {
     "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
@@ -579,15 +580,22 @@ def create_app(
         extra = {"mode": chat_mode, "dropped_messages": prompt.dropped}
         return run(prompt.ids, cfg, body.stream, extra, caller=caller, endpoint="/chat")
 
+    def public_model_info() -> dict:
+        """What the public home page may say about the model: size and kind, nothing about paths."""
+        info = engine.info()
+        return {"parameters": info["params"], "context_length": info["context_length"], "vocab_size": info["vocab_size"],
+                "instruction_tuned": chat_mode == "chat", "batching": batch_size if scheduler is not None else 1}
+
     auth_mode = "none" if not require_auth else ("account" if accounts is not None else "key")
     if accounts is not None:
         add_account_routes(app, accounts, model_name=model_name, auth_mode=auth_mode, signup_code=signup_code, open_signup=open_signup,
                            default_key_rpm=default_key_rpm, default_key_tpm=default_key_tpm, web_rpm=web_rpm, web_tpm=web_tpm,
-                           max_keys_per_user=max_keys_per_user, cookie_secure=cookie_secure, trust_proxy=trust_proxy)
+                           max_keys_per_user=max_keys_per_user, cookie_secure=cookie_secure, trust_proxy=trust_proxy,
+                           model_info=public_model_info)
     else:
         @app.get("/app/config")
         async def app_config():
-            return {"auth": auth_mode, "signup": "closed", "model": model_name, "limits": {}}
+            return {"auth": auth_mode, "signup": "closed", "model": model_name, "limits": {}, "model_info": public_model_info()}
     add_openai_routes(app, identify=identify, make_config=make_config, run=run, engine=engine, chat_mode=chat_mode,
                       model_name=model_name, sampling_cls=Sampling)
     return app

@@ -89,7 +89,10 @@ def test_there_are_no_boxes_shadows_or_filled_panels():
     assert fills <= {"var(--bg)", "none", "transparent"}, fills       # nothing is a tinted panel
     for border in re.findall(r"(?<![-\w])border:\s*([^;]+);", CSS):
         assert border.strip() == "0", border                          # no all-sides borders: only hairlines on one edge
-    assert not re.search(r"\bcard\b|\bpanel\b|\bmodal\b", CSS + JS, re.I)
+    # no card / panel / modal COMPONENTS: as a CSS class, or as a class name given to an element in the script (a variable called
+    # `panel` for an ARIA tab panel is not a visual panel)
+    assert not re.search(r"\.(card|panel|modal|box|tile)\b", CSS, re.I)
+    assert not re.search(r"class:\s*[\"'][^\"']*\b(card|panel|modal|box|tile)\b", JS, re.I)
 
 
 def test_colours_come_from_the_stylesheet_only():
