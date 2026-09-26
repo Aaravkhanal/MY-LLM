@@ -1,5 +1,7 @@
 # AARAV-LLM
 
+[![tests](https://github.com/Aaravkhanal/MY-LLM/actions/workflows/tests.yml/badge.svg)](https://github.com/Aaravkhanal/MY-LLM/actions/workflows/tests.yml)
+
 A small decoder-only language model **and the whole stack around it**, built from scratch and run on a
 MacBook Air M3 with 8 GB of memory: tokenizer, data pipeline, trainer, evaluation, fine-tuning,
 terminal chat, HTTP API and a web chat page.
@@ -27,12 +29,12 @@ Two models have been trained from random initialisation on the M3, each with the
 | **Tokenizer** | Byte-level BPE trained here on the training split only; versioned by SHA-256 | same method; 3.96 characters per token on the corpus |
 | **Data** | 60 MB of TinyStories → 15.8M training tokens | ~400 MB → **103.0M training tokens** (507,597 stories) |
 | **Pretraining** | 3,000 steps, 49.2M tokens (3.1 epochs), **79 min** | 5,500 steps, 90.1M tokens (0.87 epoch), **4.1 h** |
-| **Validation loss** | 7.66 → **1.642** (perplexity 5.17) | 8.43 → **1.398** (perplexity 4.05); test loss 1.406 |
+| **Validation loss** (full split, ± std. error) | 7.66 → **1.642** (perplexity 5.17) | 8.43 → **1.395 ± 0.007** (perplexity 4.03); test 1.406 ± 0.007; 0.51 bits per byte |
 | **Probes** (55 minimal pairs, chance 50%) | 92.7% | 94.5% |
 | **Size** | 19.8 MB fp32, **5.06 MB int8** (+0.01% loss) — packaged in `models/` | 54 MB fp32 (not packaged yet) |
 
 Around them: SFT and LoRA fine-tuning, an evaluation suite with a regression gate, terminal chat, an
-HTTP API with hashed keys and rate limiting, and a web chat page. **318 pytest tests** plus a 12-check
+HTTP API with hashed keys and rate limiting, and a web chat page. **369 pytest tests** (run in CI on every push) plus a 12-check
 end-to-end smoke test (~10 s).
 
 Token counts are not parameter counts: the corpus is 103M *tokens*, the model 14.2M *parameters*
@@ -50,15 +52,17 @@ pronouns sometimes disagree, greedy decoding loops in 12.5% of `tiny` samples (s
 common-sense facts are shaky. Each knows one domain. **It is not a general assistant**: it has no world
 knowledge and cannot reason, summarise, answer questions, write code or do maths.
 
-**Instruction following is the open problem.** The first SFT on `small` (exp_005, 60k conversations)
-lowered loss but did **not** make it follow requests better (27% vs 23% pass rate for the untuned
-model on 208 checkable prompts, within noise; requests for short or long stories passed 0 of 32). The
-cause was found and is a data problem, not a model limit: each length request had only three
-phrasings, which the model memorised. The generator now produces 70–84 phrasings each for the length and dialogue
-requests (14–57 for the other kinds; `data/instruct_tasks.py`), evaluated on 312 held-out prompts with different wording. exp_006 tests the
-fix; its results are being evaluated and will be added to [docs/RESULTS.md](docs/RESULTS.md), which
-reports the numbers that don't flatter the model too. See [docs/AUDIT.md](docs/AUDIT.md) for the full
-audit, gap analysis and plan.
+**Instruction following is the open problem, and it is measured carefully.** Requests are scored by rule (name
+present, at most 90 words, has dialogue, ...) on held-out stories, always next to *chance* (a story that ignores
+the request passes 10.6% of the time) with paired confidence intervals. The best fine-tuned model (exp_006) follows
+requests worded like its training data far better than the untuned model (56.9% vs 41.7%, +15.3 points, 95% CI
++7.4 to +22.8; short 100%, dialogue 100%, long 75%, names 79%), but on **unseen wording** it is no better than the
+base model (37.5% vs 40.6%, not significant), and topic, place and emotion requests are its weak spot. The
+first attempt failed because each length request had only three phrasings, which the model memorised;
+fixing that was worth +8.7 points on unseen wording (p = 0.002). The details, including the numbers that
+don't flatter the model, are in [docs/RESULTS.md](docs/RESULTS.md); how the evaluation itself was made
+trustworthy is in [docs/CORRECTNESS.md](docs/CORRECTNESS.md); the full audit and plan are in
+[docs/AUDIT.md](docs/AUDIT.md).
 
 ## Quick start
 
@@ -115,7 +119,8 @@ Any config value can be overridden on the command line: `train.lr=5e-4 train.max
 ```bash
 python scripts/create_key.py --label laptop            # key shown once; only its hash is stored
 python scripts/serve.py --checkpoint models/tiny-tinystories-v1-sft-int8.pt
-#   web chat  http://127.0.0.1:8000/     API: /health /model /stats /generate /chat  (+ "stream": true)
+#   web chat  http://127.0.0.1:8000/     native API: /health /model /stats /generate /chat  (+ "stream": true)
+#   OpenAI-compatible: /v1/models /v1/completions /v1/chat/completions -> works with the `openai` SDK (docs/API.md)
 python scripts/serve.py --no-auth                      # localhost only, no key
 ```
 
@@ -193,7 +198,7 @@ The `small` preset is trained (above). Its pretraining loss was still falling, a
 instruction data. On 8 GB, roughly 30–50M parameters is the practical ceiling for pretraining; anything
 larger needs rented GPU time.
 
-Not built: OpenAI-style `/v1/...` endpoints, user accounts and per-user usage records, key
+Not built: user accounts and per-user usage records, key
 list/revoke/rotate through the API, tokens-per-minute limits, preference tuning (DPO), continuous
 batching, real int8 kernels, multi-GPU training, cloud deployment. The order they will be tackled in,
 and what has to be true first, is in [docs/AUDIT.md](docs/AUDIT.md).

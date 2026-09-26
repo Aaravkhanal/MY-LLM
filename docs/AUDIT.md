@@ -240,9 +240,9 @@ SDK strategy: OpenAI compatibility first; a thin Python client only if it adds s
 | 8 | Mac constraints | **Done**; each optimisation classified in PERFORMANCE.md: bf16 (MPS, no gain), CUDA-only features not used |
 | 9 | Checkpointing/recovery | **Done**: weights, optimizer, data position, RNG, config, tokenizer fingerprint; bit-exact resume tested |
 | 10–11 | Evaluation, comparison | **Done** except the general-capability suites explained in F |
-| 12 | Tests | 318 pytest tests + a smoke test (tokenizer, data, model, masking, loss, resume, generation, API, auth, rate limit, SFT/LoRA, quantisation). Gaps: CORS, `--no-auth` refusal, TPM limits (not built) |
+| 12 | Tests | 369 pytest tests (also run in CI) + a smoke test (tokenizer, data, model, masking, loss, resume, generation, API, auth, rate limit, SFT/LoRA, quantisation). Gaps: CORS, `--no-auth` refusal, TPM limits (not built) |
 | 13–14 | Inference + optimisation | **Done for `tiny`**; `small` benchmark pending |
-| 15 | Model server | **Partial**: `/health`, `/model`, `/generate`, `/chat`; no `/v1/...` routes |
+| 15 | Model server | **Done**: `/health`, `/model`, `/generate`, `/chat` plus OpenAI-compatible `/v1/models`, `/v1/completions`, `/v1/chat/completions` (tested with the official SDK) |
 | 16–18 | API keys, usage, rate limits | **Partial**: hashed keys, request limiter, output cap, body limit, bounded queue. **Missing:** users, list/revoke/rotate API, usage table, TPM limit, per-request timeout, max-context check on input beyond truncation |
 | 19 | API docs | **Done** (API.md) for what exists |
 | 20–22 | Deployment, readiness | **Design only** (DEPLOYMENT.md, SECURITY.md) |

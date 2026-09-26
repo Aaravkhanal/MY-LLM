@@ -1,7 +1,8 @@
 # API
 
-Local HTTP API served by `scripts/serve.py` (FastAPI). This describes what **exists today**. The
-OpenAI-style `/v1/...` routes, accounts and usage tracking are **planned, not built** — see
+Local HTTP API served by `scripts/serve.py` (FastAPI). It has two front doors over one implementation:
+the **OpenAI-compatible** `/v1/...` routes (below, works with the official SDKs) and the original **native**
+routes (`/generate`, `/chat`). Accounts and per-user usage records are **planned, not built** — see
 [AUDIT.md](AUDIT.md) (Phase 4).
 
 ```bash
@@ -30,6 +31,9 @@ Missing or invalid key → `401` with `WWW-Authenticate: Bearer`. `/health` and 
 | POST | `/generate` | yes | continue raw text |
 | POST | `/chat` | yes | stateless chat: the client sends the whole message history |
 | GET | `/` | no | bundled web chat UI |
+| GET | `/v1/models`, `/v1/models/{id}` | yes | the served model (OpenAI format) |
+| POST | `/v1/completions` | yes | text completion (OpenAI format) |
+| POST | `/v1/chat/completions` | yes | chat (OpenAI format), `stream: true` supported |
 
 ### Sampling fields (both POST endpoints)
 
@@ -126,8 +130,54 @@ One generation at a time; at most a small number of queued waiters; output cappe
 body ≤ 1 MB; text fields ≤ 20,000 characters; rate limit per key (per client IP when auth is off).
 The model's context window is 256 tokens for `tiny` and 512 for `small`.
 
+## OpenAI-compatible routes
+
+Point any OpenAI client at the server by changing `base_url`; the key is one made by `scripts/create_key.py`.
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://127.0.0.1:8000/v1", api_key="aak_...")
+r = client.chat.completions.create(
+    model="aarav-lm",                                   # or the experiment name that GET /v1/models returns
+    messages=[{"role": "user", "content": "Tell me a story about a fox named Kip."}],
+    max_tokens=150, temperature=0.7,
+)
+print(r.choices[0].message.content, r.usage.total_tokens)
+
+for chunk in client.chat.completions.create(model="aarav-lm", stream=True, max_tokens=100,
+                                            messages=[{"role": "user", "content": "A story about a dragon."}]):
+    print(chunk.choices[0].delta.content or "", end="")
+```
+
+```bash
+curl -s http://127.0.0.1:8000/v1/chat/completions \
+  -H "Authorization: Bearer $AARAV_KEY" -H "Content-Type: application/json" \
+  -d '{"model":"aarav-lm","messages":[{"role":"user","content":"Tell me a story about a fox."}],"max_tokens":100}'
+```
+
+Responses follow OpenAI's objects (`chat.completion`, `chat.completion.chunk`, `text_completion`, `list`/`model`)
+with `usage.prompt_tokens / completion_tokens / total_tokens`. A stream is `data: {chunk}` frames, a final chunk
+carrying `finish_reason`, then `data: [DONE]`. The streamed text reassembles to exactly the non-streamed answer
+(tested).
+
+| Request field | Behaviour |
+|---|---|
+| `model` | must be the served experiment name or the alias `aarav-lm`, else **404** `model_not_found` (omitting it is allowed) |
+| `messages` | roles `system`, `developer` (treated as system), `user`, `assistant`; `content` may be a string or a list of `{"type":"text"}` parts; images/audio → 400 |
+| `prompt` (completions) | one string, or a list with exactly one string |
+| `max_tokens` / `max_completion_tokens` | default 128; capped by the server (`--max-tokens-cap`) |
+| `temperature`, `top_p`, `seed`, `stop` (string or ≤ 4 strings), `stream` | as in OpenAI; **if `temperature` is omitted the server default 0.8 applies, not 1.0** |
+| `top_k`, `repetition_penalty` | extensions |
+| `n` | must be 1 (400 otherwise) |
+| `frequency_penalty`, `presence_penalty`, `logit_bias`, `logprobs`, `user`, `tools`, ... | accepted and **ignored** (this model cannot call tools) |
+
+Errors on `/v1/...` paths are OpenAI's object: `{"error": {"message", "type", "param", "code"}}` with types
+`invalid_request_error` (400/404/413), `authentication_error` (401, code `invalid_api_key`), `rate_limit_error`
+(429, code `rate_limit_exceeded`, with `Retry-After`) and `server_error` (503 busy with `Retry-After`, 500).
+The native routes keep their `{"detail": ...}` shape. The SDK tests are in `tests/test_openai_compat.py`.
+
 ## Not built yet
 
-`/v1/models`, `/v1/completions`, `/v1/chat/completions` (OpenAI-compatible request/response shapes,
-so common SDKs work by changing `base_url`); accounts; listing, revoking and regenerating keys through
-the API; per-user usage records; tokens-per-minute limits.
+Accounts; listing, revoking and regenerating keys through the API; per-user usage records; tokens-per-minute
+limits; a per-request wall-clock timeout; several concurrent generations (one runs at a time).

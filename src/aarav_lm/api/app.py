@@ -33,6 +33,7 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 from aarav_lm.api.auth import KeyStore, RateLimiter
+from aarav_lm.api.openai_compat import add_openai_routes
 from aarav_lm.inference.chat_format import ChatFormatError, Message
 from aarav_lm.inference.engine import GenerationConfig, InferenceEngine
 from aarav_lm.inference.prompting import build_prompt, resolve_mode
@@ -134,6 +135,23 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(Sampling):
     messages: List[ChatMessage] = Field(..., min_length=1, max_length=64)
+
+
+class NativeFormat:
+    """The original /generate and /chat wire format. Other formats (api/openai_compat.py) implement the same five
+    methods, so generation, queueing, streaming and cleanup live in exactly one place (`run` in create_app)."""
+
+    def final(self, text: str, meta: dict) -> dict:
+        return {"text": text, **meta}
+
+    def chunk(self, delta: str) -> str:
+        return f"data: {json.dumps({'delta': delta})}\n\n"
+
+    def done(self, meta: dict) -> str:
+        return f"data: {json.dumps({'done': True, **meta})}\n\n"
+
+    def error(self, detail: str, status: int) -> str:
+        return f"data: {json.dumps({'error': detail, 'status': status})}\n\n"
 
 
 class Stats:
@@ -242,7 +260,8 @@ def create_app(
         stats.add(in_flight=-1)
         engine.lock.release()
 
-    def run(prompt_ids: List[int], cfg: GenerationConfig, stream: bool, extra: dict):
+    def run(prompt_ids: List[int], cfg: GenerationConfig, stream: bool, extra: dict, fmt=None):
+        fmt = fmt or NativeFormat()
         stats.add(requests=1, prompt_tokens=len(prompt_ids))
 
         def finish(result) -> dict:
@@ -264,7 +283,7 @@ def create_app(
                 raise HTTPException(500, "generation failed") from None
             finally:
                 release_slot()
-            return {"text": result.text, **finish(result)}
+            return fmt.final(result.text, finish(result))
 
         # Fail with a real 503 *before* the 200 stream starts if the model is busy.
         acquire_slot()
@@ -286,17 +305,19 @@ def create_app(
             try:
                 await anyio.to_thread.run_sync(take_slot)
                 it = engine.stream(prompt_ids, cfg)
+                if hasattr(fmt, "first"):
+                    yield fmt.first()
                 while True:
                     delta = await anyio.to_thread.run_sync(next, it, end)
                     if delta is end:
                         break
-                    yield f"data: {json.dumps({'delta': delta})}\n\n"
-                yield f"data: {json.dumps({'done': True, **finish(engine.last_result)})}\n\n"
+                    yield fmt.chunk(delta)
+                yield fmt.done(finish(engine.last_result))
             except HTTPException as e:
-                yield f"data: {json.dumps({'error': e.detail, 'status': e.status_code})}\n\n"
+                yield fmt.error(e.detail, e.status_code)
             except Exception:                                        # noqa: BLE001
                 stats.add(errors=1)
-                yield f"data: {json.dumps({'error': 'generation failed', 'status': 500})}\n\n"
+                yield fmt.error("generation failed", 500)
             finally:
                 if it is not None:
                     it.close()
@@ -356,4 +377,6 @@ def create_app(
         extra = {"mode": chat_mode, "dropped_messages": prompt.dropped}
         return run(prompt.ids, cfg, body.stream, extra)
 
+    add_openai_routes(app, identify=identify, make_config=make_config, run=run, engine=engine, chat_mode=chat_mode,
+                      model_name=model_name, sampling_cls=Sampling)
     return app
