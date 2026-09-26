@@ -82,8 +82,9 @@ gain is modest and not statistically established: on a final evaluation set writ
 best models pass 46–48% (greedy) against 40% untuned and 10.5% chance. Length control, learned by memorising three phrasings in the
 first attempt, was lost when the data became more varied. Along the way: fixing memorisation was worth +8.7 points (p = 0.002), the
 data changes that make a story dwell on what was asked for raised topic requests from 62% to 88%, and three further data
-experiments landed inside the evaluation's noise, which is why the next step is a better base model (a longer pretraining run is in
-progress). The details, including the negative results and the numbers that don't flatter the model, are in
+experiments landed inside the evaluation's noise. I then tested the obvious next lever, a better base model: 147M more tokens of
+pretraining cut full-split validation loss from 1.404 to 1.288 (22 standard errors), yet the same fine-tuning recipe on it followed
+unseen wording no better (44.4% vs 46.5%, paired +2.1 [-6.8, +10.9]) and lost length control entirely. A negative result, reported as one. The details, including the negative results and the numbers that don't flatter the model, are in
 [docs/RESULTS.md](docs/RESULTS.md); how the evaluation itself was made trustworthy is in [docs/CORRECTNESS.md](docs/CORRECTNESS.md);
 the full audit and plan are in [docs/AUDIT.md](docs/AUDIT.md).
 

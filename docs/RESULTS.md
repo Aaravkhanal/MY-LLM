@@ -254,9 +254,57 @@ What the paired tests say:
 
 So the honest state: the fine-tuned models follow requests clearly better than chance, and far better on wording they were trained
 on, but on entirely new wording the gain over an untuned model is modest and not statistically established at this evaluation size.
-**Tuning the data recipe further has reached the noise floor of this evaluation.** The remaining lever is the base model, which is
-what the long pretraining run (exp_010: exp_004 plus 147M further tokens) tests. **exp_009's recipe (v6) is the current best and is
-what will be re-applied to the better base.** Its records are in `experiments/exp_00{8,9}_*/`.
+**Tuning the data recipe further has reached the noise floor of this evaluation.** exp_009's recipe (v6) was then re-applied to a
+better base model; that is the next section. Its records are in `experiments/exp_00{8,9}_*/`.
+
+### exp_010 and exp_011: a better base model did not improve instruction following
+
+**exp_010: 9,000 more pretraining steps** (`configs/small_long_tinystories.yaml`): exp_004's weights, continued for 147M tokens
+(27,738 s, warmup again then cosine, same tokenizer and split). Full validation split (1200MB corpus, 2,927 windows, every window, bootstrap
+standard error), best checkpoint:
+
+| model | val loss | perplexity | top-1 next-token | bits per byte | test loss |
+|---|---|---|---|---|---|
+| exp_004 (14M, 5,500 steps, 90M tokens) | 1.4036 ± 0.0038 | 4.070 | 63.5% | 0.512 | 1.4113 ± 0.0041 |
+| **exp_010 (exp_004 + 147M more tokens, 237M in all)** | **1.2876 ± 0.0037** | **3.624** | **65.6%** | **0.470** | **1.2944 ± 0.0039** |
+
+The 0.116-nat gap is about 22 standard errors, so it is a real improvement in the language model, and the test split agrees. Validation loss
+rose at first (1.4003 to 1.4861 at step 1000, the restart of the learning-rate schedule) and then fell steadily. Three gradient-norm
+spikes were flagged by the training monitor and absorbed by clipping (`anomalies` in the run summary). Note the checkpoint file's own
+1.2855 is on the trainer's smaller validation subset; the table uses the full split.
+
+**exp_011: exp_009's fine-tuning recipe on the exp_010 base** (`configs/sft_small_instruct_v6_long.yaml`; only `init_from`
+differs). Its own validation loss on the fine-tuning data is far lower (1.2284 vs 1.3831 at step 200 for exp_009), as expected from the better base.
+
+| set (14M, pass rate) | untuned exp_004 | exp_009 | exp_011 |
+|---|---|---|---|
+| final set (never-seen wording), greedy | 39.9% | 46.5% | 44.4% |
+| final set, sampled | 34.7% | 41.7% | 41.7% |
+| in-template, greedy | 41.7% | 64.2% | 55.9% |
+| in-template, sampled | 45.1% | 56.9% | 53.5% |
+
+Paired, over distinct prompts (clustered bootstrap): on the **final set exp_011 vs exp_009 is +2.1 [−6.8, +10.9] (p = 0.66)**,
+indistinguishable, and vs the untuned model −4.5 [−15.8, +7.3] (p = 0.46), so it is still "probably better than untuned, not proven". In-template
+exp_009 is ahead by **8.3 [+2.8, +13.8] (p = 0.004)**.
+
+**What changed, by kind.** The better base traded one skill for another rather than adding to both:
+
+* Content requests improved: named character plus a feeling 29% to 58% on the final set (paired p = 0.013), in-template 67% to 83%
+  (p = 0.025); two-topic requests 17% to 29%; topics 79% to 83%.
+* Length control vanished: `short` 75% to 0% in-template (paired p < 0.001), `short_topic` 33% to 4%, and on the final set `short_topic` 38% to 4%
+  (p = 0.026) and `short` 17% to 0%. The model produces its usual length whatever is asked, the same failure seen in exp_007 and exp_008.
+
+**Conclusion, stated against my own earlier prediction.** I predicted that the remaining lever was the base model. The result says
+otherwise: a 0.116-nat lower language-modelling loss did not move instruction following in aggregate on wording the model had not seen. Better
+prediction of stories helps the model dwell on requested content, but length control is a different skill that this one-epoch,
+14M-parameter recipe does not teach reliably, and it is not helped by a better base. What this rules out: more pretraining alone.
+What it leaves open (not tested): data that teaches length explicitly *and* stays varied, a larger model, more than one fine-tuning epoch, or a
+different task mix. The final set has now been used to score two candidates after the pre-registered ones; it is reported, not tuned on.
+Nothing was changed after seeing these numbers.
+
+**Which model is served.** exp_009 remains the default for chat (it is best on the training-style requests and keeps length control
+for the wordings it knows); exp_011 is the better language model. Both are listed in the site's results explorer. Records:
+`experiments/exp_010_*/` and `experiments/exp_011_*/` (configs, metrics, logs and evaluation JSON, not checkpoints).
 
 Reproduce: `python scripts/make_eval_controls.py --eval evals/instruct_v3.jsonl --stories <TinyStories file>`,
 then `python scripts/eval_instruct.py --checkpoint <run>/checkpoints/best.pt --instruct evals/instruct_v3.jsonl

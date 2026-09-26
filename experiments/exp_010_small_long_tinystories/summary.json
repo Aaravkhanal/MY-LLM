@@ -1,0 +1,39 @@
+{
+  "name": "small_long_tinystories",
+  "status": "completed",
+  "steps": 9000,
+  "tokens_seen": 147456000,
+  "train_seconds": 27737.6,
+  "resumed_from": null,
+  "anomalies": {
+    "grad_norm_spike": 3
+  },
+  "params": 14162304,
+  "params_body": 12589440,
+  "model_mb_fp32": 54.02,
+  "best_val_loss": 1.2854656195640564,
+  "best_val_perplexity": 3.6163514092295777,
+  "last_eval": {
+    "type": "eval",
+    "step": 9000,
+    "time": 1790459543.87,
+    "val_loss": 1.2854656195640564,
+    "val_ppl": 3.6163514092295777,
+    "best_val": 1.2854656195640564,
+    "improved": true
+  },
+  "checkpoint_mb": {
+    "best.pt": 54.05,
+    "final.pt": 54.05,
+    "step_00008500.pt": 162.17,
+    "step_00009000.pt": 162.17
+  },
+  "dataset_train_tokens": 299237670,
+  "stage": "pretrain",
+  "peak_rss_mb": 886.9,
+  "peak_mps_driver_mb": 830.2,
+  "config_fingerprint": "70eedc4ac367",
+  "tokenizer_fingerprint": "a5b02e834f0a7d9e4cd5984933ecedf305903be712968afa79cf82118c66d74b",
+  "device": "mps",
+  "precision": "fp32"
+}

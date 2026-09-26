@@ -160,6 +160,8 @@ def test_rate_limit_is_a_429_rate_limit_error(engine, tmp_path):
 def test_usage_from_v1_routes_shows_up_in_the_shared_stats(served, sdk):
     http, key = served
     before = http.get("/stats", headers={"Authorization": f"Bearer {key}"}).json()
-    sdk.chat.completions.create(model="exp_test", messages=[{"role": "user", "content": "hi"}], max_tokens=4)
+    resp = sdk.chat.completions.create(model="exp_test", messages=[{"role": "user", "content": "hi"}], max_tokens=4)
     after = http.get("/stats", headers={"Authorization": f"Bearer {key}"}).json()
-    assert after["requests"] == before["requests"] + 1 and after["completion_tokens"] > before["completion_tokens"]
+    # unseeded sampling may end at once (zero completion tokens), so compare with this response's own usage, not "> 0"
+    assert after["requests"] == before["requests"] + 1
+    assert after["completion_tokens"] == before["completion_tokens"] + resp.usage.completion_tokens
