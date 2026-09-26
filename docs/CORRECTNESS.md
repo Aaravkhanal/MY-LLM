@@ -6,12 +6,41 @@ only if a test proves it, and says **measured** only if the number came from a r
 
 | # | Problem | Status |
 |---|---|---|
+| 7 | The new training diagnostics crashed a run (exp_007, step ~625) | **fixed** (tests), found by a real run |
 | 6 | Content requests (topic, place, emotion) are barely learnable from the data as generated | **found**; opt-in data fixes added, effect not yet measured |
 | 5 | One pass rate hid two different failures: not learning the task vs not generalising to new wording | **measured**; in-template control added |
 | 4 | No layer-wise gradient health, spike/overfit detection or plots during training | **added** (tests), thresholds not yet validated on a real run |
 | 3 | Instruction-following pass rates had no chance-level control, inflated sample sizes and no paired test | **fixed** (tests) |
 | 2 | SFT gradient accumulation weighted micro-batches equally instead of by scored tokens | **fixed** (test), effect on real runs not yet measured |
 | 1 | Validation loss depends on how many conversations are scored (1.2895 / 1.3276 / 1.3190 for one checkpoint; noise sd 0.031 at 160) | **fixed** (tests): the full split is scored by default, with a standard error |
+
+---
+
+## 7. The diagnostics themselves crashed a training run
+
+**Evidence.** exp_007 (SFT on the v4 data) stopped at step ~625 with
+`TypeError: Trainer._anomaly() got multiple values for argument 'kind'` (`train.log`, 16:32:55). A real gradient
+spike (max norm 8.74, one step clipped: ordinary, and handled by clipping) made the spike detector fire, and the
+code that reports a finding passed the detector's dict, which contains a key named `kind`, as keyword arguments
+alongside a positional parameter also named `kind`. The 13 unit tests of the diagnostics all passed, because they
+exercised the detectors and the layer statistics but never a detector *firing inside the real training loop*.
+
+**Why it is serious.** Entry 4 promises the diagnostics "observe, never intervene". A monitoring feature that can kill a
+multi-hour run is worse than none. The run was recoverable because checkpoints are written every 200 steps and resume
+is bit-exact: it restarted from step 600 and lost about eight minutes.
+
+**Fix.** (1) The report call no longer forwards the colliding key, and `_anomaly` takes its name as a positional-only
+argument so this class of collision cannot recur. (2) A safety net: recording a finding and measuring layer health are
+wrapped so that a fault in the diagnostics is logged (`[warn] could not record diagnostic ...`) and training goes on.
+(3) Three integration tests run real training loops: a forced loss/gradient spike is recorded (log line, metrics
+record with value, median, threshold and z, count in `summary.json`) and the run completes; a fault injected into the
+metrics writer and into the health measurement is logged and does not stop the run; an overfitting finding is recorded
+without stopping it. `test_a_loss_spike_during_training_is_recorded_and_the_run_completes` was run against the previous
+code and fails with the identical `TypeError`.
+
+**Lesson kept.** A component whose contract is "never interferes" needs a test in which it fires inside the real loop,
+not only a test of its parts. Also: detectors start empty after a resume, so a spike in the first 20 steps after a
+resume is not flagged (by design, and now documented).
 
 ---
 
@@ -92,8 +121,9 @@ new detectors would flag it.
 overfitting; the run ended after 0.87 epoch) and both are still falling slowly.
 
 **Not yet verified.** The detector thresholds were checked on synthetic noise (no false alarms in 3,000
-steps, the injected 1.6× jump is caught). Whether they are quiet on a real run is unknown until one is
-trained with them on; `summary.json → anomalies` will show it.
+steps, the injected 1.6× jump is caught). Whether they are quiet on a real run is unknown until one completes with
+them on; `summary.json → anomalies` will show it. The first real run that used them (exp_007) exposed a crash in
+the reporting path, see entry 7.
 
 ---
 

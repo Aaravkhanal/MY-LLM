@@ -164,3 +164,48 @@ def test_plot_of_a_run_is_written_and_marks_anomalies(tmp_path):
         f.write(json.dumps({"type": "anomaly", "step": 6, "anomaly": "loss_spike"}) + "\n")
     out = plot_run(run)
     assert out.name == "training_curves.png" and out.stat().st_size > 5_000
+
+
+# ── anomalies inside a REAL run must be recorded and must never stop it ──────
+# (a bug here once killed a 30-minute SFT run at step 625: the spike dict's "kind" collided with a parameter)
+
+def test_a_loss_spike_during_training_is_recorded_and_the_run_completes(tmp_path):
+    exp = tiny_experiment(tmp_path, max_steps=30, log_interval=5, eval_interval=10)
+    t = Trainer(exp, tmp_path / "run", log=quiet)
+    t.loss_spikes = SpikeDetector("loss", min_history=3, z=-50.0)          # absurd threshold: every step is a "spike"
+    t.gnorm_spikes = SpikeDetector("grad_norm", min_history=3, z=-50.0)
+    summary = t.run()
+    assert summary["status"] == "completed" and summary["steps"] == 30
+    assert summary["anomalies"]["loss_spike"] >= 20 and summary["anomalies"]["grad_norm_spike"] >= 20
+    recs = [json.loads(line) for line in (tmp_path / "run" / "metrics.jsonl").read_text().splitlines()]
+    spikes = [r for r in recs if r["type"] == "anomaly" and r["anomaly"] == "loss_spike"]
+    assert spikes and {"value", "median", "threshold", "z"} <= set(spikes[0])
+    assert "[anomaly] loss_spike" in (tmp_path / "run" / "train.log").read_text()
+
+
+def test_a_fault_inside_the_diagnostics_never_stops_training(tmp_path, monkeypatch):
+    import aarav_lm.train.trainer as trainer_mod
+    exp = tiny_experiment(tmp_path, max_steps=12, log_interval=4, eval_interval=6)
+    monkeypatch.setattr(trainer_mod, "gradient_health", lambda m: (_ for _ in ()).throw(RuntimeError("boom")))
+    t = Trainer(exp, tmp_path / "run", log=quiet)
+    t._metric_orig = t._metric
+
+    def flaky_metric(kind, **f):
+        if kind == "anomaly":
+            raise OSError("disk full")
+        return t._metric_orig(kind, **f)
+    t._metric = flaky_metric
+    t.loss_spikes = SpikeDetector("loss", min_history=3, z=-50.0)
+    summary = t.run()
+    assert summary["status"] == "completed" and summary["steps"] == 12
+    log = (tmp_path / "run" / "train.log").read_text()
+    assert "gradient health measurement failed: RuntimeError: boom" in log
+    assert "could not record diagnostic 'loss_spike': OSError: disk full" in log
+
+
+def test_overfitting_is_recorded_in_a_run_without_stopping_it(tmp_path):
+    exp = tiny_experiment(tmp_path, max_steps=12, log_interval=4, eval_interval=3)
+    t = Trainer(exp, tmp_path / "run", log=quiet)
+    t.overfit.update = lambda train, val: {"train_loss": train, "val_loss": val, "val_rise": 0.1, "gap": 0.4, "evals": 2}
+    summary = t.run()
+    assert summary["status"] == "completed" and summary["anomalies"]["overfitting"] >= 1

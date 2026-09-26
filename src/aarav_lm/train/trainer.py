@@ -296,12 +296,29 @@ class Trainer:
         empty_cache(self.device)
         return res
 
-    def _anomaly(self, kind: str, **fields: Any) -> None:
-        """Record a diagnostic finding: one log line and one metrics.jsonl record. Never acts on it."""
-        self.anomalies[kind] = self.anomalies.get(kind, 0) + 1
-        shown = ", ".join(f"{k} {v:.4g}" if isinstance(v, float) else f"{k} {v}" for k, v in fields.items() if k != "kind")
-        self.log(f"[anomaly] {kind} at step {self.step}: {shown}")
-        self._metric("anomaly", anomaly=kind, **{k: v for k, v in fields.items() if k != "kind"})
+    def _safe_health(self):
+        """Raw pre-clip layer statistics at logging steps. A failure here is logged, never raised."""
+        if (self.step + 1) % self.cfg.log_interval != 0:
+            return None
+        try:
+            return gradient_health(self.model)
+        except Exception as e:                                                   # noqa: BLE001
+            self.log(f"[warn] gradient health measurement failed: {type(e).__name__}: {e}")
+            return None
+
+    def _anomaly(self, kind: str, /, **fields: Any) -> None:
+        """Record a diagnostic finding: one log line and one metrics.jsonl record. Never acts on it, and never lets a
+        fault in the diagnostics themselves stop a training run (a run is hours of work; a log line is not)."""
+        try:
+            self.anomalies[kind] = self.anomalies.get(kind, 0) + 1
+            shown = ", ".join(f"{k} {v:.4g}" if isinstance(v, float) else f"{k} {v}" for k, v in fields.items())
+            self.log(f"[anomaly] {kind} at step {self.step}: {shown}")
+            self._metric("anomaly", anomaly=kind, **fields)
+        except Exception as e:                                                   # noqa: BLE001
+            try:
+                self.log(f"[warn] could not record diagnostic '{kind}': {type(e).__name__}: {e}")
+            except Exception:                                                    # noqa: BLE001
+                pass
 
     # ── one optimiser step's forward/backward ──────────────────────────────
     def _accumulate(self):
@@ -365,7 +382,7 @@ class Trainer:
                         f"non-finite loss ({loss_val}) at step {self.step}; last good checkpoint is untouched"
                     )
 
-                health = gradient_health(self.model) if (self.step + 1) % self.cfg.log_interval == 0 else None   # raw, pre-clip
+                health = self._safe_health()
                 gnorm = float(torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.cfg.grad_clip))
                 if not math.isfinite(gnorm):
                     self.bad_steps += 1
@@ -377,7 +394,7 @@ class Trainer:
                 self.bad_steps = 0
                 for spike in (self.loss_spikes.update(loss_val), self.gnorm_spikes.update(gnorm)):
                     if spike:
-                        self._anomaly(spike["kind"] + "_spike", **spike)
+                        self._anomaly(spike["kind"] + "_spike", **{k: v for k, v in spike.items() if k != "kind"})
                 self.optimizer.step()
                 self.optimizer.zero_grad(set_to_none=True)
 
