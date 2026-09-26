@@ -30,6 +30,24 @@ one machine and calls no external model or service.
    summary.json eval/*.json
 ```
 
+## Serving path
+
+```
+ browser / SDK ──► reverse proxy (TLS) ──► api/app.py: identify (key or session cookie + CSRF) ► rate limits ► request validation
+                                              │
+                    ┌─────────────────────────┴───────────────────────────┐
+                    ▼ --batch-size 1 (default)                            ▼ --batch-size N
+        engine.lock: one generation at a time            inference/scheduler.py: waves of up to N requests
+        InferenceEngine.stream                            inference/batching.py: one model call per step for the whole wave
+                    └─────────────────────────┬───────────────────────────┘
+                                              ▼   both share TextEmitter, the sampler and the per-request limits
+                       response format (native | OpenAI) ► usage row (counts only) in api/store.py
+```
+
+The two paths are interchangeable by construction: a request's output does not depend on the path or on who else is in the batch
+(`tests/test_batching.py`). Batching is exact for RoPE models because attention depends only on relative positions, so left-padding a
+batch and masking the padding changes nothing (`tests/test_batched_model.py`).
+
 ## Module map
 
 | Package | Responsibility | Depends on |
@@ -41,10 +59,10 @@ one machine and calls no external model or service.
 | `train` | trainer, schedule, checkpoints, monitor, device/precision, SFT trainer | data, model, evaluation.loss |
 | `finetune` | LoRA (apply / merge) | model |
 | `evaluation` | loss/ppl/accuracy, text metrics, probes, edge cases, suite, regression, compare | inference |
-| `inference` | engine (sampling, streaming), chat template, prompt builder, int8 quantisation | model, tokenizer |
+| `inference` | engine (sampling, streaming, stop sequences, wall-clock budget), `TextEmitter`, chat template, prompt builder, int8 quantisation; `batching` (exact batched decoding), `scheduler` (turns concurrent requests into waves) | model, tokenizer |
 | `chat` | session state, terminal UI | inference |
-| `api` | FastAPI app, OpenAI-compatible routes, keys and accounts (SQLite), rate limiter | inference |
-| `web` | static chat page (HTML/JS/CSS) | api |
+| `api` | FastAPI app, OpenAI-compatible routes (`openai_compat`), web accounts and sessions (`accounts_web`), users/keys/usage in SQLite (`store`), key file and rate limiter (`auth`) | inference |
+| `web` | the web app: chat, keys, usage, docs, sign-in (three same-origin files, no libraries) | api |
 
 Rule: data → tokenizer → model → train → evaluation → inference → chat/api. Nothing lower imports
 anything higher, and nothing reaches into another package's internals.
