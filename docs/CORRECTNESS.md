@@ -6,9 +6,52 @@ only if a test proves it, and says **measured** only if the number came from a r
 
 | # | Problem | Status |
 |---|---|---|
+| 4 | No layer-wise gradient health, spike/overfit detection or plots during training | **added** (tests), thresholds not yet validated on a real run |
 | 3 | Instruction-following pass rates are reported without a chance-level control | **found**, fix planned (step 1) |
 | 2 | SFT gradient accumulation weighted micro-batches equally instead of by scored tokens | **fixed** (test), effect on real runs not yet measured |
 | 1 | Validation loss depends on how many conversations are scored (1.2895 / 1.3276 / 1.3190 for one checkpoint; noise sd 0.031 at 160) | **measured**, fix planned (step 1) |
+
+---
+
+## 4. Training diagnostics: gradient health, anomalies, overfitting, plots
+
+**Gap.** A run logged loss, learning rate and the largest gradient norm per 25 steps. Nothing told you
+*which* layers were exploding or barely learning, a loss spike was noticed only by reading the log, and
+"train loss falling while validation rises" needed a person to spot it.
+
+**Added (`train/health.py`, `train/plots.py`, `scripts/plot_run.py`). Observe only:** nothing changes a
+gradient, weight, RNG or the data order. `test_diagnostics_do_not_change_training` trains twice with
+different measurement schedules and requires bit-identical final weights.
+
+| Diagnostic | How | Recorded as |
+|---|---|---|
+| Layer gradient health | per group (`blocks.N.attn`, `.mlp`, `.norm`, embeddings): L2 gradient norm and weight norm, taken **before** clipping, every `log_interval` steps; flags a group > 100× or < 0.01× the median group, or non-finite | `health` records; `[anomaly] gradient_health` |
+| Loss spike | a step loss above rolling median + 6 × robust sigma (1.4826·MAD over 50 steps, floor 2% of the median) | `anomaly` record + log line |
+| Gradient-norm spike | same, z = 8, floor 10% (gradient norms are heavier-tailed) | same |
+| Overfitting | validation up **and** training down at each of 2 consecutive evaluations | same |
+| Plots | `python scripts/plot_run.py <run>`: train/val loss, val perplexity, LR, max grad norm vs the clip line, anomaly markers, per-layer gradient norms | `training_curves.png` |
+
+Anomaly counts are also written to `summary.json`. The run still stops only for a non-finite loss or five
+non-finite gradient steps in a row, exactly as before.
+
+**Why the clip threshold stays at 1.0 (evidence, not a guess).** Per-window maximum gradient norms:
+exp_001 median 0.62, exp_004 median 0.48, exp_006 median 0.80; after the first 20% of steps the 95th
+percentile is 0.69 / 0.56 / 0.84. So 1.0 sits about 1.2–1.8× above the steady state: it acts as a safety
+net, not as a constant brake. Clipped steps: 46/3000 (exp_001), 117/5500 (exp_004), 8/1800 (exp_006), almost
+all during warmup. A lower threshold would clip routinely and slow learning; a much higher one would stop
+protecting against bad batches.
+
+**A real event the plot exposed.** exp_004 has one isolated spike in the window ending at step 5100: max
+gradient norm 3.92 (about 8× the steady 0.48), one step clipped. The window's training loss did not move
+(1.424 vs 1.427 before) and the next windows were normal, so clipping absorbed a bad batch as intended. The
+new detectors would flag it.
+
+**Also visible in exp_004's curves:** training and validation loss overlap for the whole run (no
+overfitting; the run ended after 0.87 epoch) and both are still falling slowly.
+
+**Not yet verified.** The detector thresholds were checked on synthetic noise (no false alarms in 3,000
+steps, the injected 1.6× jump is caught). Whether they are quiet on a real run is unknown until one is
+trained with them on; `summary.json → anomalies` will show it.
 
 ---
 

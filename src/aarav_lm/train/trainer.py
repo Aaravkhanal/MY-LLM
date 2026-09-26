@@ -43,6 +43,7 @@ from aarav_lm.train import checkpoint as ckpt
 from aarav_lm.train.device import (
     autocast_context, empty_cache, pick_device, seed_everything, synchronize,
 )
+from aarav_lm.train.health import OverfitDetector, SpikeDetector, gradient_health, health_flags
 from aarav_lm.train.monitor import MB, ThroughputTracker, format_duration, memory_snapshot, tensors_nbytes
 from aarav_lm.train.schedule import lr_at
 
@@ -100,6 +101,13 @@ class Trainer:
         self.peak_mps_mb = 0.0
         self.bad_steps = 0
         self.resumed_from: Optional[str] = None
+        # Diagnostics only: they observe, never change training (see train/health.py). Not part of a
+        # checkpoint; a resumed run simply starts with fresh rolling windows.
+        self.loss_spikes = SpikeDetector("loss")
+        self.gnorm_spikes = SpikeDetector("grad_norm", z=8.0, rel_floor=0.1)     # gradient norms are heavier-tailed
+        self.overfit = OverfitDetector()
+        self.anomalies: Dict[str, int] = {}
+        self._loss_since_eval, self._n_since_eval = 0.0, 0
 
     # ── logging ────────────────────────────────────────────────────────────
     def log(self, msg: str) -> None:
@@ -274,6 +282,13 @@ class Trainer:
         empty_cache(self.device)
         return res
 
+    def _anomaly(self, kind: str, **fields: Any) -> None:
+        """Record a diagnostic finding: one log line and one metrics.jsonl record. Never acts on it."""
+        self.anomalies[kind] = self.anomalies.get(kind, 0) + 1
+        shown = ", ".join(f"{k} {v:.4g}" if isinstance(v, float) else f"{k} {v}" for k, v in fields.items() if k != "kind")
+        self.log(f"[anomaly] {kind} at step {self.step}: {shown}")
+        self._metric("anomaly", anomaly=kind, **{k: v for k, v in fields.items() if k != "kind"})
+
     # ── one optimiser step's forward/backward ──────────────────────────────
     def _accumulate(self):
         """Forward/backward over `grad_accum` micro-batches; returns (step loss tensor, tokens fed).
@@ -336,6 +351,7 @@ class Trainer:
                         f"non-finite loss ({loss_val}) at step {self.step}; last good checkpoint is untouched"
                     )
 
+                health = gradient_health(self.model) if (self.step + 1) % self.cfg.log_interval == 0 else None   # raw, pre-clip
                 gnorm = float(torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.cfg.grad_clip))
                 if not math.isfinite(gnorm):
                     self.bad_steps += 1
@@ -345,6 +361,9 @@ class Trainer:
                         raise FloatingPointError("gradients stayed non-finite for 5 consecutive steps")
                     continue
                 self.bad_steps = 0
+                for spike in (self.loss_spikes.update(loss_val), self.gnorm_spikes.update(gnorm)):
+                    if spike:
+                        self._anomaly(spike["kind"] + "_spike", **spike)
                 self.optimizer.step()
                 self.optimizer.zero_grad(set_to_none=True)
 
@@ -354,6 +373,8 @@ class Trainer:
                 tracker.tick(step_tokens)
                 window_loss += loss_val
                 window_n += 1
+                self._loss_since_eval += loss_val
+                self._n_since_eval += 1
                 grad_norm_max = max(grad_norm_max, gnorm)
                 clipped += gnorm > self.cfg.grad_clip
                 self.train_seconds = train_seconds_at_start + (time.perf_counter() - t_run)
@@ -376,6 +397,10 @@ class Trainer:
                         tokens_per_sec=tracker.tokens_per_sec, step_seconds=tracker.step_seconds,
                         tokens_seen=self.tokens_seen, epochs=self.stream.epochs_completed, **mem,
                     )
+                    if health:
+                        self._metric("health", groups={g: [round(v["grad"], 6), round(v["param"], 4)] for g, v in health.items()})
+                        for flag in health_flags(health):
+                            self._anomaly("gradient_health", detail=flag)
                     if mem["sys_available_mb"] < LOW_MEMORY_MB:
                         self.log(f"[warn] only {mem['sys_available_mb']:.0f}MB of system memory free — close other apps or lower batch_size")
                     window_loss, window_n, grad_norm_max, clipped = 0.0, 0, 0.0, 0
@@ -396,6 +421,11 @@ class Trainer:
                         f"best {self.best_val:.4f}{'  ★ new best' if improved else ''}"
                     )
                     self._metric("eval", val_loss=v["loss"], val_ppl=v["perplexity"], best_val=self.best_val, improved=improved)
+                    if self._n_since_eval:
+                        of = self.overfit.update(self._loss_since_eval / self._n_since_eval, v["loss"])
+                        if of:
+                            self._anomaly("overfitting", **of)
+                    self._loss_since_eval, self._n_since_eval = 0.0, 0
                     patience = self.cfg.early_stop_patience
                     if patience and self.evals_without_improvement >= patience:
                         self.log(f"[early-stop] no improvement in {patience} evals")
@@ -442,6 +472,7 @@ class Trainer:
         summary = {
             "name": self.exp.name, "status": status, "steps": self.step, "tokens_seen": self.tokens_seen,
             "train_seconds": round(self.train_seconds, 1), "resumed_from": self.resumed_from,
+            "anomalies": dict(self.anomalies),
             "params": self.model.num_params(), "params_body": self.model.num_params(True),
             "model_mb_fp32": round(tensors_nbytes(self.model) / MB, 2),
             "best_val_loss": None if math.isinf(self.best_val) else self.best_val,

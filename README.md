@@ -102,6 +102,7 @@ python scripts/evaluate.py     --checkpoint experiments/exp_006_sft_small_instru
     --instruct evals/instruct_v3.jsonl
 
 python scripts/audit_dataset.py --source data/raw/tinystories_v2_400mb.txt   # train/held-out overlap, junk, lengths
+python scripts/plot_run.py experiments/exp_004_small_tinystories   # loss / perplexity / LR / gradient-norm curves (pip install -e ".[plots]")
 python scripts/compare.py                        # side-by-side report of every experiment
 python scripts/export_int8.py --checkpoint …     # 3.9x smaller checkpoint
 python scripts/benchmark.py                      # throughput and memory on your machine
@@ -154,6 +155,10 @@ configs/  evals/  scripts/  tests/  docs/  models/  artifacts/  experiments/
   repetition and loop detection, entity consistency, non-word rate, 14 edge cases. The evaluation
   sets are versioned and hashed into every result, and the regression check refuses to compare
   results from different data, tokenizers or settings.
+* **Training diagnostics.** Per-layer gradient norms, loss and gradient-spike detection and an
+  overfitting check run alongside training without touching it (bit-identical weights, tested); anomalies
+  land in `metrics.jsonl`, the log and `summary.json`. Scientific problems found in the pipeline, with
+  evidence and fixes, are logged in [docs/CORRECTNESS.md](docs/CORRECTNESS.md).
 * **Independent review.** A separate reviewer with no stake in the code found nine real bugs (the
   worst: the web UI's Stop button could wedge the model lock); each is fixed with a regression test.
   See the commit history.
