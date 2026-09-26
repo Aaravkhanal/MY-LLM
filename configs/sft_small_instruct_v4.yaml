@@ -1,0 +1,57 @@
+# v4 data (scripts/make_instruct_data.py --templates v4 --min-mentions 2 --first-mention-max 40 --balance-alpha 0.5 --augment 0.15).
+# Everything else, including the seed, is exp_006's recipe, so a difference is attributable to the data. The v4 changes
+# are applied together (an ablation would cost ~50 min each); judged on evals/instruct_v3*.jsonl and, once, on the final set.
+# v3: exp_005's recipe, unchanged except the data. exp_005 saw only 3 phrasings each for short/long/dialogue and
+# memorised them (held-out 'brief'/'lengthy' requests: 0/32 length checks). v3 has 70-84 phrasings for each of them (14-57 for the other kinds).
+# SFT of the 14M `small` model (exp_004) on ~60k verifiable story-request conversations
+# (topic / name / emotion / place / length / combinations; see scripts/make_instruct_data.py).
+# ~1 epoch: 32 conversations per step x 1800 steps. The earlier tiny-model SFT overfit its small
+# 4k-conversation set after ~1.7k steps; this set is ~15x larger and more varied.
+name: sft_small_instruct_v4
+description: exp_006's recipe on v4 data (23 request openers, requested words mentioned >=2 times and within 40 words, balanced sampling, casual typing).
+stage: sft
+init_from: experiments/exp_004_small_tinystories/checkpoints/best.pt
+model_preset: small
+model_overrides: {}
+tokenizer:
+  kind: bpe
+  vocab_size: 4096
+  artifact_dir: artifacts/tokenizer_tinystories_v2
+  train_files: []
+data:
+  sources:
+  - data/raw/instruct_v4.jsonl
+  format: auto
+  text_field: text
+  doc_separator: <|endoftext|>
+  out_dir: data/processed/instruct_v4_sft
+  val_fraction: 0.01
+  test_fraction: 0.01
+  min_chars: 20
+  max_chars: 100000
+  dedup: true
+  seed: 1337
+train:
+  seed: 1337
+  device: auto
+  precision: fp32
+  max_steps: 1800
+  batch_size: 2
+  grad_accum: 16
+  eval_batch_size: 4
+  lr: 0.0002
+  min_lr_ratio: 0.1
+  warmup_steps: 60
+  weight_decay: 0.01
+  beta1: 0.9
+  beta2: 0.95
+  grad_clip: 1.0
+  eval_interval: 200
+  eval_iters: 40
+  log_interval: 25
+  ckpt_interval: 200
+  early_stop_patience: 0
+  keep_last: 2
+  lora_rank: 0
+  lora_alpha: 16.0
+  lora_dropout: 0.0

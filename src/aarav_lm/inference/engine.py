@@ -47,6 +47,7 @@ class GenerationConfig:
     stop_ids: Tuple[int, ...] = ()      # extra token ids that end generation (e.g. <|end|>)
     stop_at_eot: bool = True
     seed: Optional[int] = None
+    max_seconds: Optional[float] = None  # wall-clock budget for the whole call; on expiry it stops with finish_reason "timeout"
 
     def validate(self) -> "GenerationConfig":
         if self.max_new_tokens < 1:
@@ -63,6 +64,8 @@ class GenerationConfig:
             raise ValueError("no_repeat_ngram_size must be 0 (off) or >= 2")
         if any(not s for s in self.stop_sequences):
             raise ValueError("stop sequences must be non-empty")
+        if self.max_seconds is not None and self.max_seconds <= 0:
+            raise ValueError("max_seconds must be > 0")
         return self
 
 
@@ -70,7 +73,7 @@ class GenerationConfig:
 class GenerationResult:
     text: str = ""
     token_ids: List[int] = field(default_factory=list)
-    finish_reason: str = ""             # "length" | "eot" | "stop"
+    finish_reason: str = ""             # "length" | "eot" | "stop" | "timeout"
     prompt_tokens: int = 0
     generated_tokens: int = 0
     seconds: float = 0.0
@@ -189,6 +192,9 @@ class InferenceEngine:
         finish = "length"
 
         for _ in range(cfg.max_new_tokens):
+            if cfg.max_seconds is not None and time.perf_counter() - t0 > cfg.max_seconds:
+                finish = "timeout"
+                break
             nxt = sample_next(logits.cpu(), cfg, gen, gen_ids, exempt_ids=(self.tok.eot_id, *cfg.stop_ids))
             if cfg.stop_at_eot and nxt == self.tok.eot_id:
                 finish = "eot"

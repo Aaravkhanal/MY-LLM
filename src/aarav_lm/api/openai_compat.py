@@ -107,6 +107,12 @@ def _text_of(content: Union[str, List[dict]]) -> str:
 
 # ── response formats (same five methods as api.app.NativeFormat) ─────────────
 
+def _finish_reason(meta: dict) -> str:
+    """OpenAI's finish_reason is "stop" or "length"; a request that ran out of wall-clock time returned a truncated
+    completion, which is what "length" means to a client."""
+    return "length" if meta["finish_reason"] == "timeout" else meta["finish_reason"]
+
+
 def _usage(meta: dict) -> dict:
     u = meta["usage"]
     return {"prompt_tokens": u["prompt_tokens"], "completion_tokens": u["completion_tokens"],
@@ -125,7 +131,7 @@ class ChatFormat:
     def final(self, text: str, meta: dict) -> dict:
         return {"id": self.id, "object": "chat.completion", "created": self.created, "model": self.model,
                 "choices": [{"index": 0, "message": {"role": "assistant", "content": text},
-                             "finish_reason": meta["finish_reason"]}],
+                             "finish_reason": _finish_reason(meta)}],
                 "usage": _usage(meta)}
 
     def first(self) -> str:
@@ -135,7 +141,7 @@ class ChatFormat:
         return self._frame({"content": delta}, None)
 
     def done(self, meta: dict) -> str:
-        return self._frame({}, meta["finish_reason"]) + "data: [DONE]\n\n"
+        return self._frame({}, _finish_reason(meta)) + "data: [DONE]\n\n"
 
     def error(self, detail: Any, status: int) -> str:
         return f"data: {json.dumps(_error_body(status, detail))}\n\ndata: [DONE]\n\n"
@@ -153,7 +159,7 @@ class CompletionFormat(ChatFormat):
 
     def final(self, text: str, meta: dict) -> dict:
         return {"id": self.id, "object": "text_completion", "created": self.created, "model": self.model,
-                "choices": [{"index": 0, "text": text, "finish_reason": meta["finish_reason"]}], "usage": _usage(meta)}
+                "choices": [{"index": 0, "text": text, "finish_reason": _finish_reason(meta)}], "usage": _usage(meta)}
 
     def first(self) -> str:                                                     # completions have no role frame
         return ""

@@ -79,7 +79,9 @@ curl -s http://127.0.0.1:8000/chat \
 }
 ```
 
-`finish_reason` is `stop` (the model ended, or a stop sequence matched) or `length` (hit `max_tokens`).
+`finish_reason` is `stop` (the model ended, or a stop sequence matched), `length` (hit `max_tokens`) or `timeout` (the
+request used up its wall-clock budget, `--request-timeout`, default 60 s; the partial text is returned and the model slot is
+freed). On the OpenAI-compatible routes a timeout is reported as `length`, the closest valid value.
 
 ### Streaming
 
@@ -131,7 +133,8 @@ Body: `{"detail": "..."}` (or `{"error": "..."}` for 413).
 
 ## Limits
 
-One generation at a time; at most a small number of queued waiters; output capped at `max_tokens_cap`;
+One generation at a time; at most a small number of queued waiters; output capped at `max_tokens_cap`; each generation
+cut off after `--request-timeout` seconds;
 body ≤ 1 MB; text fields ≤ 20,000 characters; rate limit per key (per client IP when auth is off).
 The model's context window is 256 tokens for `tiny` and 512 for `small`.
 
@@ -199,7 +202,7 @@ With `--db` the server uses the account database instead of the JSON key file (`
 * **Per-key limits:** `rpm_limit` replaces the server-wide requests-per-minute for that key; `tpm_limit` caps prompt +
   completion tokens per rolling minute, measured from the usage table. A request is refused (429, `Retry-After`) once the
   key is already at its limit, so a key can overshoot by at most one request.
-* **Every request leaves exactly one usage row**, whichever way it ends: 200, 429 (`rate_limited` / `token_limit`), 503
+* **Every request leaves exactly one usage row**, whichever way it ends: 200 (`error_type` `timeout` if it was cut off), 429 (`rate_limited` / `token_limit`), 503
   (`busy`), 500 (`generation_failed`), or 499 (`client_disconnected`, a stream the client abandoned). A failing database
   never fails a request; it is counted in `GET /stats` as `usage_write_failures`.
 * `GET /v1/usage?days=7` returns the caller's own totals: `{"object": "usage", "key_id", "requests", "prompt_tokens",
@@ -207,6 +210,5 @@ With `--db` the server uses the account database instead of the JSON key file (`
 
 ## Not built yet
 
-Self-service signup and key management over HTTP (today the owner uses `scripts/manage_keys.py`); a per-request
-wall-clock timeout; several concurrent generations (one runs at a time); a shared rate-limit store for more than one
+Self-service signup and key management over HTTP (today the owner uses `scripts/manage_keys.py`); several concurrent generations (one runs at a time); a shared rate-limit store for more than one
 server process.

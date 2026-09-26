@@ -33,6 +33,8 @@ def main() -> None:
     ap.add_argument("--db", help="account database (scripts/manage_keys.py): per-key limits, usage records, revocation. "
                                  "Overrides --keys-file.")
     ap.add_argument("--max-tokens-cap", type=int, default=512)
+    ap.add_argument("--request-timeout", type=float, default=60.0,
+                    help="wall-clock seconds one generation may take before it is cut off with finish_reason \"timeout\" (0 = no limit)")
     ap.add_argument("--rate-limit-per-min", type=float, default=60.0)
     ap.add_argument("--cors-origin", action="append", default=[], help="allowed browser origin (repeatable)")
     args = ap.parse_args()
@@ -43,7 +45,7 @@ def main() -> None:
     ck = find_checkpoint(args.checkpoint)
     engine = InferenceEngine.from_checkpoint(ck, tokenizer_dir_for(ck, args.tokenizer), args.device)
     app = create_app(
-        engine, AccountStore(args.db) if args.db else KeyStore(args.keys_file), require_auth=not args.no_auth, max_tokens_cap=args.max_tokens_cap,
+        engine, AccountStore(args.db) if args.db else KeyStore(args.keys_file), require_auth=not args.no_auth, max_tokens_cap=args.max_tokens_cap, request_timeout=args.request_timeout,
         rate_limit_per_min=args.rate_limit_per_min, cors_origins=tuple(args.cors_origin),
         model_name=Path(ck).parent.parent.name,
     )

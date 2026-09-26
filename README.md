@@ -201,7 +201,7 @@ The `small` preset is trained (above). Its pretraining loss was still falling, a
 instruction data. On 8 GB, roughly 30–50M parameters is the practical ceiling for pretraining; anything
 larger needs rented GPU time.
 
-Not built: self-service signup and key management over HTTP, a per-request timeout, preference tuning (DPO), continuous
+Not built: self-service signup and key management over HTTP, preference tuning (DPO), continuous
 batching, real int8 kernels, multi-GPU training, cloud deployment. The order they will be tackled in,
 and what has to be true first, is in [docs/AUDIT.md](docs/AUDIT.md).
 

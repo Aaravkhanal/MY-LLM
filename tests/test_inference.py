@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 import pytest
 import torch
 
@@ -249,3 +251,16 @@ def test_invalid_no_repeat_settings_are_rejected():
             GenerationConfig(no_repeat_ngram_size=bad).validate()
     GenerationConfig(no_repeat_ngram_size=0).validate()
     GenerationConfig(no_repeat_ngram_size=4).validate()
+
+
+# ── wall-clock budget ────────────────────────────────────────────────────────
+
+def test_a_generation_stops_at_its_wall_clock_budget_and_returns_what_it_has(engine):
+    from aarav_lm.inference.engine import GenerationConfig
+    cfg = GenerationConfig(max_new_tokens=200, temperature=0.0, top_k=None, top_p=None, max_seconds=1e-9, stop_at_eot=False)
+    res = engine.generate("Once upon a time", cfg)
+    assert res.finish_reason == "timeout" and res.generated_tokens < 200
+    full = engine.generate("Once upon a time", replace(cfg, max_seconds=None, max_new_tokens=10))
+    assert full.finish_reason == "length" and full.generated_tokens == 10
+    with pytest.raises(ValueError, match="max_seconds"):
+        GenerationConfig(max_seconds=0).validate()

@@ -193,6 +193,7 @@ def create_app(
     rate_limit_burst: int = 10,
     queue_timeout: float = 30.0,
     max_waiters: int = 8,
+    request_timeout: float = 60.0,
     cors_origins: tuple = (),
     model_name: str = "aarav-lm",
     mode: str = "auto",
@@ -260,7 +261,7 @@ def create_app(
             return GenerationConfig(
                 max_new_tokens=min(body.max_tokens, max_tokens_cap), temperature=body.temperature,
                 top_k=body.top_k, top_p=body.top_p, repetition_penalty=body.repetition_penalty,
-                no_repeat_ngram_size=body.no_repeat_ngram_size,
+                no_repeat_ngram_size=body.no_repeat_ngram_size, max_seconds=request_timeout or None,
                 stop_sequences=tuple(s for s in body.stop if s), stop_ids=stop_ids, seed=body.seed,
             ).validate()
         except ValueError as e:
@@ -324,7 +325,7 @@ def create_app(
                 raise HTTPException(500, "generation failed") from None
             finally:
                 release_slot()
-            log_usage(200, None, result.generated_tokens)
+            log_usage(200, "timeout" if result.finish_reason == "timeout" else None, result.generated_tokens)
             return fmt.final(result.text, finish(result))
 
         # Fail with a real 503 *before* the 200 stream starts if the model is busy.
@@ -358,7 +359,8 @@ def create_app(
                     if delta is end:
                         break
                     yield fmt.chunk(delta)
-                log_usage(200, None, engine.last_result.generated_tokens)
+                log_usage(200, "timeout" if engine.last_result.finish_reason == "timeout" else None,
+                          engine.last_result.generated_tokens)
                 yield fmt.done(finish(engine.last_result))
             except HTTPException as e:
                 log_usage(e.status_code, "busy" if e.status_code == 503 else "error")

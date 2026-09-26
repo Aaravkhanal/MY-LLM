@@ -167,3 +167,22 @@ def test_nothing_secret_or_private_is_stored_in_usage_rows(server):
     chat(client, key, messages=[{"role": "user", "content": "my secret prompt text"}])
     dump = json.dumps([dict(r) for r in accounts._db.execute("SELECT * FROM usage")])
     assert "secret prompt" not in dump and key not in dump
+
+
+def test_a_request_over_its_time_budget_is_cut_off_returned_partial_and_recorded(engine, accounts):
+    uid = accounts.create_user("t@example.com")
+    key = accounts.create_key(uid)
+    client = TestClient(create_app(engine, accounts, model_name="exp_test", request_timeout=1e-9, queue_timeout=5.0,
+                                   rate_limit_per_min=600, rate_limit_burst=100))
+    native = client.post("/generate", headers=auth(key), json={"prompt": "Once upon a time", "max_tokens": 50, "temperature": 0})
+    assert native.status_code == 200 and native.json()["finish_reason"] == "timeout"
+    oa = chat(client, key, max_tokens=50)
+    assert oa.status_code == 200 and oa.json()["choices"][0]["finish_reason"] == "length"          # a valid OpenAI value
+    frames = [json.loads(f[6:]) for f in chat(client, key, stream=True, max_tokens=50).text.split("\n\n") if f.startswith("data: {")]
+    assert frames[-1]["choices"][0]["finish_reason"] == "length"
+    got = rows(accounts, key)
+    assert len(got) == 3 and all(g["status"] == 200 and g["error_type"] == "timeout" for g in got)
+    assert client.get("/health").status_code == 200
+    # the model slot is free again: an untimed server on the same engine still answers
+    ok = TestClient(create_app(engine, accounts, model_name="exp_test", request_timeout=0, rate_limit_per_min=600, rate_limit_burst=100))
+    assert chat(ok, key).json()["choices"][0]["finish_reason"] in ("stop", "length")

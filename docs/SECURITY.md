@@ -32,8 +32,8 @@ constant-time comparison, and `weights_only` checkpoint loading in the API path.
    the next request), last-used. Not closed: there is no self-service HTTP signup or key management; the owner uses
    `scripts/manage_keys.py`. The JSON key file remains as the simple mode.
 3. **Rate limit is per process and in memory**; it resets on restart and does not span replicas.
-4. ~~No tokens-per-minute limit~~ **Closed with `--db`** (per-key `tpm_limit`). Still open: no per-request wall-clock
-   timeout for a running generation.
+4. ~~No tokens-per-minute limit~~ **Closed with `--db`** (per-key `tpm_limit`). The per-request wall-clock timeout is also
+   closed (`--request-timeout`, default 60 s).
 5. ~~No usage records~~ **Closed with `--db`**: one row per request (counts and outcome only; no prompt text). Still
    open: nothing reads them for abuse detection, and there is no retention policy.
 6. **`/stats` and `/model` are visible to any valid key** (fine for one owner, not for many users); `/stats` shows
