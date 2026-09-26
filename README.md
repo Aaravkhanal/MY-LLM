@@ -18,30 +18,47 @@ play with her toys in the kitchen. One day, she found a big box in the kitchen. 
 
 ## What was built, and what came out
 
-| | |
-|---|---|
-| **Model** | 4.95M-parameter Llama-style transformer (RMSNorm, RoPE, SwiGLU, grouped-query attention, tied embeddings), 256-token context |
-| **Tokenizer** | Byte-level BPE, 2,048 tokens, trained here on the training split only; versioned by SHA-256 |
-| **Data** | 60 MB slice of TinyStories → 15.8M training tokens (docs/DATASETS.md) |
-| **Pretraining** | 3,000 steps, 49.2M tokens (3.1 epochs), **79 minutes** on the M3; peak process memory 225 MB |
-| **Result** | validation loss **7.66 → 1.642 (perplexity 5.17)**; test perplexity 5.09; 0.65 bits per byte |
-| **Fine-tuning** | SFT on 19.8k story-request conversations (6.5 min) + LoRA support |
-| **Size** | 19.8 MB fp32, **5.06 MB int8** (+0.01% loss) — both packaged in `models/` |
-| **Tests** | 293 pytest tests + a 12-check end-to-end smoke test (~10 s) |
+Two models have been trained from random initialisation on the M3, each with the same pipeline:
+
+| | `tiny` (v1) | `small` (v2) |
+|---|---|---|
+| **Model** | 4.95M-parameter Llama-style transformer (RMSNorm, RoPE, SwiGLU, grouped-query attention, tied embeddings) | **14,162,304** parameters, same design: 8 layers, width 384, 6 query / 2 KV heads |
+| **Context / vocabulary** | 256 / 2,048 | 512 / 4,096 |
+| **Tokenizer** | Byte-level BPE trained here on the training split only; versioned by SHA-256 | same method; 3.96 characters per token on the corpus |
+| **Data** | 60 MB of TinyStories → 15.8M training tokens | ~400 MB → **103.0M training tokens** (507,597 stories) |
+| **Pretraining** | 3,000 steps, 49.2M tokens (3.1 epochs), **79 min** | 5,500 steps, 90.1M tokens (0.87 epoch), **4.1 h** |
+| **Validation loss** | 7.66 → **1.642** (perplexity 5.17) | 8.43 → **1.398** (perplexity 4.05); test loss 1.406 |
+| **Probes** (55 minimal pairs, chance 50%) | 92.7% | 94.5% |
+| **Size** | 19.8 MB fp32, **5.06 MB int8** (+0.01% loss) — packaged in `models/` | 54 MB fp32 (not packaged yet) |
+
+Around them: SFT and LoRA fine-tuning, an evaluation suite with a regression gate, terminal chat, an
+HTTP API with hashed keys and rate limiting, and a web chat page. **318 pytest tests** plus a 12-check
+end-to-end smoke test (~10 s).
+
+Token counts are not parameter counts: the corpus is 103M *tokens*, the model 14.2M *parameters*
+(about 6.4 tokens seen per parameter; loss was still falling when training stopped).
 
 ### How good is it, honestly?
 
-The base model writes fluent, grammatical, well-formed children's stories: 98% of sentences are
-capitalised correctly, ~0% non-words, 80% of stories end by themselves, and the character named in the
-prompt was reused in all 20 name prompts of the evaluation set. On 55 held-out minimal-pair probes it scores **92.7%** (grammar 100%, story
-logic 100%, common sense 79%; chance is 50%).
+The base models write fluent, grammatical, well-formed children's stories (`tiny`: 98% of sentences
+capitalised correctly, ~0% non-words, 80% of stories end by themselves; the character named in the
+prompt was reused in all 20 name prompts). On 55 held-out probes `tiny` scores **92.7%** and `small`
+**94.5%** (grammar, story logic, common sense; chance is 50%).
 
-It is also a 5M-parameter model. Story logic drifts ("the pillow was not a pillow"), names and
-pronouns sometimes disagree ("a little girl named Tom… he"), greedy decoding loops in 12.5% of
-samples (sampling: 0%), and common-sense facts are shaky (it misses "snow is white", "an ant is
-small"). It knows one domain. **It is not a general assistant.** The SFT model learned the chat
-format and, for named characters, gender-consistent names; measured request-following beyond that is
-weak — see [docs/RESULTS.md](docs/RESULTS.md), which reports the numbers that don't flatter it too.
+They are also very small models. Story logic drifts ("the pillow was not a pillow"), names and
+pronouns sometimes disagree, greedy decoding loops in 12.5% of `tiny` samples (sampling: 0%), and
+common-sense facts are shaky. Each knows one domain. **It is not a general assistant**: it has no world
+knowledge and cannot reason, summarise, answer questions, write code or do maths.
+
+**Instruction following is the open problem.** The first SFT on `small` (exp_005, 60k conversations)
+lowered loss but did **not** make it follow requests better (27% vs 23% pass rate for the untuned
+model on 208 checkable prompts, within noise; requests for short or long stories passed 0 of 32). The
+cause was found and is a data problem, not a model limit: each length request had only three
+phrasings, which the model memorised. The generator now produces 70–84 phrasings each for the length and dialogue
+requests (14–57 for the other kinds; `data/instruct_tasks.py`), evaluated on 312 held-out prompts with different wording. exp_006 tests the
+fix; its results are being evaluated and will be added to [docs/RESULTS.md](docs/RESULTS.md), which
+reports the numbers that don't flatter the model too. See [docs/AUDIT.md](docs/AUDIT.md) for the full
+audit, gap analysis and plan.
 
 ## Quick start
 
@@ -72,6 +89,19 @@ python scripts/make_story_requests.py --stories data/raw/tinystories_v2_head.txt
 python scripts/prepare_sft.py  --config configs/sft_tinystories.yaml
 python scripts/train.py        --config configs/sft_tinystories.yaml
 
+# the 14M `small` model (needs ~400 MB of TinyStories in data/raw/, see docs/DATASETS.md; ~4 h)
+python scripts/prepare_data.py --config configs/small_tinystories.yaml
+python scripts/train.py        --config configs/small_tinystories.yaml
+
+# verifiable instruction data + a held-out request-following eval, then SFT
+python scripts/make_instruct_data.py --stories data/raw/tinystories_v2_400mb.txt \
+    --out data/raw/instruct_v3.jsonl --eval-out evals/instruct_v3.jsonl --n-train 60000 --per-kind 24
+python scripts/prepare_sft.py  --config configs/sft_small_instruct_v3.yaml
+python scripts/train.py        --config configs/sft_small_instruct_v3.yaml
+python scripts/evaluate.py     --checkpoint experiments/exp_006_sft_small_instruct_v3/checkpoints/best.pt \
+    --instruct evals/instruct_v3.jsonl
+
+python scripts/audit_dataset.py --source data/raw/tinystories_v2_400mb.txt   # train/held-out overlap, junk, lengths
 python scripts/compare.py                        # side-by-side report of every experiment
 python scripts/export_int8.py --checkpoint …     # 3.9x smaller checkpoint
 python scripts/benchmark.py                      # throughput and memory on your machine
@@ -139,23 +169,28 @@ throttles, so measurements vary ±30% and checkpointing often is the right defau
 
 | | |
 |---|---|
+| [docs/AUDIT.md](docs/AUDIT.md) | audit of the whole project: architecture, model and dataset reports, gap matrix, risk register, phased plan |
 | [docs/RESULTS.md](docs/RESULTS.md) | every experiment, what worked, what didn't |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | design decisions and why, checkpoint format, data flow |
 | [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | measured throughput, memory, int8, thermal behaviour |
+| [docs/API.md](docs/API.md) | the HTTP API as it exists today: endpoints, fields, errors, streaming |
+| [docs/SECURITY.md](docs/SECURITY.md) | controls that exist, known gaps, what must close before going public |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | plan for serving other people (design only; nothing deployed) |
 | [docs/DATASETS.md](docs/DATASETS.md) | data sources and licences |
 | [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md) | works that informed the design |
 | [models/README.md](models/README.md) | the packaged checkpoints |
 
-## Scaling path
+## Scaling path and what is not built
 
-The `small` preset (8 layers, d=384, vocab 4,096, context 512; 14.2M parameters) is defined and
-tested but not yet trained. Nothing in the design stops at that size; the next steps are more data
-(the pipeline streams and shards), a bigger tokenizer, then a cloud GPU for anything past ~100M
-parameters. On 8 GB, roughly 30–50M parameters is the practical ceiling for pretraining.
+The `small` preset is trained (above). Its pretraining loss was still falling, and only ~1/5 of the
+2.2 GB TinyStories file has been used, so more tokens are the cheapest next gain, followed by better
+instruction data. On 8 GB, roughly 30–50M parameters is the practical ceiling for pretraining; anything
+larger needs rented GPU time.
 
-Not built: preference tuning (DPO), continuous batching, real int8 kernels, multi-GPU training,
-cloud deployment. See docs/DEPLOYMENT.md for when each becomes worth doing.
+Not built: OpenAI-style `/v1/...` endpoints, user accounts and per-user usage records, key
+list/revoke/rotate through the API, tokens-per-minute limits, preference tuning (DPO), continuous
+batching, real int8 kernels, multi-GPU training, cloud deployment. The order they will be tackled in,
+and what has to be true first, is in [docs/AUDIT.md](docs/AUDIT.md).
 
 ## Licence
 

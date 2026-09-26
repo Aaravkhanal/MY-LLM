@@ -1,5 +1,5 @@
 # v3: exp_005's recipe, unchanged except the data. exp_005 saw only 3 phrasings each for short/long/dialogue and
-# memorised them (held-out 'brief'/'lengthy' requests: 0/32 length checks). v3 has 70-84 phrasings per kind.
+# memorised them (held-out 'brief'/'lengthy' requests: 0/32 length checks). v3 has 70-84 phrasings for each of them (14-57 for the other kinds).
 # SFT of the 14M `small` model (exp_004) on ~60k verifiable story-request conversations
 # (topic / name / emotion / place / length / combinations; see scripts/make_instruct_data.py).
 # ~1 epoch: 32 conversations per step x 1800 steps. The earlier tiny-model SFT overfit its small

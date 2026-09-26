@@ -96,7 +96,7 @@ Throughput median 6.4k tokens/s (min 1.6k, max 8.6k, varying with thermals and o
    length/dialogue request and the eval used a phrasing not seen in training, so the model memorised
    strings instead of learning the concept. Also, the eval repeated one prompt 16× (one sample under
    greedy decoding), so its confidence intervals were too narrow. Fixed in `instruct_tasks.py` (70–84
-   phrasings per kind) and a 312-prompt eval with 4–6 held-out phrasings; exp_006 tests the fix.
+   phrasings each for short/long/dialogue requests, 14–57 for the other kinds) and a 312-prompt eval with 4–6 held-out phrasings; exp_006 tests the fix.
 2. Unseen names are copied only 12% of the time after SFT (base 4%). A 14M model has little capacity for it.
 3. `exp_004/env.json` records `git dirty: true`: the code that trained it was not exactly a commit.
    Now committed (`d1d98cc`); future runs should be started from a clean tree.
