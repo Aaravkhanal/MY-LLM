@@ -246,7 +246,7 @@ SDK strategy: OpenAI compatibility first; a thin Python client only if it adds s
 | 16–18 | API keys, usage, rate limits | **Done for a single-owner service**: SQLite users/keys/usage/models (`--db`), hashed keys, revoke/rotate/expiry effective on the next request, per-key rpm and tpm limits, one usage row per request incl. rejections, `/v1/usage`. **Missing:** self-service signup/key management over HTTP, per-request wall-clock timeout, shared limiter for several processes |
 | 19 | API docs | **Done** (API.md) for what exists |
 | 20–22 | Deployment, readiness | **Design only** (DEPLOYMENT.md, SECURITY.md) |
-| 25–26 | Experiment tracking, docs | Experiment records are complete. Docs: README, ARCHITECTURE, DEPLOYMENT, API, SECURITY, AUDIT, RESULTS, PERFORMANCE, DATASETS exist; **TRAINING, EVALUATION, INFERENCE, EXPERIMENTS.md are folded into README/RESULTS/PERFORMANCE/COMPARISON and can be split out on request** |
+| 25–26 | Experiment tracking, docs | Experiment records are complete. Docs: README, ARCHITECTURE, DEPLOYMENT, API, SECURITY, AUDIT, RESULTS, PERFORMANCE, DATASETS exist; TRAINING.md and EVALUATION.md now exist; INFERENCE and EXPERIMENTS content lives in PERFORMANCE.md and `experiments/COMPARISON.md` |
 
 ## 12. Phased execution plan
 

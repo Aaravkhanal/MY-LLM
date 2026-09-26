@@ -180,6 +180,8 @@ throttles, so measurements vary ±30% and checkpointing often is the right defau
 
 | | |
 |---|---|
+| [docs/TRAINING.md](docs/TRAINING.md) | the training pipeline, the recipes that were run and why, stability and recovery, hardware notes |
+| [docs/EVALUATION.md](docs/EVALUATION.md) | how quality is measured: chance level, controls, paired comparison, what each number can and cannot say |
 | [docs/AUDIT.md](docs/AUDIT.md) | audit of the whole project: architecture, model and dataset reports, gap matrix, risk register, phased plan |
 | [docs/CORRECTNESS.md](docs/CORRECTNESS.md) | running log of scientific problems found in training/evaluation: evidence, fix, test, what is still unmeasured |
 | [docs/RESULTS.md](docs/RESULTS.md) | every experiment, what worked, what didn't |
