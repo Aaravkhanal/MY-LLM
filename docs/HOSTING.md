@@ -28,25 +28,29 @@ The server generates **one reply at a time** (a lock around the model) and answe
 
     replies per second  ≈  tokens per second ÷ tokens per reply        (a story is about 120-250 tokens)
 
-Measured on the M3 (single stream through the HTTP API, CPU): the 5M-parameter model decodes about **380 tokens/s**
-([DEPLOYMENT.md](DEPLOYMENT.md)), i.e. roughly one story per half a second, or 120 stories a minute for everyone together.
-The 14M model is slower per token; **its number has not been measured yet** (the machine was training). Measure it on the
-machine you will host on, with the tool in this repo:
+Measured on the M3 (through the HTTP API, CPU, idle machine, 120-token streamed replies): the **14M model serves about 374 tokens/s**, i.e.
+roughly 3 replies a second, or a story every third of a second, when one user at a time is waiting; with 8 people at once each waits
+about 2.5 s for a whole reply. With batching (`--batch-size 8`) the same machine reached 530 tokens/s at 8 simultaneous users (median
+reply 1.8 s) and served 16 at once at 706 tokens/s without refusing anyone ([PERFORMANCE.md](PERFORMANCE.md) has the table and the caveats). The
+5M model is faster still ([DEPLOYMENT.md](DEPLOYMENT.md)). Measure it on the machine you will host on, with the tool in this repo:
 
 ```bash
+python scripts/manage_keys.py user add you@example.com
 python scripts/manage_keys.py key create you@example.com --label load --rpm 6000 --tpm 10000000
 python scripts/loadtest.py --url http://127.0.0.1:8000 --key aak_... --concurrency 4 --requests 40 --max-tokens 150 --stream
 ```
 
 It reports the mix of 200 / 429 / 503, latency percentiles, completion tokens per second, and time to first token. That the
-server refuses cleanly when full (503 with Retry-After, never a hang or a 500) is covered by `tests/test_loadtest.py`.
+server refuses cleanly when full (503 with Retry-After, never a hang or a 500) is covered by `tests/test_loadtest.py`. A single key
+can send at most 10 requests in the same instant (a burst limit that does not scale with `--rpm`), so a load test with
+one key above concurrency 10 sees some 429s from that, not from the server being full; use several keys for such a test.
 
 Per-user limits keep one person from using it all: a signed-in browser or a self-made key gets **20 requests and 30,000 tokens
 per minute** by default (`--web-rpm/--web-tpm/--key-rpm/--key-tpm`), five active keys per person. Twenty requests a minute is a
 new story every three seconds, so with the model producing roughly one story per second or two, **a handful of people chatting at
 the same time is comfortable; dozens is not** without batching. Batched decoding across users is built (`--batch-size 8`, exact and
-tested; about 2-2.5x throughput at 16 concurrent users in a contended measurement, [PERFORMANCE.md](PERFORMANCE.md)); it is off by
-default until measured on an idle machine.
+tested; 2.3x at a wave of 8 and 3.3x at 16 in the raw decode benchmark, +42% through the HTTP API at 8 users,
+[PERFORMANCE.md](PERFORMANCE.md)); it is off by default and worth turning on at about eight simultaneous users.
 
 ## Path A: your Mac and a Cloudflare quick tunnel
 

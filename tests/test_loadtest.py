@@ -73,3 +73,13 @@ def test_a_dead_server_is_counted_not_crashed_on():
 
 def test_percentiles():
     assert loadtest.pct([1, 2, 3, 4, 5], 50) == 3 and loadtest.pct([1, 2, 3, 4, 5], 95) == 5 and loadtest.pct([], 50) is None
+
+
+def test_streams_are_refused_with_a_real_503_never_as_an_error_after_the_200(server):
+    """The unbatched stream path used to admit a request (acquire and release the slot), then take the slot again after the 200 header
+    was sent; under load the second take could hit the waiter limit and the client got a 200 followed by an error event. Overload
+    must show up as 503 (or be served), so the load tester must see no faults."""
+    url, key = server(queue_timeout=10, max_waiters=2)
+    r = loadtest.run(url, key, concurrency=24, requests=120, max_tokens=24, stream=True, model="exp_test")
+    assert r["faults"] == [], r["faults"]
+    assert set(r["statuses"]) <= {"200", "503"} and r["statuses"].get("200", 0) >= 1

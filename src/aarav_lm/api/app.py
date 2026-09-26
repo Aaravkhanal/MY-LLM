@@ -302,10 +302,14 @@ def create_app(
         except ValueError as e:
             raise HTTPException(422, str(e)) from e
 
-    def acquire_slot() -> None:
-        """Wait (bounded) for the single generation slot. Runs in a worker thread."""
+    def acquire_slot(admitted: bool = False) -> None:
+        """Wait (bounded) for the single generation slot. Runs in a worker thread.
+
+        `admitted`: this request already passed the waiter limit (a stream checks once before its 200 and takes the slot again
+        inside the stream). Judging it a second time could refuse it after the 200 header was sent, so the client would see a
+        successful response that ends in an error instead of a 503."""
         with stats._lock:
-            if stats.waiting >= max_waiters:            # never let queued requests exhaust the thread pool
+            if stats.waiting >= max_waiters and not admitted:      # never let queued requests exhaust the thread pool
                 stats.rejected += 1
                 raise HTTPException(503, "too many requests waiting, try again shortly", headers={"Retry-After": "5"})
             stats.waiting += 1
@@ -485,7 +489,7 @@ def create_app(
             it = None
 
             def take_slot() -> None:
-                acquire_slot()
+                acquire_slot(admitted=True)
                 held["slot"] = True                # set inside the thread: cancellation can't lose it
 
             try:
