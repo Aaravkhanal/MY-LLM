@@ -8,7 +8,7 @@ only if a test proves it, and says **measured** only if the number came from a r
 |---|---|---|
 | 3 | Instruction-following pass rates are reported without a chance-level control | **found**, fix planned (step 1) |
 | 2 | SFT gradient accumulation weighted micro-batches equally instead of by scored tokens | **fixed** (test), effect on real runs not yet measured |
-| 1 | Two "validation loss" numbers for one checkpoint differ by 0.04 (subset choice) | **found**, measurement in progress, fix planned |
+| 1 | Validation loss depends on how many conversations are scored (1.2895 / 1.3276 / 1.3190 for one checkpoint; noise sd 0.031 at 160) | **measured**, fix planned (step 1) |
 
 ---
 
@@ -56,14 +56,32 @@ because most micro-batches have similar counts, and it will be reported either w
 
 ## 1. Validation loss depends on which conversations are scored
 
-**Evidence.** exp_005's own log reports SFT validation loss **1.2895** at the end of training;
-`scripts/evaluate.py` printed **1.3276** for the same checkpoint. The trainer scores 160 evenly spaced
-conversations (`eval_iters` 40 × `eval_batch_size` 4); `evaluate.py` scores 400; the split holds 2,423.
+**Evidence (measured on exp_005 `best.pt`, `data/processed/instruct_v2_sft`, script in the session
+scratchpad; per-conversation loss sums, token-weighted).** The same checkpoint has three different
+"validation loss" numbers depending on how many conversations are scored:
 
-**Consequences.** (a) A validation loss is only comparable within a run, because the subset is fixed.
-(b) Across runs with different SFT data (exp_005 vs exp_006) validation sets are different conversations,
-so their losses **must not be compared**. (c) Picking `best.pt` on a small subset is noisy.
+| Scored | Where it comes from | Loss |
+|---|---|---|
+| 160 evenly spaced conversations | the trainer's own eval (`eval_iters` 40 × `eval_batch_size` 4) | 1.2895 |
+| 1,008 evenly spaced conversations | `scripts/evaluate.py` (`windows` in its result file) | 1.3276 |
+| **all 2,423** | the truth for this split | **1.3190** |
 
-**Status.** The size of the subset noise is being measured on the full split (bootstrap over conversations)
-and will be filled in here. Planned fix: final numbers use the full validation and test splits and carry a
-standard error; the training-time subset stays for speed and is labelled as such.
+Sampling noise of a random subset (500 draws): 160 conversations → sd **0.031** (5–95% range 1.265–1.367);
+400 → sd 0.018; bootstrap standard error of the full-split loss → **0.008**. The trainer's evenly spaced
+160 happens to sit 0.030 *below* the full value. Test split, all 2,356 conversations: 1.3294.
+
+Weighting also matters: an equal-weight mean of per-conversation losses is 1.2908, against 1.3190
+token-weighted (assistant tokens per conversation: mean 188, sd 50). Every loss quoted in this repository is
+token-weighted.
+
+**Consequences.**
+* A validation loss is only comparable *within* one run, where the subset is fixed and the comparison is
+  paired. Differences of ~0.01 between checkpoints of one run are meaningful; the absolute number is not.
+* Across runs with different SFT data (exp_005 vs exp_006), validation sets are different conversations, so
+  their losses **must not be compared**. The trainer's reported best loss is also selected on the same subset.
+* `best.pt` is chosen on 160 conversations. With subset noise of 0.03 that choice between neighbouring
+  checkpoints is close to arbitrary late in training, when the true differences are ~0.005.
+
+**Planned fix (step 1).** Final numbers (`scripts/evaluate.py`) score the full validation and test splits
+and report a bootstrap standard error; the training-time subset stays for speed and is labelled as a subset
+in the log.
