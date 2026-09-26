@@ -232,8 +232,22 @@ class Trainer:
         self.data_summary = f"train {self.train_tokens:,} tok / val {self.val_tokens:,} tok"
 
     def _init_model(self) -> AaravLM:
+        if self.exp.init_from:
+            return self._model_from_checkpoint()
         # Initialise on CPU so weights are identical across devices for a given seed.
         return AaravLM(self.model_cfg)
+
+    def _model_from_checkpoint(self) -> AaravLM:
+        """Continued pretraining: start from another run's weights. Only the weights carry over; the optimiser,
+        LR schedule and data order start fresh (the schedule warms up again, so expect a small loss bump before
+        the gain). Architecture and tokenizer must match exactly."""
+        path = resolve(self.exp.init_from)
+        model, raw = ckpt.load_model(path, "cpu", self.tok.fingerprint)
+        if raw["model_config"] != self.model_cfg.to_dict():
+            raise RuntimeError(f"{path.name} has a different architecture than this experiment's model config")
+        self.init_from_name = f"{path.parent.parent.name}/{path.name}"
+        self.log(f"[init] continuing pretraining from {self.init_from_name} (weights only; optimiser and schedule start fresh)")
+        return model
 
     def _export_model(self) -> AaravLM:
         """The plain model to put in model-only checkpoints."""

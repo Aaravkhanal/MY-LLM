@@ -165,3 +165,182 @@ def test_training_task_mix_follows_the_weights_even_for_rare_kinds():
             assert word_count(story) <= SHORT_MAX_WORDS
         if r["task"] in ("long", "long_topic"):
             assert word_count(story) >= LONG_MIN_WORDS
+
+
+# ── clustered intervals and paired comparison ────────────────────────────────
+
+def test_cluster_interval_is_wider_when_draws_are_duplicates_of_few_prompts():
+    from aarav_lm.evaluation.stats import cluster_rate_ci
+    independent = [(1, 1)] * 6 + [(0, 1)] * 6 + [(1, 1)] * 6 + [(0, 1)] * 6        # 24 different prompts, 50% pass
+    duplicated = [(4, 4), (0, 4), (4, 4), (0, 4), (4, 4), (0, 4)]                   # 6 prompts x 4 identical draws, 50% pass
+    wi, wd = cluster_rate_ci(independent), cluster_rate_ci(duplicated)
+    assert wd[1] - wd[0] > 1.5 * (wi[1] - wi[0])
+    assert cluster_rate_ci([]) == [0.0, 1.0]
+
+
+def test_paired_difference_detects_a_real_gap_and_not_a_null_one():
+    from aarav_lm.evaluation.stats import paired_difference
+    real = [(1, 0, 1)] * 30 + [(1, 1, 1)] * 20 + [(0, 0, 1)] * 20                  # A wins 30 prompts, loses none
+    r = paired_difference(real)
+    assert r["diff"] == pytest.approx(30 / 70) and r["ci95"][0] > 0.2 and r["p"] < 0.01
+    null = [(1, 0, 1)] * 15 + [(0, 1, 1)] * 15 + [(1, 1, 1)] * 40
+    n = paired_difference(null)
+    assert n["diff"] == 0 and n["ci95"][0] < 0 < n["ci95"][1] and n["p"] > 0.5
+    with pytest.raises(ValueError):
+        paired_difference([])
+
+
+def test_paired_compare_matches_by_prompt_and_refuses_mismatched_runs():
+    from aarav_lm.evaluation.paired import format_paired, paired_compare
+    mk = lambda pid, kind, text, ok: {"id": pid, "kind": kind, "prompt": text, "passed": ok}           # noqa: E731
+    a = [mk("1", "topic", "story with a dog", True), mk("2", "topic", "story with a cat", True), mk("3", "short", "brief", False)]
+    b = [mk("1", "topic", "story with a dog", False), mk("2", "topic", "story with a cat", True), mk("3", "short", "brief", False)]
+    r = paired_compare(a, b, n_boot=200)
+    assert r["topic"]["only_a"] == 1 and r["topic"]["only_b"] == 0 and r["ALL"]["n"] == 3
+    assert r["ALL"]["rate_a"] == pytest.approx(2 / 3) and r["ALL"]["rate_b"] == pytest.approx(1 / 3)
+    assert "topic" in format_paired(r, "A", "B")
+    with pytest.raises(ValueError, match="different prompts"):
+        paired_compare(a, b[:2])
+    with pytest.raises(ValueError, match="differs between"):
+        paired_compare(a, [mk("1", "topic", "OTHER TEXT", False), b[1], b[2]])
+
+
+def test_chance_levels_measure_what_a_request_ignoring_story_scores():
+    from aarav_lm.data.instruct_data import chance_levels
+    stories = ["The dog ran to the park.", "The cat sat.", "A dog and a cat played.", "The sun was hot."]
+    prompts = [
+        {"kind": "topic", "prompt": "a", "checks": [{"kind": "contains_all", "words": ["dog"], "n": 0}]},
+        {"kind": "topic", "prompt": "b", "checks": [{"kind": "contains_all", "words": ["cat"], "n": 0}]},
+        {"kind": "name", "prompt": "c", "checks": [{"kind": "contains_all", "words": ["Zara"], "n": 0}]},
+        {"kind": "generic", "prompt": "d", "checks": []},                                # format-only: not scored
+    ]
+    c = chance_levels(prompts, stories)
+    assert c["by_kind"] == {"name": 0.0, "topic": 0.5} and c["n_stories"] == 4          # dog in 2 of 4, cat in 2 of 4
+
+
+def test_in_template_control_uses_training_phrasings_and_held_out_eval_uses_none_of_them():
+    from aarav_lm.data.instruct_data import make_eval_prompts
+    stories = [f"Once upon a time there was a little girl named Mia. She had a dog and played in the park. "
+               f"Then she said, \"Hello {i}!\" " * 3 + "The end." for i in range(40)]
+    train = {t for ts in TRAIN_TEMPLATES.values() for t in ts}
+    held = make_eval_prompts(stories, per_kind=6, seed=0)
+    ctrl = make_eval_prompts(stories, per_kind=6, seed=0, templates=TRAIN_TEMPLATES)
+    assert {p["kind"] for p in held} == {p["kind"] for p in ctrl}
+    assert not any(p["prompt"] in train for p in held if "{" not in p["prompt"])         # fixed-string prompts never come from training
+    generic_train = set(TRAIN_TEMPLATES["generic"])
+    assert all(p["prompt"] in generic_train for p in ctrl if p["kind"] == "generic")     # the control really does use training wording
+    assert not any(p["prompt"] in generic_train for p in held if p["kind"] == "generic")
+
+
+# ── v4 data options: templates, prominence, balanced sampling, casual typing ─
+
+def _synthetic_pool(n, seed, skew=False):
+    """Stories with known features. With skew=True most stories are set at the park (like the real corpus)."""
+    import random
+    from aarav_lm.data.instruct_tasks import EMOTIONS, NOUNS, PLACES
+    r = random.Random(seed)
+    out = []
+    for _ in range(n):
+        name = r.choice(["Tim", "Mia", "Zoe", "Sam", "Lily", "Ben"])
+        a, b = r.sample(NOUNS, 2)
+        place = "park" if (skew and r.random() < 0.7) else r.choice(PLACES)
+        em = r.choice(EMOTIONS)
+        body = [f"Once upon a time, there was a little kid named {name}. {name} loved a {a} at the {place}."]
+        for _ in range(r.choice([2, 4, 8, 12, 16])):
+            body.append(f"The {r.choice([a, b])} was {r.choice([em, 'happy', 'big'])}. \"Look!\" said {name}." if r.random() < .5
+                        else f"{name} saw the {r.choice([a, b])} and smiled at the {place}.")
+        out.append(" ".join(body))
+    return out
+
+
+def test_default_generator_output_is_byte_identical_to_the_v3_data():
+    """Pinned hash: any change to the defaults would silently alter the data exp_006 was trained on."""
+    import hashlib
+    import json
+    from aarav_lm.data.instruct_data import make_conversations
+    stories = {"train": _synthetic_pool(1500, 1), "val": _synthetic_pool(60, 2), "test": _synthetic_pool(60, 3)}
+    recs = list(make_conversations(stories, 800, seed=0))
+    assert len(recs) == 920
+    assert hashlib.sha256(json.dumps(recs, sort_keys=True).encode()).hexdigest() == \
+        "41b4a529737d154ff21084306dd733f974344cd835b17319d342509975d19dbf"
+
+
+def test_v4_templates_share_no_string_with_the_eval_and_add_many_frames():
+    from aarav_lm.data.instruct_tasks import TRAIN_TEMPLATES_V4
+    v4 = {t for ts in TRAIN_TEMPLATES_V4.values() for t in ts}
+    assert not v4 & {t for ts in EVAL_TEMPLATES.values() for t in ts}
+    assert set(TRAIN_TEMPLATES_V4) == set(TRAIN_TEMPLATES)
+    assert all(len(TRAIN_TEMPLATES_V4[k]) >= 2 * len(TRAIN_TEMPLATES[k]) for k in TRAIN_TEMPLATES if k != "generic")
+    assert not any(t.startswith(("Give me", "Compose", "Create", "Make up", "Could you", "I'm in the mood")) for t in v4)
+
+
+def test_balanced_sampling_flattens_a_skewed_place_distribution():
+    from collections import Counter
+    from aarav_lm.data.instruct_data import make_conversations
+    from aarav_lm.data.instruct_tasks import PLACES
+
+    def park_share(alpha):
+        stories = {"train": _synthetic_pool(4000, 5, skew=True)}
+        c = Counter()
+        for rec in make_conversations(stories, 3000, seed=1, balance_alpha=alpha):
+            if rec["task"] == "place":
+                u = [m for m in rec["messages"] if m["role"] == "user"][0]["content"]
+                c.update(p for p in PLACES if p in u)
+        return c["park"] / sum(c.values()), sum(c.values())
+    natural, n1 = park_share(1.0)
+    balanced, n2 = park_share(0.3)
+    assert natural > 0.5 and balanced < 0.5 * natural and n1 > 100 and n2 > 100
+
+
+def test_balanced_and_default_paths_are_both_deterministic_and_use_each_story_once():
+    from aarav_lm.data.instruct_data import make_conversations
+    stories = {"train": _synthetic_pool(600, 7, skew=True)}
+    a = list(make_conversations(stories, 400, seed=3, balance_alpha=0.5, augment=0.3, min_mentions=2))
+    b = list(make_conversations(stories, 400, seed=3, balance_alpha=0.5, augment=0.3, min_mentions=2))
+    assert a == b and len(a) > 300
+    answers = [[m for m in r["messages"] if m["role"] == "assistant"][0]["content"] for r in a]
+    assert len(set(answers)) == len(answers)                       # never the same story twice
+
+
+def test_min_mentions_only_keeps_requests_about_words_the_story_dwells_on():
+    from aarav_lm.data.instruct_tasks import extract_features
+    f = extract_features("Once upon a time a dog lived in the park. The dog ran. The dog barked at the park. The end.")
+    assert f.topic_mentions == 3 and f.place_mentions == 2
+    once = extract_features("Once upon a time, a boy saw a cat in a forest and went home to eat dinner with mom and dad today.")
+    assert once.topic_mentions == 1 and once.place_mentions == 1
+
+
+def test_casual_typing_keeps_the_names_the_checks_depend_on():
+    import random
+    from aarav_lm.data.instruct_tasks import Features, build_task, run_check
+    f = Features(name="Zara", topics=["dog"], place="park", emotion="sad", words=50, dialogue=True)
+    rng = random.Random(0)
+    seen_lower, seen_nopunct = False, False
+    for _ in range(200):
+        t = build_task("name", f, rng, TRAIN_TEMPLATES, augment=1.0)
+        assert "Zara" in t.request                                # the requested name keeps its capital
+        assert run_check(t.checks[0], "Once upon a time Zara went home.")
+        seen_lower |= t.request.replace("Zara", "").lower() == t.request.replace("Zara", "")
+        seen_nopunct |= not t.request.endswith((".", "!", "?"))
+    assert seen_lower and seen_nopunct
+    plain = build_task("name", f, random.Random(0), TRAIN_TEMPLATES, augment=0.0)
+    assert plain.request == build_task("name", f, random.Random(0), TRAIN_TEMPLATES).request
+
+
+def test_first_mention_positions_and_the_early_mention_filter():
+    from aarav_lm.data.instruct_data import make_conversations
+    from aarav_lm.data.instruct_tasks import extract_features
+    early = extract_features("A dog lived in the park. The dog was happy in the park. The end.")
+    late = extract_features("Mia woke up and ate her breakfast slowly and then brushed her teeth. Later a dog came to the park. The dog ran in the park.")
+    assert early.topic_first == 1 and early.place_first == 5 and late.topic_first >= 15
+    stories = {"train": _synthetic_pool(800, 9)}
+    all_topic = [r for r in make_conversations(stories, 500, seed=1) if r["task"] == "topic"]
+    early_topic = [r for r in make_conversations(stories, 500, seed=1, first_mention_max=20, min_mentions=1) if r["task"] == "topic"]
+    assert early_topic and all_topic
+    strict = [r for r in make_conversations(stories, 500, seed=1, first_mention_max=5) if r["task"] == "topic"]
+    assert strict == []                                              # nothing in the fixture opens with its topic in 5 words
+    for r in early_topic:                                            # every answer really opens with what was asked for
+        user = [m for m in r["messages"] if m["role"] == "user"][0]["content"]
+        story = [m for m in r["messages"] if m["role"] == "assistant"][0]["content"]
+        f = extract_features(story)
+        assert f.topic_first <= 20 and f.topic_first < 10**9

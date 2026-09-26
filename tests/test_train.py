@@ -284,3 +284,33 @@ def test_a_step_with_every_target_masked_is_an_error_not_nan():
     model = AaravLM(cfg_5m(arch="modern", vocab_size=500, block_size=16))
     with pytest.raises(ValueError, match="masked"):
         _accum_trainer(model, _masked_batches([0, 0]))._accumulate()
+
+
+# ── continued pretraining ────────────────────────────────────────────────────
+
+def test_continued_pretraining_starts_from_the_given_weights_and_only_the_weights(tmp_path):
+    exp = tiny_experiment(tmp_path, max_steps=20, eval_interval=20)
+    first = Trainer(exp, tmp_path / "a", log=quiet).run()
+    fresh = tiny_experiment(tmp_path, max_steps=4, eval_interval=4)
+    Trainer(fresh, tmp_path / "fresh", log=quiet).run()
+
+    cont = tiny_experiment(tmp_path, max_steps=4, eval_interval=4)
+    cont.init_from = str(tmp_path / "a" / "checkpoints" / "final.pt")
+    summary = Trainer(cont, tmp_path / "b", log=quiet).run()
+
+    def step0(run):
+        evals = [json.loads(line) for line in (run / "metrics.jsonl").read_text().splitlines() if '"eval"' in line]
+        return next(e for e in evals if e["step"] == 0)["val_loss"]
+    assert step0(tmp_path / "b") == pytest.approx(first["last_eval"]["val_loss"], rel=1e-5)   # identical weights, identical val batches
+    assert step0(tmp_path / "fresh") > step0(tmp_path / "b") + 1.0                           # a random init is far worse
+    assert summary["steps"] == 4 and summary["tokens_seen"] == 4 * 4 * 2 * 32                # counters start from zero
+
+
+def test_continued_pretraining_rejects_a_different_architecture_or_tokenizer(tmp_path):
+    exp = tiny_experiment(tmp_path, max_steps=4, eval_interval=4)
+    Trainer(exp, tmp_path / "a", log=quiet).run()
+    other = tiny_experiment(tmp_path, max_steps=4, eval_interval=4)
+    other.model_overrides = {**other.model_overrides, "n_layer": 3}
+    other.init_from = str(tmp_path / "a" / "checkpoints" / "final.pt")
+    with pytest.raises(RuntimeError, match="different architecture"):
+        Trainer(other, tmp_path / "b", log=quiet).run()

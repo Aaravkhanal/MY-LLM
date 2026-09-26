@@ -27,6 +27,9 @@ def main() -> None:
     ap.add_argument("--probes", default="evals/probes_v1.jsonl")
     ap.add_argument("--instruct", default="evals/instruct_v2.jsonl",
                     help="rule-checked instruction-following prompts (skipped if the file does not exist)")
+    ap.add_argument("--loss-windows", type=int, default=None,
+                    help="score only this many evenly spaced val/test items (default: the whole split; a subset "
+                         "adds ~0.03 of noise to the loss, see docs/CORRECTNESS.md)")
     ap.add_argument("--max-new-tokens", type=int, default=200)
     ap.add_argument("--out", help="results file (default: <experiment>/eval/<checkpoint>_results.json)")
     ap.add_argument("--baseline", help="results file to compare against; exit code 1 if a metric regresses")
@@ -42,7 +45,7 @@ def main() -> None:
     prompts = args.prompts or ("evals/chat_prompts_v1.jsonl" if engine.meta.get("stage") == "sft" else "evals/prompts_v1.jsonl")
     print(f"[eval] stage={engine.meta.get('stage', 'pretrain')}  prompts={prompts}")
     results = run_suite(engine, resolve(cfg["data"]["out_dir"]), resolve(prompts), resolve(args.probes),
-                        max_new_tokens=args.max_new_tokens,
+                        max_new_tokens=args.max_new_tokens, max_windows=args.loss_windows,
                         instruct_path=resolve(args.instruct) if resolve(args.instruct).exists() else None)
     out = Path(args.out) if args.out else run_dir / "eval" / f"{ckpt.stem}_results.json"
     print(f"[eval] wrote {save_results(results, out)}")

@@ -96,7 +96,7 @@ class ExperimentConfig:
     name: str = "exp"
     description: str = ""
     stage: str = "pretrain"           # pretrain | sft
-    init_from: str = ""               # sft: checkpoint (best.pt/final.pt/step_*.pt) to start from
+    init_from: str = ""               # checkpoint (best.pt/final.pt/step_*.pt) to start from: required for sft, optional for pretrain (continued pretraining)
     model_preset: str = "tiny"
     model_overrides: dict = field(default_factory=dict)
     tokenizer: TokenizerConfig = field(default_factory=TokenizerConfig)

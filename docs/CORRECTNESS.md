@@ -6,10 +6,48 @@ only if a test proves it, and says **measured** only if the number came from a r
 
 | # | Problem | Status |
 |---|---|---|
+| 6 | Content requests (topic, place, emotion) are barely learnable from the data as generated | **found**; opt-in data fixes added, effect not yet measured |
+| 5 | One pass rate hid two different failures: not learning the task vs not generalising to new wording | **measured**; in-template control added |
 | 4 | No layer-wise gradient health, spike/overfit detection or plots during training | **added** (tests), thresholds not yet validated on a real run |
-| 3 | Instruction-following pass rates are reported without a chance-level control | **found**, fix planned (step 1) |
+| 3 | Instruction-following pass rates had no chance-level control, inflated sample sizes and no paired test | **fixed** (tests) |
 | 2 | SFT gradient accumulation weighted micro-batches equally instead of by scored tokens | **fixed** (test), effect on real runs not yet measured |
-| 1 | Validation loss depends on how many conversations are scored (1.2895 / 1.3276 / 1.3190 for one checkpoint; noise sd 0.031 at 160) | **measured**, fix planned (step 1) |
+| 1 | Validation loss depends on how many conversations are scored (1.2895 / 1.3276 / 1.3190 for one checkpoint; noise sd 0.031 at 160) | **fixed** (tests): the full split is scored by default, with a standard error |
+
+---
+
+## 6. Content requests are barely learnable from the data as generated
+
+**Evidence.** Even on wording it was trained on, exp_006 passes only 21% of place requests and 25% of emotion
+requests, below the untuned model (54%, 58%). Reading its replies: it opens with the same generic "little girl
+named Lily" story regardless of the requested topic or place. In the training data the requested word appears
+in the story 99.9% of the time, but the first mention is late (place: median 19 words, 90th percentile 68), and
+the distribution is heavily skewed (`park` is 40% of 5,114 place examples; `library` 14, `mountain` 21).
+The "topic" of a story is its most frequent noun even if it occurs once.
+
+**Added (opt-in; the default output is byte-identical, pinned by a hash test).** `make_conversations` /
+`scripts/make_instruct_data.py`: `--templates v4` (23 request openers instead of 8, disjoint from the eval
+wording), `--min-mentions N` (the requested word must occur at least N times), `--first-mention-max W` (and first
+within W words), `--balance-alpha a` (sample values with probability ∝ count^a, flattening rare places/topics/
+names), `--augment p` (casual typing: lowercase, no final punctuation; names keep their capital).
+
+**Not yet measured.** Whether any of it helps. That is exp_007, judged on a fresh held-out set.
+
+---
+
+## 5. One pass rate hid two different failures
+
+**Evidence.** exp_006 scored 37.5% on held-out phrasings, no better than the untuned model (40.6%): "the SFT did
+not work". The in-template control (same kinds and held-out stories, but the training wording) shows 56.9% vs
+41.7% (paired +15.3 points, 95% interval +7.4 to +22.8): the model *did* learn to follow requests, for the
+wording it had seen. The two questions have different answers and different fixes (more phrasing diversity vs a
+bigger model or more data), and only the pair of numbers distinguishes them. Full tables are in
+[RESULTS.md](RESULTS.md).
+
+**Fix.** `scripts/make_eval_controls.py` builds the control from the training templates and the held-out
+stories; `make_eval_prompts(..., templates=...)` makes any phrasing family. Both sets are reported together.
+
+**Caveat.** The held-out set has now been looked at while designing fixes. Improvements will be confirmed on a
+fresh set (new wording, new stories) that is written down before any model is scored on it.
 
 ---
 
@@ -55,22 +93,26 @@ trained with them on; `summary.json → anomalies` will show it.
 
 ---
 
-## 3. Chance-level control is missing from the instruction-following eval
+## 3. Instruction-following pass rates had no baseline, inflated sample sizes and no paired test
 
-**Evidence.** For each of the 312 prompts in `evals/instruct_v3.jsonl`, 200 random real held-out
-stories were checked against the prompt's rules, i.e. what a model that ignores the request would score.
-Chance-level pass rate by kind: name 3.7%, topic 8.6%, name+topic 0.5%, two topics 1.6%, place 10.3%,
-emotion 18.6%, name+emotion 2.0%, short 1.4%, long 11.8%, short+topic 0.2%, long+topic 0.8%,
-**dialogue 66.4%**, generic 100% (no rule, so it is excluded from the scored rate). Over the scored kinds
-the average is about **10.5%**.
+**Evidence.** For each of the 312 prompts in `evals/instruct_v3.jsonl`, every held-out story was checked against
+the prompt's rules, i.e. what a model that ignores the request would score. Chance-level pass rate by kind:
+name 3.9%, topic 8.8%, name+topic 0.7%, two topics 1.8%, place 10.2%, emotion 19.3%, name+emotion 1.6%, short
+1.4%, long 11.6%, short+topic 0.2%, long+topic 0.9%, **dialogue 66.8%**, generic 100% (no rule, excluded). Over
+the scored kinds the average is **10.6%**. Also, the kinds with no story-dependent slot (short, long, dialogue,
+generic) are only 6, 6, 4 and 4 distinct strings repeated 24 times each: under greedy decoding a repeat is the
+same test, so "n = 24" was really 4–6, and the overall n = 312 was 190 distinct prompts. Finally, per-prompt
+outcomes were not saved, so no paired test was possible.
 
-**Why it matters.** The un-tuned 14M model scored 23% (greedy) and the first SFT run 27% on the earlier
-208-prompt set. Those numbers only mean something relative to about 10% chance, and a kind such as
-dialogue is 66% "correct" for free. A raw pass rate can therefore hide a model that is doing nothing.
+**Why it mattered.** The un-tuned 14M model scored 23% on the earlier set; that is meaningful only against ~10%
+chance, and a kind like dialogue is 67% "correct" for free.
 
-**Planned fix (step 1).** Report each kind's chance level next to its pass rate, and lift over chance;
-save per-prompt outcomes so two checkpoints can be compared on the same prompts with a paired test;
-tighten the dialogue rule.
+**Fix (`evaluation/instruct.py`, `paired.py`, `stats.py`; `scripts/make_eval_controls.py`, `eval_instruct.py`,
+`compare_instruct.py`).** Results now carry, per kind and overall: `chance` and `lift`, `n_distinct`, a
+`ci95_clustered` that resamples distinct prompts, and `per_prompt` outcomes. `paired_compare` runs two
+checkpoints through identical prompts with a cluster bootstrap on the difference. Tests:
+`test_cluster_interval_is_wider_when_draws_are_duplicates_of_few_prompts`, `test_paired_difference_detects_a_real_gap_and_not_a_null_one`,
+`test_chance_levels_measure_what_a_request_ignoring_story_scores`, and the instruction-eval structure test.
 
 ---
 
@@ -125,6 +167,10 @@ token-weighted.
 * `best.pt` is chosen on 160 conversations. With subset noise of 0.03 that choice between neighbouring
   checkpoints is close to arbitrary late in training, when the true differences are ~0.005.
 
-**Planned fix (step 1).** Final numbers (`scripts/evaluate.py`) score the full validation and test splits
-and report a bootstrap standard error; the training-time subset stays for speed and is labelled as a subset
-in the log.
+**Fix.** `scripts/evaluate.py` now scores the whole validation and test splits by default
+(`--loss-windows N` restores a subset) and reports a bootstrap standard error (`evaluation/loss.py`:
+`heldout_rows` in one forward pass, `summarize_rows`); results say whether the split was scored `complete`, and
+the regression gate refuses to compare a subset with a full-split result. Tests require the new function to
+agree exactly with the old loss and accuracy functions, and its standard error to match the analytic value for
+equal-weight rows. Measured with it: exp_004 validation 1.3948 ± 0.0065 (999 windows), test 1.4056 ± 0.0072;
+exp_005 1.3190 ± 0.0079; exp_006 1.3185 ± 0.0076. The trainer's 160-conversation subset is unchanged (speed).

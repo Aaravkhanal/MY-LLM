@@ -11,6 +11,7 @@ import argparse
 import json
 
 from aarav_lm.data.instruct_data import make_conversations, make_eval_prompts, write_jsonl
+from aarav_lm.data.instruct_tasks import TRAIN_TEMPLATES, TRAIN_TEMPLATES_V4
 from aarav_lm.data.story_requests import load_stories
 from aarav_lm.paths import resolve
 
@@ -23,6 +24,15 @@ def main() -> None:
     ap.add_argument("--n-train", type=int, default=60000)
     ap.add_argument("--per-kind", type=int, default=16, help="evaluation prompts per task kind")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--templates", choices=["v3", "v4"], default="v3",
+                    help="request wording: v3 (8 openers) or v4 (23 openers, ~3x the frames)")
+    ap.add_argument("--min-mentions", type=int, default=1,
+                    help="a topic/place/emotion request needs a story that mentions that word at least this often")
+    ap.add_argument("--first-mention-max", type=int, default=None,
+                    help="...and it must first appear within this many words of the story's start")
+    ap.add_argument("--balance-alpha", type=float, default=1.0,
+                    help="1.0 follows the corpus distribution; <1 flattens toward rare topics/places/names (0 = uniform)")
+    ap.add_argument("--augment", type=float, default=0.0, help="share of requests rewritten in casual typing")
     ap.add_argument("--split-seed", type=int, default=1337, help="must equal data.seed of the pretraining config")
     ap.add_argument("--val-fraction", type=float, default=0.005)
     ap.add_argument("--test-fraction", type=float, default=0.005)
@@ -33,7 +43,10 @@ def main() -> None:
     stories = load_stories([resolve(s) for s in args.stories], args.split_seed, args.val_fraction, args.test_fraction,
                            min_chars=args.min_chars, max_chars=args.max_chars)
     print({k: len(v) for k, v in stories.items()}, f"usable stories ({args.min_chars}-{args.max_chars} chars)")
-    recs = list(make_conversations(stories, args.n_train, args.seed))
+    recs = list(make_conversations(stories, args.n_train, args.seed,
+                                   templates=TRAIN_TEMPLATES_V4 if args.templates == "v4" else TRAIN_TEMPLATES,
+                                   min_mentions=args.min_mentions, balance_alpha=args.balance_alpha, augment=args.augment,
+                                   first_mention_max=args.first_mention_max))
     n = write_jsonl(recs, resolve(args.out))
     kinds = {}
     for r in recs:

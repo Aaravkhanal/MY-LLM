@@ -79,6 +79,98 @@ What did not:
   story's opening, and a 5M-parameter model has little capacity to condition 150 tokens of story on a
   short request. The packaged SFT model is the 600-step one (lower loss, less forgetting).
 
+## The 14M model and request following (exp_004 – exp_006)
+
+Everything in this section is reproducible from the repository: configs in `configs/`, per-run records in
+`experiments/exp_00{4,5,6}_*/`, evaluation files in `evals/`, scripts named below.
+
+### Pretraining the `small` model (exp_004)
+
+14,162,304 parameters (8 layers, width 384, 6 query / 2 KV heads, context 512, vocabulary 4,096), 5,500 steps,
+90.1M tokens (0.87 epoch of the 103M-token training split), 4.09 h on the M3.
+
+| Held-out split (scored in full) | Loss ± std. error | Perplexity | Bits per byte | Top-1 |
+|---|---|---|---|---|
+| validation (999 windows) | **1.3948 ± 0.0065** | 4.03 | 0.509 | 0.637 |
+| test (995 windows) | 1.4056 ± 0.0072 | 4.08 | 0.513 | 0.634 |
+
+Bits per byte is the tokenizer-independent number: exp_001 (the 5M model, a different tokenizer) had
+0.651 on its validation split, so the 14M model is about 22% better. Probes 94.5% (55 pairs, chance 50%), edge
+cases 14/14. Training was healthy (no NaN, no loss spikes; one isolated gradient spike absorbed by clipping,
+see [CORRECTNESS.md](CORRECTNESS.md), entry 4) and train and validation loss overlap throughout: no overfitting,
+and both were still falling when it stopped.
+
+### Instruction tuning: what the data taught, measured properly
+
+Two SFT runs of exp_004 on 60,000 verifiable conversations each: **exp_005** (each length or dialogue request
+had 2–3 phrasings) and **exp_006** (70–84 phrasings each; recipe otherwise identical). Request following is
+scored by rules, not by a judge (`evaluation/instruct.py`): a reply passes if it satisfies every check, e.g. "contains
+the requested name", "at most 90 words", "has dialogue".
+
+Two prompt sets, both built from held-out (test-split) stories, 24 prompts for each of 13 request kinds:
+
+* **held-out phrasings** (`evals/instruct_v3.jsonl`): request wording never used in training; for name requests,
+  half use names that never occur in the corpus.
+* **in-template control** (`evals/instruct_v3.intemplate.jsonl`): the same kinds, but the wording the model *was*
+  trained on. The gap between the two sets is what separates "did not learn the task" from "learned only the
+  wording it saw".
+
+Every rate is reported next to **chance**: the pass rate of a real story that ignores the request (aggregate
+10.6%; per kind below). Confidence intervals resample *distinct* prompts (190 distinct prompts in the held-out
+set, 277 in the control), because kinds like "short story" repeat a few strings. Greedy decoding, pass rate %:
+
+| Request kind | chance | base 004 | SFT 005 | SFT 006 | | base 004 | SFT 005 | SFT 006 |
+|---|---|---|---|---|---|---|---|---|
+| | | **held-out phrasings** | | | | **in-template control** | | |
+| dialogue | 66.8 | 96 | 100 | 100 | | 62 | 75 | 100 |
+| short | 1.4 | 71 | 0 | 0 | | 46 | 29 | **100** |
+| long | 11.6 | 21 | 0 | **58** | | 12 | 21 | **75** |
+| name | 3.9 | 46 | 50 | **67** | | 58 | 75 | 79 |
+| name + topic | 0.7 | 33 | 38 | 42 | | 29 | 62 | 71 |
+| topic | 8.8 | 62 | 42 | 46 | | 75 | 88 | 83 |
+| place | 10.2 | 62 | 29 | 21 | | 54 | 33 | 21 |
+| emotion | 19.3 | 46 | 50 | 46 | | 58 | 50 | 25 |
+| **all scored kinds** | 10.6 | 40.6 | 28.8 | 37.5 | | 41.7 | 44.4 | **56.9** |
+| 95% CI of the aggregate | | 30–51 | 20–38 | 27–48 | | 36–48 | 39–50 | 51–63 |
+
+(The base model receives the request as plain text to continue; the SFT models get the chat template.)
+
+Paired comparisons on identical prompts (`scripts/compare_instruct.py`, greedy; difference in points, 95% interval):
+
+| A vs B | held-out phrasings | in-template control |
+|---|---|---|
+| SFT 006 vs SFT 005 | **+8.7 [+2.8, +15.4], p = 0.002** | **+12.5 [+6.3, +18.5]** |
+| SFT 006 vs base 004 | −3.1 [−15.6, +8.7], p = 0.67 (no difference) | **+15.3 [+7.4, +22.8]** |
+
+What this establishes:
+
+* **The phrasing fix worked.** exp_006 beats exp_005 on unseen wording, mostly through length control (long 0 → 58%,
+  p = 0.005) and names (+17 points, p = 0.025).
+* **The model really learned to follow requests, for wording it saw.** On the in-template control it is far above
+  chance and the base model: short 100%, dialogue 100%, long 75%, name 79%, name + topic 71%.
+* **It does not generalise to unseen wording.** On held-out phrasings it is indistinguishable from the untuned
+  base model overall (and worse on "short": 0% vs 71%; the replies are 91–142 words, i.e. its default length).
+  A 14M model trained on ~80 phrasings per kind is learning a template family, not the concept of a request.
+* **Content requests (topic, place, emotion) are its weak spot**, worse than the base model even in-template
+  (place 21% vs 54%, emotion 25% vs 58%). The base model just continues the prompt text, which repeats the
+  requested word; the SFT model opens most stories with the same generic "a little girl named Lily…". The training data
+  explains part of it: a place request's story mentions the place late (median 19 words in) and `park` is 40% of
+  the 5,114 place examples (`library` 14).
+* **Sampling hurts control** (in-template aggregate 56.9% greedy vs 43.1% sampled at T = 0.7).
+
+Losses: validation loss on the *full* split is 1.3190 ± 0.0079 (exp_005) and 1.3185 ± 0.0076 (exp_006), but they are
+scored on different conversation sets, so this is **not** a comparison of the two models
+([CORRECTNESS.md](CORRECTNESS.md), entry 1). Per-conversation and per-prompt outcomes are in
+`experiments/exp_00{4,5,6}_*/eval/`.
+
+Next: exp_007 tests data fixes aimed at the weak spots (more request wordings, requested words that the story
+actually dwells on and introduces early, balanced sampling across rare places and topics, casual typing); it is
+judged on a *fresh* held-out set so that iterating against the current one cannot flatter it.
+
+Reproduce: `python scripts/make_eval_controls.py --eval evals/instruct_v3.jsonl --stories <TinyStories file>`,
+then `python scripts/eval_instruct.py --checkpoint <run>/checkpoints/best.pt --instruct evals/instruct_v3.jsonl
+evals/instruct_v3.intemplate.jsonl` and `python scripts/compare_instruct.py A.json B.json`.
+
 ## Efficiency
 
 See PERFORMANCE.md. Headlines: 18k tokens/s training in 1.3 GB of GPU memory; bf16 no faster than

@@ -31,8 +31,8 @@ from aarav_lm.data.dataset import TokenDataset
 from aarav_lm.data.sft import SFTDataset
 from aarav_lm.data.shards import Shard
 from aarav_lm.evaluation.edge_cases import run_edge_cases
-from aarav_lm.evaluation.instruct import run_instruction_eval
-from aarav_lm.evaluation.loss import evaluate_loss, next_token_accuracy
+from aarav_lm.evaluation.instruct import load_chance, run_instruction_eval
+from aarav_lm.evaluation.loss import heldout_rows, summarize_rows
 from aarav_lm.evaluation.metrics import build_vocabulary, summarize_generations
 from aarav_lm.evaluation.probes import load_jsonl, run_probes
 from aarav_lm.inference.chat_format import Message
@@ -62,15 +62,16 @@ def is_sft_dir(data_dir: Path) -> bool:
     return (data_dir / "val.npz").exists()
 
 
-def eval_batches(data_dir: Path, split: str, engine: InferenceEngine, max_windows: int, batch_size: int = 16):
-    """Fixed held-out batches for either a pretraining shard dir or an SFT dir."""
+def eval_batches(data_dir: Path, split: str, engine: InferenceEngine, max_windows: Optional[int], batch_size: int = 16):
+    """Fixed held-out batches for either a pretraining shard dir or an SFT dir.
+    `max_windows=None` scores the whole split; a number scores that many items, evenly spaced."""
     if is_sft_dir(data_dir):
         ds = SFTDataset.load(data_dir / f"{split}.npz", engine.tok.pad_id)
         n_items = len(ds)
     else:
         ds = TokenDataset(Shard.open(data_dir / f"{split}.bin"), engine.block_size)
         n_items = ds.n_windows
-    n_batches = -(-min(max_windows, n_items) // batch_size)
+    n_batches = -(-(n_items if max_windows is None else min(max_windows, n_items)) // batch_size)
     return ds.fixed_eval_batches(batch_size, n_batches)
 
 
@@ -95,18 +96,21 @@ def load_wordlist(data_dir: str | Path, engine: InferenceEngine, max_tokens: int
     return vocab
 
 
-def loss_section(engine: InferenceEngine, data_dir: Path, max_windows: int, batch_size: int = 16) -> Dict:
-    """Held-out metrics per split. bits_per_byte = loss / ln 2 / (bytes per token): unlike
-    perplexity it does not depend on the tokenizer, so it stays comparable across vocabularies."""
+def loss_section(engine: InferenceEngine, data_dir: Path, max_windows: Optional[int], batch_size: int = 16) -> Dict:
+    """Held-out metrics per split, with a bootstrap standard error on the loss. By default the WHOLE split
+    is scored (`max_windows=None`): a subset of a few hundred conversations moves the loss by ~0.03
+    (docs/CORRECTNESS.md, entry 1). bits_per_byte = loss / ln 2 / (bytes per token): unlike perplexity it
+    does not depend on the tokenizer, so it stays comparable across vocabularies."""
     out = {}
     manifest_path = data_dir / "manifest.json"
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     for split in ("val", "test"):
         batches = eval_batches(data_dir, split, engine, max_windows, batch_size)
+        stats = summarize_rows(heldout_rows(engine.model, batches, engine.device))
         out[split] = {
-            **evaluate_loss(engine.model, batches, engine.device),
-            **next_token_accuracy(engine.model, batches, engine.device),
-            "windows": sum(x.shape[0] for x, _ in batches),          # windows (pretrain) or conversations (SFT)
+            **stats,
+            "windows": stats["rows"],                                # windows (pretrain) or conversations (SFT)
+            "complete": max_windows is None,                         # True: the whole split was scored
         }
         bpt = (manifest.get("splits", {}).get(split) or {}).get("bytes_per_token")
         out[split]["bits_per_byte"] = out[split]["loss"] / math.log(2) / bpt if bpt else None
@@ -151,7 +155,7 @@ def run_suite(
     prompts_path: str | Path,
     probes_path: str | Path,
     max_new_tokens: int = 200,
-    max_windows: int = 1000,
+    max_windows: Optional[int] = None,
     log: Callable[[str], None] = print,
     instruct_path: str | Path | None = None,
 ) -> Dict:
@@ -162,15 +166,18 @@ def run_suite(
 
     log("[eval] held-out loss / perplexity / next-token accuracy")
     loss = loss_section(engine, data_dir, max_windows)
-    log(f"[eval]   val loss {loss['val']['loss']:.4f} ppl {loss['val']['perplexity']:.2f}  "
-        f"test loss {loss['test']['loss']:.4f}  top1 {loss['val']['top1']:.3f}")
+    log(f"[eval]   val loss {loss['val']['loss']:.4f} ± {loss['val']['stderr']:.4f} (ppl {loss['val']['perplexity']:.2f}, "
+        f"{loss['val']['windows']:,} {'complete' if loss['val']['complete'] else 'SUBSET of'} rows)  "
+        f"test loss {loss['test']['loss']:.4f} ± {loss['test']['stderr']:.4f}  top1 {loss['val']['top1']:.3f}")
     log(f"[eval] generation on {len(prompts)} fixed prompts (greedy + sampled)")
     generation = generation_section(engine, prompts, vocabulary, max_new_tokens)
     instruction = None
     if instruct_path:
         instruct = load_jsonl(instruct_path)
         log(f"[eval] instruction following on {len(instruct)} prompts with rule-based checks")
-        instruction = run_instruction_eval(engine, instruct, max_new_tokens=max(max_new_tokens, 400))
+        chance_file = Path(instruct_path).with_suffix(".chance.json")
+        instruction = run_instruction_eval(engine, instruct, max_new_tokens=max(max_new_tokens, 400),
+                                           chance=load_chance(chance_file) if chance_file.exists() else None)
         for mode, r in instruction.items():
             log(f"[eval]   {mode}: pass {r['pass_rate']['rate']:.3f}  95% CI {r['pass_rate']['ci95']}")
     log("[eval] probes")

@@ -46,6 +46,9 @@ LONG_MIN_WORDS = 190
 
 # ── request templates (train and eval are deliberately disjoint) ─────────────
 
+_QUESTION_OPENERS = ("Can you", "Could you", "Would you", "Can I have", "Do you know", "How about")
+
+
 def _frames(openers: Sequence[str], bodies: Sequence[str]) -> List[str]:
     """Cross request openers with story descriptions, e.g. 'Please write' x 'a short story' -> many distinct requests.
 
@@ -55,7 +58,7 @@ def _frames(openers: Sequence[str], bodies: Sequence[str]) -> List[str]:
     out = []
     for o in openers:
         for body in bodies:
-            if o.startswith(("Can you", "Could you")):
+            if o.startswith(_QUESTION_OPENERS):
                 out.append(f"{o} {body}?")
             else:
                 out += [f"{o} {body}.", f"{o} {body}, please."]
@@ -64,29 +67,30 @@ def _frames(openers: Sequence[str], bodies: Sequence[str]) -> List[str]:
 
 _TRAIN_OPEN = ["Write", "Tell me", "I want", "Please write", "Please tell me", "I'd like", "Can you write", "Can you tell me"]
 
-TRAIN_TEMPLATES: Dict[str, List[str]] = {
-    "name": _frames(_TRAIN_OPEN, ["a story about {name}", "a story with {name} in it", "a story about a character named {name}",
+def _train_templates(openers: List[str]) -> Dict[str, List[str]]:
+    return {
+    "name": _frames(openers, ["a story about {name}", "a story with {name} in it", "a story about a character named {name}",
                                   "a tale about {name}"]) + ["Story about {name}, please!"],
-    "topic": _frames(_TRAIN_OPEN, ["a story about a {topic}", "a story with a {topic} in it", "a tale about a {topic}",
+    "topic": _frames(openers, ["a story about a {topic}", "a story with a {topic} in it", "a tale about a {topic}",
                                    "something about a {topic}"]) + ["Story about a {topic}, please!"],
-    "name_topic": _frames(_TRAIN_OPEN, ["a story about {name} and a {topic}", "a story where {name} finds a {topic}",
+    "name_topic": _frames(openers, ["a story about {name} and a {topic}", "a story where {name} finds a {topic}",
                                         "a story with {name} and a {topic}"]),
-    "two_topics": _frames(_TRAIN_OPEN, ["a story about a {topic} and a {topic2}", "a story with a {topic} and a {topic2} in it",
+    "two_topics": _frames(openers, ["a story about a {topic} and a {topic2}", "a story with a {topic} and a {topic2} in it",
                                         "a tale about a {topic} and a {topic2}"]),
-    "place": _frames(_TRAIN_OPEN, ["a story set at the {place}", "a story that takes place at the {place}",
+    "place": _frames(openers, ["a story set at the {place}", "a story that takes place at the {place}",
                                    "a story about the {place}", "a story about a day at the {place}"]),
-    "emotion": _frames(_TRAIN_OPEN, ["a story where someone feels {emotion}", "a story about feeling {emotion}",
+    "emotion": _frames(openers, ["a story where someone feels {emotion}", "a story about feeling {emotion}",
                                      "a {emotion} story"]),
-    "name_emotion": _frames(_TRAIN_OPEN, ["a story about {name}, who feels {emotion}", "a story about {name} feeling {emotion}"]),
-    "short": _frames(_TRAIN_OPEN, ["a very short story", "a short story", "a tiny story", "a quick story", "a really short story",
+    "name_emotion": _frames(openers, ["a story about {name}, who feels {emotion}", "a story about {name} feeling {emotion}"]),
+    "short": _frames(openers, ["a very short story", "a short story", "a tiny story", "a quick story", "a really short story",
                                    "a super short story"]),
-    "long": _frames(_TRAIN_OPEN, ["a long story", "a longer story", "a really long story", "a very long story",
+    "long": _frames(openers, ["a long story", "a longer story", "a really long story", "a very long story",
                                   "a story that goes on for a while", "a big long story"]),
-    "short_topic": _frames(_TRAIN_OPEN, ["a very short story about a {topic}", "a quick story about a {topic}",
+    "short_topic": _frames(openers, ["a very short story about a {topic}", "a quick story about a {topic}",
                                          "a short story with a {topic} in it", "a tiny tale about a {topic}"]),
-    "long_topic": _frames(_TRAIN_OPEN, ["a long story about a {topic}", "a longer story with a {topic} in it",
+    "long_topic": _frames(openers, ["a long story about a {topic}", "a longer story with a {topic} in it",
                                         "a really long story about a {topic}", "a big long tale about a {topic}"]),
-    "dialogue": _frames(_TRAIN_OPEN, ["a story with lots of talking", "a story where the characters talk a lot",
+    "dialogue": _frames(openers, ["a story with lots of talking", "a story where the characters talk a lot",
                                       "a story with lots of dialogue", "a story with a lot of speaking",
                                       "a story where everyone chats"]),
     "generic": ["Tell me a story.", "Tell me a short story.", "Can you tell me a bedtime story?", "I want a story!",
@@ -94,6 +98,17 @@ TRAIN_TEMPLATES: Dict[str, List[str]] = {
                 "I'd like a bedtime story.", "Please write a story for children.", "Can you tell me a story?",
                 "Tell me a happy story.", "Story time, please!", "Write something for a child."],
 }
+
+
+TRAIN_TEMPLATES: Dict[str, List[str]] = _train_templates(_TRAIN_OPEN)
+
+# v4: many more request frames (openers). Still none of them equals an eval string (tests/test_instruct.py), and the
+# eval openers ("Give me", "Compose", "Create", "Make up", "Could you", "I'm in the mood for") are deliberately absent.
+_TRAIN_OPEN_V4 = _TRAIN_OPEN + [
+    "Would you please write", "I need", "Let's have", "Time for", "Show me", "Imagine", "Can I have", "I'd love",
+    "How about", "Do you know", "Please make me", "I wish for", "Let me hear", "Please share", "Go ahead and write",
+]
+TRAIN_TEMPLATES_V4: Dict[str, List[str]] = _train_templates(_TRAIN_OPEN_V4)
 
 # Phrasings never seen in training: new openers ("Give me", "Compose", "Create", "Make up", "Could you"), and for the
 # length/dialogue requests both new frames around known keywords and synonyms the model never saw ("brief", "lengthy").
@@ -188,6 +203,12 @@ class Features:
     emotion: Optional[str] = None
     words: int = 0
     dialogue: bool = False
+    topic_mentions: int = 0       # how often the main topic / place / emotion word occurs: 1 = a passing mention
+    place_mentions: int = 0
+    emotion_mentions: int = 0
+    topic_first: int = 10**9      # word index of the first mention (small = the story opens with it)
+    place_first: int = 10**9
+    emotion_first: int = 10**9
 
 
 def extract_features(story: str) -> Features:
@@ -197,7 +218,15 @@ def extract_features(story: str) -> Features:
                     key=lambda n: (-(counts[n] + counts[n + "s"]), story.lower().find(n)))
     place = next((p for p in sorted(PLACES, key=lambda p: -counts[p]) if counts[p] >= 1), None)
     emotion = next((e for e in sorted(EMOTIONS, key=lambda e: -counts[e]) if counts[e] >= 1), None)
-    return Features(m.group(1) if m else None, topics, place, emotion, word_count(story), has_dialogue(story))
+    first: Dict[str, int] = {}
+    for i, w in enumerate(w.lower() for w in WORD_RE.findall(story)):
+        first.setdefault(w, i)
+    never = 10**9
+    return Features(m.group(1) if m else None, topics, place, emotion, word_count(story), has_dialogue(story),
+                    (counts[topics[0]] + counts[topics[0] + "s"]) if topics else 0,
+                    counts[place] if place else 0, counts[emotion] if emotion else 0,
+                    min(first.get(topics[0], never), first.get(topics[0] + "s", never)) if topics else never,
+                    first.get(place, never) if place else never, first.get(emotion, never) if emotion else never)
 
 
 def applicable_tasks(f: Features) -> List[str]:
@@ -239,8 +268,22 @@ class Task:
         return {"kind": self.kind, "request": self.request, "checks": [c.to_dict() for c in self.checks]}
 
 
-def build_task(kind: str, f: Features, rng: random.Random, templates: Dict[str, List[str]]) -> Task:
-    """Instantiate `kind` for features `f`. Slots are filled from the story so its own text satisfies the checks."""
+def _casual(request: str, keep: Sequence[str], rng: random.Random) -> str:
+    """How people really type: drop the final punctuation and/or lowercase everything (names stay capitalised,
+    so the check that the name appears still means the same thing)."""
+    t = request
+    if rng.random() < 0.5:
+        t = t.rstrip(".!?")
+    if rng.random() < 0.5:
+        t = t.lower()
+        for w in keep:
+            t = t.replace(w.lower(), w)
+    return t
+
+
+def build_task(kind: str, f: Features, rng: random.Random, templates: Dict[str, List[str]], augment: float = 0.0) -> Task:
+    """Instantiate `kind` for features `f`. Slots are filled from the story so its own text satisfies the checks.
+    With `augment` > 0, that share of requests is rewritten in casual typing (training only)."""
     slots: Dict[str, str] = {}
     checks: List[Check] = []
     if kind in ("name", "name_topic", "name_emotion"):
@@ -264,7 +307,10 @@ def build_task(kind: str, f: Features, rng: random.Random, templates: Dict[str, 
         checks.append(Check("min_words", n=LONG_MIN_WORDS))
     if kind == "dialogue":
         checks.append(Check("has_dialogue"))
-    return Task(kind, rng.choice(templates[kind]).format(**slots), checks)
+    request = rng.choice(templates[kind]).format(**slots)
+    if augment > 0 and rng.random() < augment:
+        request = _casual(request, [slots["name"]] if "name" in slots else [], rng)
+    return Task(kind, request, checks)
 
 
 def pick_task(f: Features, rng: random.Random, templates: Dict[str, List[str]] = TRAIN_TEMPLATES) -> Task:

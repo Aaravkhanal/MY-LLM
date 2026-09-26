@@ -393,3 +393,96 @@ def test_natural_end_rate_counts_chat_stops_as_well_as_eot():
     ]
     r = M.summarize_generations(samples, {"a", "b", "c", "d", "e", "f", "g"})
     assert r["natural_end_rate"] == pytest.approx(2 / 3) and r["eot_rate"] == pytest.approx(1 / 3)
+
+
+# ── held-out loss with a standard error ──────────────────────────────────────
+
+def _masked_eval_batches(n_batches=3, rows=4, width=16, vocab=500, seed=0):
+    import torch
+    g = torch.Generator().manual_seed(seed)
+    out = []
+    for _ in range(n_batches):
+        x = torch.randint(0, vocab, (rows, width), generator=g)
+        y = torch.randint(0, vocab, (rows, width), generator=g)
+        for r in range(rows):
+            y[r, : int(torch.randint(0, width - 1, (1,), generator=g))] = -1        # a different mask per row
+        out.append((x, y))
+    return out
+
+
+def test_heldout_rows_agree_exactly_with_the_existing_loss_and_accuracy_functions():
+    import torch
+    from aarav_lm.config.config import cfg_5m
+    from aarav_lm.evaluation.loss import evaluate_loss, heldout_rows, next_token_accuracy, summarize_rows
+    from aarav_lm.model.core import AaravLM
+    torch.manual_seed(0)
+    model = AaravLM(cfg_5m(arch="modern", vocab_size=500, block_size=16))
+    batches = _masked_eval_batches()
+    dev = torch.device("cpu")
+    old, acc = evaluate_loss(model, batches, dev), next_token_accuracy(model, batches, dev)
+    new = summarize_rows(heldout_rows(model, batches, dev))
+    assert new["loss"] == pytest.approx(old["loss"], rel=1e-6) and new["tokens"] == old["tokens"]
+    assert new["perplexity"] == pytest.approx(old["perplexity"], rel=1e-6)
+    assert new["top1"] == pytest.approx(acc["top1"]) and new["top5"] == pytest.approx(acc["top5"])
+    assert new["rows"] == 12 and new["stderr"] > 0
+
+
+def test_stderr_is_reproducible_and_shrinks_with_more_rows():
+    import numpy as np
+    from aarav_lm.evaluation.loss import summarize_rows
+    rng = np.random.default_rng(1)
+
+    def rows(n):
+        c = rng.integers(20, 60, n)
+        return {"sum": c * rng.normal(1.3, 0.4, n).clip(0.2), "count": c, "hit1": c // 2, "hit5": c // 2}
+    small, big = rows(50), rows(2000)
+    assert summarize_rows(small)["stderr"] == summarize_rows(small)["stderr"]            # seeded bootstrap
+    assert summarize_rows(big)["stderr"] < summarize_rows(small)["stderr"] / 3           # ~ 1/sqrt(n)
+
+
+def test_stderr_matches_the_analytic_value_for_equal_weight_rows():
+    import numpy as np
+    from aarav_lm.evaluation.loss import summarize_rows
+    rng = np.random.default_rng(2)
+    per_row = rng.normal(1.5, 0.3, 1000)
+    rows = {"sum": per_row * 40, "count": np.full(1000, 40), "hit1": np.zeros(1000, int), "hit5": np.zeros(1000, int)}
+    got = summarize_rows(rows, n_boot=1000)["stderr"]
+    assert got == pytest.approx(per_row.std(ddof=1) / np.sqrt(1000), rel=0.15)
+
+
+def test_the_suite_scores_the_whole_split_by_default_and_says_so(engine, tiny_run, small_sets):
+    full = run_suite(engine, tiny_run["exp"].data.out_dir, small_sets[0], small_sets[1], max_new_tokens=8,
+                     log=lambda _: None)
+    part = run_suite(engine, tiny_run["exp"].data.out_dir, small_sets[0], small_sets[1], max_new_tokens=8,
+                     max_windows=3, log=lambda _: None)
+    for split in ("val", "test"):
+        assert full["loss"][split]["complete"] is True and part["loss"][split]["complete"] is False
+        assert part["loss"][split]["windows"] <= 16 < full["loss"][split]["windows"]      # subsets round up to whole batches of 16
+        assert full["loss"][split]["stderr"] >= 0
+    assert full["settings"]["max_windows"] is None
+
+
+def test_instruction_eval_reports_chance_lift_effective_n_and_per_prompt(engine, instruct_file):
+    from aarav_lm.evaluation.instruct import run_instruction_eval
+    rows = [json.loads(l) for l in instruct_file.read_text().splitlines()]
+    dup = dict(rows[1], id="b2")                                   # the same "short" prompt again: 2 rows, 1 distinct string
+    dup2 = dict(rows[1], id="b3")
+    res = run_instruction_eval(engine, rows + [dup, dup2], max_new_tokens=10,
+                               chance={"topic": 0.1, "short": 0.5, "name": 0.0})
+    for mode in res.values():
+        assert mode["prompts"] == 6 and mode["scored"] == 5
+        short = mode["by_task"]["short"]
+        assert short["n"] == 3 and short["n_distinct"] == 1         # three rows, one distinct request
+        assert short["chance"] == 0.5 and short["lift"] == pytest.approx(short["rate"] - 0.5, abs=1e-4)
+        assert 0 <= short["ci95_clustered"][0] <= short["ci95_clustered"][1] <= 1
+        assert mode["pass_rate"]["n_distinct"] == 3
+        assert mode["pass_rate"]["chance"] == pytest.approx((0.1 * 1 + 0.5 * 3 + 0.0 * 1) / 5, abs=1e-4)
+        pp = mode["per_prompt"]
+        assert [r["id"] for r in pp] == ["a", "b", "c", "b2", "b3"]  # the check-less prompt is not scored
+        assert all(set(r) >= {"id", "kind", "prompt", "passed", "checks", "words"} for r in pp)
+        assert sum(r["passed"] for r in pp) == mode["pass_rate"]["pass"]
+    # greedy decoding is deterministic, so identical prompts must have identical outcomes
+    g = [r["passed"] for r in res["greedy"]["per_prompt"] if r["prompt"] == rows[1]["prompt"]]
+    assert len(set(g)) == 1
+    plain = run_instruction_eval(engine, rows, max_new_tokens=10)
+    assert "chance" not in plain["greedy"]["pass_rate"] and "n_distinct" in plain["greedy"]["pass_rate"]

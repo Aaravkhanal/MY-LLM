@@ -1,0 +1,28 @@
+{
+  "val": {
+    "loss": 1.39476,
+    "stderr": 0.0065,
+    "perplexity": 4.03401,
+    "perplexity_stderr": 0.02624,
+    "tokens": 511488,
+    "rows": 999,
+    "top1": 0.63691,
+    "top5": 0.88213,
+    "windows": 999,
+    "complete": true,
+    "bits_per_byte": 0.50865
+  },
+  "test": {
+    "loss": 1.40559,
+    "stderr": 0.00725,
+    "perplexity": 4.07793,
+    "perplexity_stderr": 0.02955,
+    "tokens": 509440,
+    "rows": 995,
+    "top1": 0.63407,
+    "top5": 0.88048,
+    "windows": 995,
+    "complete": true,
+    "bits_per_byte": 0.51286
+  }
+}

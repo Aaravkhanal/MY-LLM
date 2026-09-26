@@ -103,5 +103,6 @@ SFT is a separate stage (`stage: sft`) that reuses the trainer. It starts from a
 checkpoint (architecture and tokenizer are verified), trains on conversations with an
 assistant-only loss mask, and writes checkpoints with `stage: sft`. Optional LoRA freezes the base,
 trains rank-r adapters, and merges them into plain weights on export. Continued pretraining is the
-same `pretrain` stage started from `init_from`-style weights (not yet exposed as a config option).
+same `pretrain` stage with `init_from` set: only the weights carry over (fresh optimiser, schedule and data order),
+and architecture and tokenizer must match exactly.
 Not built yet: DPO/preference tuning, adapter hot-swapping, checkpoint merging across runs.
