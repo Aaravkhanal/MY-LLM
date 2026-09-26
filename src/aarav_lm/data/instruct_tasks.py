@@ -46,45 +46,78 @@ LONG_MIN_WORDS = 190
 
 # ── request templates (train and eval are deliberately disjoint) ─────────────
 
+def _frames(openers: Sequence[str], bodies: Sequence[str]) -> List[str]:
+    """Cross request openers with story descriptions, e.g. 'Please write' x 'a short story' -> many distinct requests.
+
+    A request that is a question ("Can you ...") ends in '?', the rest in '.' or '!' variants, so the phrasing pool
+    is large enough that the model must learn what 'short' or 'about a dog' MEANS rather than memorise a few strings.
+    """
+    out = []
+    for o in openers:
+        for body in bodies:
+            if o.startswith(("Can you", "Could you")):
+                out.append(f"{o} {body}?")
+            else:
+                out += [f"{o} {body}.", f"{o} {body}, please."]
+    return out
+
+
+_TRAIN_OPEN = ["Write", "Tell me", "I want", "Please write", "Please tell me", "I'd like", "Can you write", "Can you tell me"]
+
 TRAIN_TEMPLATES: Dict[str, List[str]] = {
-    "name": ["Tell me a story about {name}.", "Can you tell me a story about a character named {name}?",
-             "Write a short story about {name}.", "I want to hear about {name}. Please tell a story.",
-             "Story about {name}, please!", "Please write a story with {name} in it."],
-    "topic": ["Tell me a story about a {topic}.", "Write a short story with a {topic} in it.",
-              "Can you tell me a story about a {topic}?", "I would like a story about a {topic}.",
-              "Please tell me a story with a {topic}.", "Story about a {topic}, please!"],
-    "name_topic": ["Tell me a story about {name} and a {topic}.", "Write a story about {name} who finds a {topic}.",
-                   "Can you write a story with {name} and a {topic}?"],
-    "two_topics": ["Write a story about a {topic} and a {topic2}.", "Tell me a story with a {topic} and a {topic2} in it.",
-                   "I want a story about a {topic} and a {topic2}."],
-    "place": ["Write a story set at the {place}.", "Tell me a story that takes place at the {place}.",
-              "I want a story about the {place}."],
-    "emotion": ["Write a story where someone feels {emotion}.", "Tell me a story about feeling {emotion}.",
-                "Can you write a {emotion} story?"],
-    "name_emotion": ["Write a story about {name}, who feels {emotion}.", "Tell me a story about {name} feeling {emotion}."],
-    "short": ["Write a very short story.", "Tell me a quick, short story.", "A tiny story, please!"],
-    "long": ["Write a long story.", "Tell me a long story.", "I want a longer story, please."],
-    "short_topic": ["Write a very short story about a {topic}.", "Tell me a quick story about a {topic}."],
-    "long_topic": ["Write a long story about a {topic}.", "Tell me a longer story with a {topic} in it."],
-    "dialogue": ["Write a story with lots of talking.", "Tell me a story where the characters talk a lot."],
+    "name": _frames(_TRAIN_OPEN, ["a story about {name}", "a story with {name} in it", "a story about a character named {name}",
+                                  "a tale about {name}"]) + ["Story about {name}, please!"],
+    "topic": _frames(_TRAIN_OPEN, ["a story about a {topic}", "a story with a {topic} in it", "a tale about a {topic}",
+                                   "something about a {topic}"]) + ["Story about a {topic}, please!"],
+    "name_topic": _frames(_TRAIN_OPEN, ["a story about {name} and a {topic}", "a story where {name} finds a {topic}",
+                                        "a story with {name} and a {topic}"]),
+    "two_topics": _frames(_TRAIN_OPEN, ["a story about a {topic} and a {topic2}", "a story with a {topic} and a {topic2} in it",
+                                        "a tale about a {topic} and a {topic2}"]),
+    "place": _frames(_TRAIN_OPEN, ["a story set at the {place}", "a story that takes place at the {place}",
+                                   "a story about the {place}", "a story about a day at the {place}"]),
+    "emotion": _frames(_TRAIN_OPEN, ["a story where someone feels {emotion}", "a story about feeling {emotion}",
+                                     "a {emotion} story"]),
+    "name_emotion": _frames(_TRAIN_OPEN, ["a story about {name}, who feels {emotion}", "a story about {name} feeling {emotion}"]),
+    "short": _frames(_TRAIN_OPEN, ["a very short story", "a short story", "a tiny story", "a quick story", "a really short story",
+                                   "a super short story"]),
+    "long": _frames(_TRAIN_OPEN, ["a long story", "a longer story", "a really long story", "a very long story",
+                                  "a story that goes on for a while", "a big long story"]),
+    "short_topic": _frames(_TRAIN_OPEN, ["a very short story about a {topic}", "a quick story about a {topic}",
+                                         "a short story with a {topic} in it", "a tiny tale about a {topic}"]),
+    "long_topic": _frames(_TRAIN_OPEN, ["a long story about a {topic}", "a longer story with a {topic} in it",
+                                        "a really long story about a {topic}", "a big long tale about a {topic}"]),
+    "dialogue": _frames(_TRAIN_OPEN, ["a story with lots of talking", "a story where the characters talk a lot",
+                                      "a story with lots of dialogue", "a story with a lot of speaking",
+                                      "a story where everyone chats"]),
     "generic": ["Tell me a story.", "Tell me a short story.", "Can you tell me a bedtime story?", "I want a story!",
-                "Write a story for kids.", "Please tell me something fun."],
+                "Write a story for kids.", "Please tell me something fun.", "Write a story.", "Tell me a fun story.",
+                "I'd like a bedtime story.", "Please write a story for children.", "Can you tell me a story?",
+                "Tell me a happy story.", "Story time, please!", "Write something for a child."],
 }
 
-EVAL_TEMPLATES: Dict[str, List[str]] = {           # phrasings never seen in training
-    "name": ["Could you make up a tale starring {name}?", "Write me something about a girl or boy called {name}."],
-    "topic": ["Give me a story featuring a {topic}.", "I'm in the mood for a story that has a {topic}."],
-    "name_topic": ["Make up a story in which {name} meets a {topic}."],
-    "two_topics": ["Create a tale involving both a {topic} and a {topic2}."],
-    "place": ["Give me a story happening at the {place}."],
-    "emotion": ["Compose a story in which somebody is {emotion}."],
-    "name_emotion": ["Give me a story where {name} is {emotion}."],
-    "short": ["Give me a brief little story."],
-    "long": ["Give me a nice long story."],
-    "short_topic": ["A brief story about a {topic}, please."],
-    "long_topic": ["A long, detailed story about a {topic}, please."],
-    "dialogue": ["Write a story that is full of conversation."],
-    "generic": ["Surprise me with a story.", "Any story will do."],
+# Phrasings never seen in training: new openers ("Give me", "Compose", "Create", "Make up", "Could you"), and for the
+# length/dialogue requests both new frames around known keywords and synonyms the model never saw ("brief", "lengthy").
+EVAL_TEMPLATES: Dict[str, List[str]] = {
+    "name": ["Could you make up a tale starring {name}?", "Write me something about a girl or boy called {name}.",
+             "Give me a story featuring {name}.", "Compose a tale in which {name} is the hero."],
+    "topic": ["Give me a story featuring a {topic}.", "I'm in the mood for a story that has a {topic}.",
+              "Compose a tale involving a {topic}.", "Make up something with a {topic} in the story."],
+    "name_topic": ["Make up a story in which {name} meets a {topic}.", "Give me a tale starring {name} and a {topic}."],
+    "two_topics": ["Create a tale involving both a {topic} and a {topic2}.", "Give me a story that features a {topic} and a {topic2}."],
+    "place": ["Give me a story happening at the {place}.", "Compose a tale that unfolds at the {place}."],
+    "emotion": ["Compose a story in which somebody is {emotion}.", "Give me a tale about a {emotion} character."],
+    "name_emotion": ["Give me a story where {name} is {emotion}.", "Compose a tale in which {name} feels {emotion}."],
+    "short": ["Give me a brief little story.", "Compose a short tale.", "Create a quick story for me.",
+              "Make up a concise story.", "Could you create a bite-sized story?", "Give me a teeny story."],
+    "long": ["Give me a nice long story.", "Compose a lengthy tale.", "Create a long story for me.",
+             "Make up a long, detailed story.", "Could you create an extended story?", "Give me an epic long story."],
+    "short_topic": ["A brief story about a {topic}, please.", "Compose a short tale about a {topic}.",
+                    "Create a quick story with a {topic}."],
+    "long_topic": ["A long, detailed story about a {topic}, please.", "Compose a lengthy tale about a {topic}.",
+                   "Create a long story with a {topic}."],
+    "dialogue": ["Write a story that is full of conversation.", "Compose a tale with plenty of dialogue.",
+                 "Make up a story where people chat a lot.", "Give me a story with lots of speaking parts."],
+    "generic": ["Surprise me with a story.", "Any story will do.", "Give me a story.", "Compose a tale."],
 }
 
 TASK_WEIGHTS = {"name": 15, "topic": 15, "name_topic": 10, "two_topics": 8, "place": 9, "emotion": 8,

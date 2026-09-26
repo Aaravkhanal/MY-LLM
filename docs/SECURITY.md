@@ -1,0 +1,46 @@
+# Security
+
+Status of the controls for exposing the model to other people. **Nothing is deployed publicly.** The
+server is safe to run on localhost today; the "Before going public" list is what is still missing.
+
+## What exists
+
+Most of these are covered by `tests/test_api.py` and `tests/test_review_fixes.py`. **Not covered by a
+test:** the `--no-auth` refusal on non-local hosts (`scripts/serve.py`), the CORS configuration, the
+constant-time comparison, and `weights_only` checkpoint loading in the API path.
+
+| Control | Implementation |
+|---|---|
+| API keys never stored in plaintext | `api/auth.py`: `aak_` + 256 bits from `secrets.token_urlsafe`; only the SHA-256 is saved; the key is printed once by `scripts/create_key.py` |
+| Constant-time key check | `hmac.compare_digest` over every stored entry (no early exit) |
+| Key file permissions | created `0600`, written atomically, git-ignored (`secrets/`) |
+| Rate limiting | per-key (per-IP without auth) token bucket, `429` + `Retry-After` |
+| Input validation | pydantic bounds on every field; text ≤ 20,000 chars; ≤ 64 messages; body ≤ 1 MB, enforced for chunked uploads too |
+| Output cap | `max_tokens_cap` (default 512) applied server-side |
+| Bounded concurrency | one generation at a time; a bounded waiter queue; `503` after 30 s |
+| Client disconnect frees the model | async event generator; regression test against a real socket |
+| No code execution from checkpoints | `torch.load(weights_only=True)`; tokenizer text can't inject special tokens |
+| Safe-by-default binding | `127.0.0.1`; `--no-auth` refused on any other host |
+| Browser hardening for the bundled UI | strict CSP, `nosniff`, `no-referrer`, `frame-ancestors 'none'`; only three static files are served |
+| CORS | off unless `--cors-origin` is given; then only those origins, `GET`/`POST`, `Authorization`/`Content-Type` |
+| Secrets in logs | keys are only ever in the `Authorization` header, which uvicorn's access log does not print; request bodies are not logged |
+
+## Known gaps (do not expose publicly until these are closed)
+
+1. **No TLS.** The server speaks plain HTTP; a reverse proxy must terminate HTTPS.
+2. **Keys are a JSON file.** No accounts, no listing/revoking/regenerating through the API, no per-key
+   quotas or expiry, no last-used time. Revocation means editing the file.
+3. **Rate limit is per process and in memory**; it resets on restart and does not span replicas.
+4. **No tokens-per-minute limit** and no per-request wall-clock timeout for a running generation.
+5. **No usage records**, so no abuse detection or per-user accounting.
+6. **`/stats` and `/model` are visible to any valid key** (fine for one owner, not for many users).
+7. **No content policy or output filtering.** The model is a small story model; a chat model exposed to
+   the public needs a stated policy.
+8. **Unauthenticated `/health` and the web page** are intentional, but the page is only useful on the same origin.
+9. **Dependency and supply-chain checks** are not automated (no lock file audit in CI).
+10. **The `--no-auth` local mode** is one flag away; keep it out of any service definition.
+
+## Before going public
+
+Phase 4 in [AUDIT.md](AUDIT.md) closes gaps 2, 4, 5 and 6 (accounts, key management, TPM limits, usage
+table). Gaps 1 and 3 belong to deployment (TLS proxy, shared limiter). The rest are decisions or CI work.

@@ -1,0 +1,1285 @@
+{
+  "version": 1,
+  "model": {
+    "params": 14162304,
+    "context_length": 512,
+    "vocab_size": 4096,
+    "device": "cpu",
+    "tokenizer_fingerprint": "a5b02e834f0a7d9e4cd5984933ecedf305903be712968afa79cf82118c66d74b",
+    "step": 1800,
+    "val_loss": 1.2894646295054422,
+    "val_perplexity": 3.630842189542424,
+    "stage": "sft",
+    "experiment": "exp_005_sft_small_instruct",
+    "checkpoint": "experiments/exp_005_sft_small_instruct/checkpoints/best.pt"
+  },
+  "loss": {
+    "val": {
+      "loss": 1.327553559578541,
+      "perplexity": 3.7718045958747664,
+      "tokens": 188107,
+      "top1": 0.6510177718000925,
+      "top5": 0.8919870073947275,
+      "windows": 1008,
+      "bits_per_byte": null
+    },
+    "test": {
+      "loss": 1.333752853939266,
+      "perplexity": 3.7952597504218577,
+      "tokens": 189941,
+      "top1": 0.6500808145687345,
+      "top5": 0.8912662353046472,
+      "windows": 1008,
+      "bits_per_byte": null
+    }
+  },
+  "generation": {
+    "greedy": {
+      "samples": [
+        {
+          "id": "c000",
+          "prompt": "Tell me a story about Lily.",
+          "text": "Once upon a time, there was a little girl named Lily. She loved to play with her toys and eat yummy food. One day, Lily found a big, red apple in her yard. She was very happy and wanted to eat it.\nLily's mom saw her and said, \"Lily, don't eat that apple! It's not good for you.\" Lily listened to her mom and put the apple back in the yard. She felt proud that she listened to her mom.\nLater, Lily's mom came outside and saw the apple on the ground. She was not happy. \"Lily, you should not eat that apple. It's not good for you,\" her mom said. Lily felt sad and said, \"I'm sorry, Mom. I will not eat the apple again.\"\nFrom that day on, Lily learned to listen to her mom and not to eat things that were not hers. She knew that she should listen to her mom and not eat things that were",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c001",
+          "prompt": "Tell me a story about Tom.",
+          "text": "Once upon a time, there was a little boy named Tom. Tom loved to play with his toy cars. One day, he found a big, red car. He was very happy and wanted to show it to his friend, Sam.\nTom ran to Sam's house and said, \"Look, Sam! I found a big, red car!\" Sam looked at the car and said, \"Wow, Tom! That's a nice car! Can I play with it too?\" Tom said, \"Yes, Sam! Let's play together!\"\nThey played with the car all day. They made it go fast and slow, and they had lots of fun. At the end of the day, they were tired but happy. They knew they would play with the car again soon.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c002",
+          "prompt": "Tell me a story about Mia.",
+          "text": "Once upon a time, there was a little girl named Mia. Mia loved to play with her toys. One day, she found a big, red ball in her room. She was very happy and wanted to play with it.\nMia took the ball to her room and started to play. She threw the ball high in the air and caught it. But then, something unexpected happened. The ball went too high and hit a big tree. The tree shook and a big, scary monster came out.\nThe monster was very angry and wanted to take the ball away. Mia was scared and didn't know what to do. She tried to hide the ball, but the monster found it. The monster took the ball and ran away. Mia was very sad and cried. The monster went away, and Mia never saw her ball again.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c003",
+          "prompt": "Tell me a story about Ben.",
+          "text": "Once upon a time, there was a little boy named Ben. Ben was a very curious boy. One day, he went to the park with his mom. He saw a big tree and wanted to climb it.\nBen's mom said, \"Be careful, Ben! The tree is very tall.\" Ben listened to his mom and started to climb the tree. He was very happy. But then, something unexpected happened. A big wind came and blew Ben's hat off his head.\nBen was sad and said, \"Mom, my hat is gone!\" His mom looked at the hat and said, \"Don't worry, Ben. We will find your hat.\" They looked around the park and found the hat on the ground. Ben was so happy and thanked his mom. They went home and Ben's mom gave him a big hug.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c004",
+          "prompt": "Tell me a story about Sam.",
+          "text": "Once upon a time, there was a little boy named Sam. Sam loved to play with his toy cars. One day, he found a big, red car. He was very happy and wanted to show it to his friend, Tim.\nSam ran to Tim's house and said, \"Look, Tim! I found a big, red car!\" Tim looked at the car and said, \"Wow, Sam! That's a nice car! Can I play with it?\" Sam said, \"Yes, but be careful. It's my favorite car.\"\nTim and Sam played with the big, red car all day. They had so much fun. When it was time to go home, Sam said, \"Thank you, Tim, for playing with me. I had a great time!\" Tim smiled and said, \"You're welcome, Sam. I'm glad you had fun.\"\nThe moral of the story is to always be careful with things you find, so you don't lose",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c005",
+          "prompt": "Tell me a story about Anna.",
+          "text": "Once upon a time, there was a little girl named Anna. She loved to play with her toys and have fun. One day, she found a big box in her room. She was very excited and wanted to see what was inside.\nAnna opened the box and found a big, soft teddy bear. She was so happy and hugged the teddy bear tight. She played with the teddy bear all day long. But then, something unexpected happened. The teddy bear started to talk!\n\"Hello, Anna,\" said the teddy bear. \"I am a magic teddy bear. I can make your wishes come true.\" Anna was very surprised but happy. She wished for a big, fun party with her friends. The teddy bear made her wish come true.\nThe magic teddy bear made her wish come true. Anna and her friends played all day, and they had so much fun. When the party was over, Anna said, \"Thank you, magic teddy bear, for making me a big",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c006",
+          "prompt": "Tell me a story about Max.",
+          "text": "Once upon a time, there was a big, hairy dog named Max. Max loved to play with his ball. One day, Max saw a little girl named Lily. Lily was sad because she lost her toy. Max wanted to help Lily find her toy.\nMax and Lily looked everywhere for the toy. They looked under the bed, behind the couch, and in the toy box. But they could not find the toy. Max had an idea. He would use his hairy paws to make a big, fun toy for Lily.\nMax found a big, soft pillow and brought it to Lily. Lily was so happy! She hugged Max and said, \"Thank you, Max! You are a good friend.\" Max wagged his tail and felt proud. From that day on, Max and Lily played together with the big, soft pillow.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c007",
+          "prompt": "Tell me a story about Sue.",
+          "text": "Once upon a time, there was a little girl named Sue. Sue loved to play with her toys. One day, she found a big box in her room. She was very happy and wanted to see what was inside.\nSue opened the box and found a big, soft pillow. She was so excited! She put the pillow on her bed and started to sleep. But then, something unexpected happened. The pillow started to move! Sue was very surprised.\nThe pillow was not a pillow at all! It was a magic pillow that could talk. The pillow said, \"Thank you for finding me, Sue. I was a pillow, but now I am a magic pillow!\" Sue and the magic pillow became best friends and played together every day.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c008",
+          "prompt": "Tell me a story about Jack.",
+          "text": "Once upon a time, there was a little boy named Jack. He was three years old and he loved to play. One day, Jack was playing in his backyard when he saw something shiny in the grass. He ran over to it and found a big, shiny rock. He was so excited and he wanted to show it to his mom.\nJack ran to his mom and said, \"Mom, look what I found!\" His mom smiled and said, \"That's a very special rock, Jack. It's a special rock that can make you feel special.\"\nJack was so excited and he couldn't wait to show his mom the special rock. He ran to the kitchen and found some yummy food. He brought it to his mom and said, \"Mom, I found this rock! It's so special!\"\nHis mom smiled and said, \"That's a very special rock, Jack. It's a special rock that can make you feel special.\"\nJack was so happy and",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c009",
+          "prompt": "Tell me a story about Emma.",
+          "text": "Once upon a time, there was a little girl named Emma. Emma loved to play with her toys. One day, she found a big, red ball in her room. She was very happy and wanted to play with it.\nEmma took the ball outside to play. She threw it high in the air and watched it fly. The ball went up, up, up into the sky. Emma was very excited to see her ball fly.\nBut then, something unexpected happened. The ball hit a big tree and broke. Emma was sad and didn't know what to do. She tried to fix the ball, but it was too broken. Emma's mom came outside and saw the broken ball. She was not happy. She told Emma that she should have been more careful with her toys.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c010",
+          "prompt": "Can you tell me a story about a character named Zoe?",
+          "text": "Once upon a time, there was a little girl named Zoe. She was very excited because she was going to the park. She put on her shoes and ran to the park.\nAt the park, Zoe saw a big tree. She wanted to climb it. She started to climb up, but then she slipped and fell. Zoe was sad and hurt. She cried and cried.\nA kind boy saw Zoe and came to help. He said, \"Don't cry, Zoe. I will help you.\" He took Zoe to the doctor. The doctor said, \"You must be careful when you climb the tree.\" Zoe learned to be careful and not to fall.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c011",
+          "prompt": "Can you tell me a story about a character named Leo?",
+          "text": "Once upon a time, there was a big, strong lion named Leo. He lived in a big forest with many trees. Leo loved to play with his friends, the little birds and the little birds.\nOne day, Leo and his friends were playing near a big tree. They were having so much fun. But then, something unexpected happened. A big wind came and blew all the leaves away! Leo and his friends were sad.\nBut then, a kind bird saw the leaves and wanted to help. The bird flew up and picked up the leaves with its beak. The bird brought the leaves back to Leo and his friends. They were so happy and thanked the bird. From that day on, Leo and his friends played together in the forest, and they all became good friends.",
+          "finish_reason": "stop"
+        }
+      ],
+      "distinct_1": 0.09921109251733205,
+      "distinct_2": 0.3950263032042085,
+      "distinct_3": 0.5699593398708444,
+      "mean_sample_distinct_2": 0.8495792911347378,
+      "loop_fraction": 0.0,
+      "max_token_run": 1,
+      "nonword_rate": 0.002629691608893139,
+      "capitalised_sentence_frac": 1.0,
+      "clean_ending_frac": 0.6333333333333333,
+      "entity_consistency": 0.92,
+      "eot_rate": 0.0,
+      "natural_end_rate": 0.6,
+      "mean_tokens": 173.96666666666667,
+      "mean_words": 139.43333333333334,
+      "mean_chars": 681.8666666666667,
+      "empty_fraction": 0.0,
+      "mean_tokens_per_sec": 340.69536873414216
+    },
+    "sampled": {
+      "samples": [
+        {
+          "id": "c000",
+          "prompt": "Tell me a story about Lily.",
+          "text": "Once upon a time, in a small town, there lived a girl named Lily. She had a pet cat named Max. Lily and Max were best friends. They played together every day. Lily had a big, soft blanket to sit on. Max loved to hold it, and Lily loved to hold it.\nOne day, Lily's blanket fell on the ground. She was sad and said, \"Oh no, my blanket!\" Max looked at the blanket and said, \"Don't worry, Lily. I will help you find it.\" So, they looked all around the town to find the blanket.\nThey looked under the bed, behind the chair, and in the toy box. Finally, they found the blanket on the ground. Lily was so happy to have her blanket back. She hugged Max and said, \"Thank you, Max. You are a good friend.\" Max wagged his tail and smiled, knowing he could always count on Lily.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c001",
+          "prompt": "Tell me a story about Tom.",
+          "text": "Once upon a time, there was a little boy named Tom. Tom was very excited to go on a vacation with his family. They went to a big beach with lots of sand and water. Tom was excited to play in the sand and swim in the water.\nTom had a red bucket and a yellow bucket. He wanted to add the blue bucket to his shirt. His mom said, \"Tom, you can use the bucket to make a pretty picture on your shirt. You can make a pretty picture with the sand.\" Tom was very happy and wanted to help his mom.\nTom took the blue bucket and went to the beach. He helped his mom clean the beach and put the sand in a vase. Tom's mom was proud of him. They went home and had a fun day together.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c002",
+          "prompt": "Tell me a story about Mia.",
+          "text": "One day, a little girl named Mia went to the park with her mom. They saw a big tree with a hole in it. Mia wanted to see if she could fit in the hole. She tried to climb the tree, but she was not very fit. Mia felt sad because she wanted to be fit and strong like her mom.\nMia's mom saw her sad face and had an idea. \"Let's go inside the house and ask for help.\" Mia's mom said, \"Okay, let's go!\" They went inside the house and found a big, long stick. Mia was so excited!\nMia used the stick to dig and put the stick in the hole. She was happy that she could do it on her own. She learned that when you work together, you can do anything. The moral of the story is that teamwork makes a big difference, and we can do anything when we work together.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c003",
+          "prompt": "Tell me a story about Ben.",
+          "text": "Once upon a time, there was a big, wide tree. Under the tree, there was a little bird. The bird was very happy. It liked to sing all day. The bird had many friends.\nOne day, the bird saw a cat. The cat was big and round. The bird wanted to be friends with the cat. The bird tried to fly high with the cat. They played all day. The cat did not sing or run.\nAt the end of the day, the bird and the cat were tired. They sat under the wide tree. They talked and laughed. The bird was very happy. The cat and the bird were friends.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c004",
+          "prompt": "Tell me a story about Sam.",
+          "text": "Once upon a time, there was a little girl named Sam. She was very excited to go to the library with her mom. Her mom said, \"Yes, we can go, but we must be careful not to get lost.\"\nAt the library, Sam saw a big book. It was a novel, but it was very old. Sam and her mom sat down to read the novel. They both liked it a lot. Sam's mom showed him the novel. It had lots of words inside.\nSuddenly, Sam's mom said, \"The first time is out!\" Sam was scared and tried to stop. But then, he saw a big box in the corner. The box was shut. Sam's mom said, \"We will open it now.\" Sam was happy and thanked his mom. They opened the box and found a new story to tell.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c005",
+          "prompt": "Tell me a story about Anna.",
+          "text": "Once upon a time, there was a little girl named Anna. She was a very independent girl, but she was always asking questions.\nOne day, Anna asked her mom, \"What do I need to do?\" Her mom replied, \"We need a special gift to find out.\"\nAnna was very excited and asked her mom, \"What kind of gift?\" Her mom replied, \"Put a special gift in the box, or a surprise.\"\nAnna thought hard about what she could do. She decided to open the gift and see what was inside.\nWhen she opened the gift, she saw a shiny necklace! Anna was so excited she picked it up. She put it on her head and felt so happy.\nAnna ran to show her mom. Mom was proud of her and said, \"You did a great job, Anna!\"\nAnna smiled and knew that her mom was right. From that day on, Anna was more careful with her special gift.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c006",
+          "prompt": "Tell me a story about Max.",
+          "text": "Once upon a time, there was a big, enormous dog named Max. Max liked to protect his friends. He would run, jump, and fetch and roll all day long. Max's friends liked to watch him play. They would clap and laugh. Max was very happy.\nOne day, Max was playing with his friends when he met a small cat named Lily. Lily was scared of Max. Max said, \"Don't be scared, Lily. I am a nice dog. Let's be friends.\" Lily was happy to have a friend and they played together every day.\nThe moral of the story is that we should always be kind and help others. It can make us feel good and happy too.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c007",
+          "prompt": "Tell me a story about Sue.",
+          "text": "Once upon a time, in a small town, there was a little girl named Sue. Sue was very adventurous. She loved to play with her friends and learn new things. One day, Sue found a big box of shapes in her room. She did not know what was inside.\nSue called her friends to come and play with the shapes. They all took turns using the shapes to make shapes and shapes. They had so much fun! But then, Sue's mom came in and said, \"Sue, we need to be careful with the shapes. They can make big, soft things.\"\nSue listened to her mom and did not touch any shapes. She still wanted to play with them. Then, something unexpected happened. A big, colorful bird came into the room. The bird saw the shapes too and wanted to play with them. The bird took some shapes from Sue's mom's hand and flew away. Sue and her friends were sad, but they learned to be more careful with",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c008",
+          "prompt": "Tell me a story about Jack.",
+          "text": "One day, a little boy named Jack saw a bright sunrise. He wanted to go outside and play, but he was a bit scared. He felt a bit scared but he knew he had to be brave. So, he asked his mom if he could go outside.\n\"Mom, can I go outside?\" he said. His mom smiled and said, \"Yes, of course you can!\"\nJack was very happy. He grabbed his shoes and went outside. He was walking around in the park and he saw lots of pretty flowers. He smiled and ran around in the grass. He was having so much fun!\nSuddenly, Jack heard a voice. It was his mom. She was talking to him! She said, \"Jack, be careful! Don't go too far!\" Jack took a deep breath, turned to his mom, and said, \"Ok, I'll be right here.\"\nHis mom smiled and said, \"That's great, Jack! You",
+          "finish_reason": "length"
+        },
+        {
+          "id": "c009",
+          "prompt": "Tell me a story about Emma.",
+          "text": "Once upon a time, there was a little girl named Emma. Emma loved to dance. She danced all day and all night. Her best friend, Tom, also loved to dance.\nOne day, Emma and Tom went to the park. They saw a big tree. Emma wanted to dance under the tree, but Tom said, \"No, I am not safe. I will stay here and watch you.\" Emma felt sad, but she listened to Tom.\nLater, Emma and Tom played under the tree. They had so much fun. When they were done, Emma said, \"Tom, I am safe now.\" Tom said, \"Me too, Emma. Let's dance again tomorrow.\" And they went home, happy and safe.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c010",
+          "prompt": "Can you tell me a story about a character named Zoe?",
+          "text": "Once upon a time, there was a little girl named Zoe. She was three years old and loved to play.\nOne day, Zoe was playing in her garden when she saw a big, gray cloud coming. She went closer to see what it was and saw it was a scary shadow.\n\"Why is it so scary?\" asked Zoe.\n\"It's scary,\" said a voice.\nZoe looked around and saw a big, white bear. The bear was so cute and had a big smile.\n\"Can I play with you?\" asked the bear.\n\"Of course you can,\" said Zoe.\nThe bear and Zoe played together for a while, until the sun went down. Then they said goodbye and Zoe walked back home feeling happy.",
+          "finish_reason": "stop"
+        },
+        {
+          "id": "c011",
+          "prompt": "Can you tell me a story about a character named Leo?",
+          "text": "One day, a big lion named Leo went to play. He liked to roar very loud. Leo was a very good lion. He had a lot of friends to play with. They would all play together. They were very happy.\nBut one day, something unexpected happened. A little bird named Timmy was on the ground. Timmy was sad. He could not roar very loud. Leo wanted to help his new friend. He thought, \"Maybe if I roar loud like you, I can roar.\"\nBen roared louder and louder. He did not want to scare Timmy anymore. But then, a big wind came. It blew Leo up into the sky. The wind blew strong, and Leo was able to jump.\nTrue's friends saw him in the sky. They laughed and clapped. They said, \"You are a good lion, Leo. You are a good friend.\" Leo was happy to make his friends happy. They played together all day long.",
+          "finish_reason": "stop"
+        }
+      ],
+      "distinct_1": 0.1403118040089087,
+      "distinct_2": 0.5636138613861386,
+      "distinct_3": 0.8195097796484279,
+      "mean_sample_distinct_2": 0.8773408821875076,
+      "loop_fraction": 0.0,
+      "max_token_run": 1,
+      "nonword_rate": 0.003711952487008166,
+      "capitalised_sentence_frac": 1.0,
+      "clean_ending_frac": 0.8666666666666667,
+      "entity_consistency": 0.88,
+      "eot_rate": 0.0,
+      "natural_end_rate": 0.8333333333333334,
+      "mean_tokens": 168.86666666666667,
+      "mean_words": 134.7,
+      "mean_chars": 654.8333333333334,
+      "empty_fraction": 0.0,
+      "mean_tokens_per_sec": 321.1579922127103
+    }
+  },
+  "instruction": {
+    "greedy": {
+      "pass_rate": {
+        "pass": 52,
+        "n": 192,
+        "rate": 0.2708333333333333,
+        "ci95": [
+          0.2129,
+          0.3377
+        ]
+      },
+      "by_task": {
+        "dialogue": {
+          "pass": 16,
+          "n": 16,
+          "rate": 1.0,
+          "ci95": [
+            0.8064,
+            1.0
+          ]
+        },
+        "emotion": {
+          "pass": 1,
+          "n": 16,
+          "rate": 0.0625,
+          "ci95": [
+            0.0111,
+            0.2833
+          ]
+        },
+        "long": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ]
+        },
+        "long_topic": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ]
+        },
+        "name": {
+          "pass": 10,
+          "n": 16,
+          "rate": 0.625,
+          "ci95": [
+            0.3864,
+            0.8152
+          ]
+        },
+        "name_emotion": {
+          "pass": 2,
+          "n": 16,
+          "rate": 0.125,
+          "ci95": [
+            0.035,
+            0.3602
+          ]
+        },
+        "name_topic": {
+          "pass": 6,
+          "n": 16,
+          "rate": 0.375,
+          "ci95": [
+            0.1848,
+            0.6136
+          ]
+        },
+        "place": {
+          "pass": 9,
+          "n": 16,
+          "rate": 0.5625,
+          "ci95": [
+            0.3318,
+            0.769
+          ]
+        },
+        "short": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ]
+        },
+        "short_topic": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ]
+        },
+        "topic": {
+          "pass": 5,
+          "n": 16,
+          "rate": 0.3125,
+          "ci95": [
+            0.1416,
+            0.556
+          ]
+        },
+        "two_topics": {
+          "pass": 3,
+          "n": 16,
+          "rate": 0.1875,
+          "ci95": [
+            0.0659,
+            0.4301
+          ]
+        }
+      },
+      "by_check": {
+        "contains_all": {
+          "pass": 60,
+          "n": 144,
+          "rate": 0.4166666666666667,
+          "ci95": [
+            0.3393,
+            0.4983
+          ]
+        },
+        "has_dialogue": {
+          "pass": 16,
+          "n": 16,
+          "rate": 1.0,
+          "ci95": [
+            0.8064,
+            1.0
+          ]
+        },
+        "max_words": {
+          "pass": 0,
+          "n": 32,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1072
+          ]
+        },
+        "min_words": {
+          "pass": 0,
+          "n": 32,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1072
+          ]
+        }
+      },
+      "name_seen": {
+        "pass": 15,
+        "n": 24,
+        "rate": 0.625,
+        "ci95": [
+          0.4271,
+          0.7884
+        ]
+      },
+      "name_unseen": {
+        "pass": 3,
+        "n": 24,
+        "rate": 0.125,
+        "ci95": [
+          0.0434,
+          0.31
+        ]
+      },
+      "natural_end_rate": 0.9855769230769231,
+      "mean_words": 144.78365384615384,
+      "prompts": 208,
+      "scored": 192,
+      "examples": [
+        {
+          "prompt": "Could you make up a tale starring Tim?",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little boy named Tim. Tim loved to play with his toy cars. One day, he found a big, red car. It was very fast and made a loud noise when he pushed it. Tim was very happy and wanted to show his mom.\nTim ran to his mom and said, \"Look, Mom! I found a big, red car!\" His mom smiled and said, \"That's great, Tim! Let's go see what it can do!\" They went to the park and Tim played with his new car. He made it go fast and slow, and he made it go fast.\nAfter a while, Tim's mom called him to go home. Tim said goodbye to his new car and went home. He told his mom all about the fun day he had with his car. Tim couldn't wait to play with his car again."
+        },
+        {
+          "prompt": "Could you make up a tale starring Zara?",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little girl named Zara. She was three years old and loved to play. One day, Zara was playing in her garden when she saw a big, red ball. She wanted to play with it, so she ran over to it and grabbed it.\nSuddenly, Zara heard a voice. It was a friendly voice. It said, \"Hi Zara! I'm a magician. I can make your wish come true.\"\nZara was so excited. She asked the magician, \"Can you make me a wish?\"\nThe magician smiled and said, \"Of course! I can make your wish come true.\"\nZara was so excited. She said, \"I wish for a big, red ball!\"\nThe magician smiled and said, \"I wish for a big, red ball. But I can't find one that is too big for me.\"\nZara was so happy. She thanked t"
+        },
+        {
+          "prompt": "Write me something about a girl or boy called Daisy.",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little girl named Daisy. Daisy was very excited because she was going to the park. She was so excited!\nWhen Daisy arrived at the park, she saw a big slide. She ran to it and started to climb up. She was so excited to slide down!\nBut when she got to the top, she saw something strange. There was a big, scary monster! Daisy was so scared, she started to cry.\nThe monster said, \"Don't be scared, Daisy. I'm here to help you.\" Daisy was so scared that she ran away.\nThe monster was so happy that Daisy was safe. She hugged the monster and said, \"Thank you for helping me. I'm so glad I was here.\"\nThe monster smiled and said, \"You're welcome, Daisy. I'm glad you're safe no"
+        },
+        {
+          "prompt": "Could you make up a tale starring Otis?",
+          "kind": "name",
+          "passed": false,
+          "reply": "Once upon a time, there was a little boy named Tim. Tim loved to play with his toy cars. One day, he found a big, red car. It was very fast and made a loud noise when he pushed it. Tim was very happy and wanted to show his mom.\nTim ran to his mom and said, \"Look, Mom! I found a big, red car!\" His mom smiled and said, \"That's great, Tim! Let's go see what it can do!\" They went to the park and Tim played with his new car. He made it go fast and slow, and he made it go fast.\nAfter a while, Tim's mom called him to go home. Tim said goodbye to his new car and went home. He told his mom all about the fun day he had with his car. Tim couldn't wait to play with his car again."
+        },
+        {
+          "prompt": "Could you make up a tale starring Tim?",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little boy named Tim. Tim loved to play with his toy cars. One day, he found a big, red car. It was very fast and made a loud noise when he pushed it. Tim was very happy and wanted to show his mom.\nTim ran to his mom and said, \"Look, Mom! I found a big, red car!\" His mom smiled and said, \"That's great, Tim! Let's go see what it can do!\" They went to the park and Tim played with his new car. He made it go fast and slow, and he made it go fast.\nAfter a while, Tim's mom called him to go home. Tim said goodbye to his new car and went home. He told his mom all about the fun day he had with his car. Tim couldn't wait to play with his car again."
+        },
+        {
+          "prompt": "Write me something about a girl or boy called Ingrid.",
+          "kind": "name",
+          "passed": false,
+          "reply": "Once upon a time, there was a little girl named Lily. She loved to play with her toys and eat yummy food. One day, Lily found a big, red apple in her yard. She was very happy and wanted to eat it.\nLily's mom saw her and said, \"Lily, don't eat that apple. It's not good for you.\" Lily listened to her mom and put the apple back in the yard. She felt proud that she listened to her mom.\nLater, Lily's mom came outside and saw the apple on the ground. She was not happy. \"Lily, you should not eat that apple. It's not good for you,\" her mom said. Lily felt sad and said, \"I'm sorry, Mom. I will not eat the apple again.\"\nFrom that day on, Lily learned to listen to her mom and not to eat things that wer"
+        }
+      ]
+    },
+    "sampled": {
+      "pass_rate": {
+        "pass": 49,
+        "n": 192,
+        "rate": 0.2552083333333333,
+        "ci95": [
+          0.1988,
+          0.3213
+        ]
+      },
+      "by_task": {
+        "dialogue": {
+          "pass": 12,
+          "n": 16,
+          "rate": 0.75,
+          "ci95": [
+            0.505,
+            0.8982
+          ]
+        },
+        "emotion": {
+          "pass": 2,
+          "n": 16,
+          "rate": 0.125,
+          "ci95": [
+            0.035,
+            0.3602
+          ]
+        },
+        "long": {
+          "pass": 5,
+          "n": 16,
+          "rate": 0.3125,
+          "ci95": [
+            0.1416,
+            0.556
+          ]
+        },
+        "long_topic": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ]
+        },
+        "name": {
+          "pass": 10,
+          "n": 16,
+          "rate": 0.625,
+          "ci95": [
+            0.3864,
+            0.8152
+          ]
+        },
+        "name_emotion": {
+          "pass": 1,
+          "n": 16,
+          "rate": 0.0625,
+          "ci95": [
+            0.0111,
+            0.2833
+          ]
+        },
+        "name_topic": {
+          "pass": 4,
+          "n": 16,
+          "rate": 0.25,
+          "ci95": [
+            0.1018,
+            0.495
+          ]
+        },
+        "place": {
+          "pass": 9,
+          "n": 16,
+          "rate": 0.5625,
+          "ci95": [
+            0.3318,
+            0.769
+          ]
+        },
+        "short": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ]
+        },
+        "short_topic": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ]
+        },
+        "topic": {
+          "pass": 3,
+          "n": 16,
+          "rate": 0.1875,
+          "ci95": [
+            0.0659,
+            0.4301
+          ]
+        },
+        "two_topics": {
+          "pass": 3,
+          "n": 16,
+          "rate": 0.1875,
+          "ci95": [
+            0.0659,
+            0.4301
+          ]
+        }
+      },
+      "by_check": {
+        "contains_all": {
+          "pass": 53,
+          "n": 144,
+          "rate": 0.3680555555555556,
+          "ci95": [
+            0.2937,
+            0.4493
+          ]
+        },
+        "has_dialogue": {
+          "pass": 12,
+          "n": 16,
+          "rate": 0.75,
+          "ci95": [
+            0.505,
+            0.8982
+          ]
+        },
+        "max_words": {
+          "pass": 0,
+          "n": 32,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1072
+          ]
+        },
+        "min_words": {
+          "pass": 5,
+          "n": 32,
+          "rate": 0.15625,
+          "ci95": [
+            0.0686,
+            0.3175
+          ]
+        }
+      },
+      "name_seen": {
+        "pass": 13,
+        "n": 24,
+        "rate": 0.5416666666666666,
+        "ci95": [
+          0.3507,
+          0.7211
+        ]
+      },
+      "name_unseen": {
+        "pass": 2,
+        "n": 24,
+        "rate": 0.08333333333333333,
+        "ci95": [
+          0.0232,
+          0.2585
+        ]
+      },
+      "natural_end_rate": 1.0,
+      "mean_words": 137.5528846153846,
+      "prompts": 208,
+      "scored": 192,
+      "examples": [
+        {
+          "prompt": "Could you make up a tale starring Tim?",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little boy named Tim. Tim loved to play outside in the mud. One day, he found a shiny rock and showed it to his mom.\n\"Mom, look at this rock I found!\" Tim said. His mom smiled and said, \"That's a very nice rock, Tim. But be careful, it's very dirty.\"\nTim put the rock in a bag and went outside to play. He saw a big, red ball. He wanted to play with the ball, but he remembered what his mom said. He knew that if he kept his rock safe, it might stay clean and fun.\nTim went back inside and found a nice, clean rock. He was so happy that he didn't want to spoil the rock. He put it in a jar and went back outside to play with his ball. And they lived happily ever after."
+        },
+        {
+          "prompt": "Could you make up a tale starring Zara?",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, in a big forest, there was a little boy named Zara. Zara loved to play outside and run in the sun. One day, Zara saw a small bird who was very sad. The bird could not fly.\nZara wanted to help the bird. She had an idea to release the bird from a big rock. The rock was not a rock, but a big rock! Zara used her strong legs to push the rock. The rock started to move! The rock was not a rock, it was a big turtle!\nThe turtle was very happy to be his friend. He said \"thank you\" to Zara for helping him. They played together all day long. Zara was happy to help her new friend. And from that day on, Zara and the turtle were the best of friends."
+        },
+        {
+          "prompt": "Write me something about a girl or boy called Daisy.",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little girl named Daisy. She had a very special toy. It was a red ball. Daisy loved her ball so much.\nOne day, Daisy went to the park with her mom. She brought her red ball with her. She wanted to show her friends. Daisy ran to the park with her red ball. She played with her friends and had so much fun.\nAt the end of the day, Daisy's friends were very tired. They all sat down to rest. Daisy was happy she had her red ball. She knew she had a good day at the park."
+        },
+        {
+          "prompt": "Could you make up a tale starring Otis?",
+          "kind": "name",
+          "passed": false,
+          "reply": "Once upon a time, there was a little boy named Tom. Tom loved to eat spaghetti. One day, Tom's mom gave him a big plate of spaghetti to eat. Tom was so happy and excited!\nTom's friend, Sam, saw him with the big plate. Sam wanted to play with the spaghetti too. So, Tom and Sam decided to share the spaghetti. They both took a small piece and put it on the plate. They had a lot of fun playing together.\nAfter they finished eating, Tom and Sam played with the spaghetti. They ate it very fast and had a great time. They learned that sharing made them happy. And from that day on, they always shared their spaghetti with each other."
+        },
+        {
+          "prompt": "Could you make up a tale starring Tim?",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little boy named Tim. Tim loved to play outside with his friends. One day, they found a big, red ball. Tim had an idea. He wanted to play with the ball in the park.\nTim and his friends played with the ball all day. They kicked it, and they laughed. Then, they saw a big tree with a big hole. Tim's ball went inside the hole and got stuck. His friends helped him get the ball out. They were so happy.\nThe next day, Tim and his friends found a secret door in the tree. They opened the door and saw a room full of toys. Tim's friends were so surprised! They played with the toys all day long. Tim and his friends had so much fun, and they learned that even if something is "
+        },
+        {
+          "prompt": "Write me something about a girl or boy called Ingrid.",
+          "kind": "name",
+          "passed": false,
+          "reply": "One day, a boy named Tim and his dog, Spot, went to play in the park. They saw a big tree with a hole in it. Tim said, \"Let's discuss what's inside the hole?\" Spot barked and wagged his tail.\nTim found a long stick and used it to dig a hole under the tree. He put the stick in the hole and said, \"Now we have a secret!\" They played a game where they would shoot the stick into the hole. They would throw the stick into the hole, and it would hit the ground with a loud \"pop\" on it.\nThen, something unexpected happened. A big wind came and blew the stick out of the hole. The stick broke into two pieces. Tim and Spot were sad because they could not play with the stick anymore. The end."
+        }
+      ]
+    }
+  },
+  "probes": {
+    "accuracy": 0.9636363636363636,
+    "n": 55,
+    "by_category": {
+      "commonsense": {
+        "accuracy": 0.8947368421052632,
+        "n": 19
+      },
+      "grammar": {
+        "accuracy": 1.0,
+        "n": 26
+      },
+      "story_logic": {
+        "accuracy": 1.0,
+        "n": 10
+      }
+    },
+    "items": [
+      {
+        "category": "grammar",
+        "prefix": "The dogs",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -3.831073045730591,
+        "incorrect_logp": -8.93731689453125,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The cat",
+        "correct": " is",
+        "incorrect": " are",
+        "correct_logp": -5.7676472663879395,
+        "incorrect_logp": -12.394399642944336,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Tom and Mia",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -1.3594794273376465,
+        "incorrect_logp": -7.356952667236328,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "She",
+        "correct": " was",
+        "incorrect": " were",
+        "correct_logp": -2.611006259918213,
+        "incorrect_logp": -9.714500427246094,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "They",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -2.4113376140594482,
+        "incorrect_logp": -9.041845321655273,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "I",
+        "correct": " am",
+        "incorrect": " is",
+        "correct_logp": -3.143885612487793,
+        "incorrect_logp": -8.179566383361816,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The children",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -1.425812005996704,
+        "incorrect_logp": -7.263336181640625,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The flowers",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -4.080644607543945,
+        "incorrect_logp": -10.735143661499023,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "We",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -3.044891119003296,
+        "incorrect_logp": -7.6065673828125,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "You",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -2.090386152267456,
+        "incorrect_logp": -6.693831443786621,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "It",
+        "correct": " is",
+        "incorrect": " are",
+        "correct_logp": -2.640150547027588,
+        "incorrect_logp": -8.997119903564453,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Mia and Sam",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -1.0425721406936646,
+        "incorrect_logp": -6.666776657104492,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The boy",
+        "correct": " has",
+        "incorrect": " have",
+        "correct_logp": -7.987313270568848,
+        "incorrect_logp": -10.233612060546875,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The boys",
+        "correct": " have",
+        "incorrect": " has",
+        "correct_logp": -5.597259044647217,
+        "incorrect_logp": -10.306297302246094,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "She",
+        "correct": " has",
+        "incorrect": " have",
+        "correct_logp": -5.010828971862793,
+        "incorrect_logp": -8.372648239135742,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "They",
+        "correct": " have",
+        "incorrect": " has",
+        "correct_logp": -5.024482727050781,
+        "incorrect_logp": -9.796627044677734,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "This",
+        "correct": " is",
+        "incorrect": " are",
+        "correct_logp": -1.407808542251587,
+        "incorrect_logp": -8.288422584533691,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "These",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -1.5166336297988892,
+        "incorrect_logp": -4.38129997253418,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "He",
+        "correct": " was",
+        "incorrect": " were",
+        "correct_logp": -2.1328768730163574,
+        "incorrect_logp": -9.830192565917969,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The birds",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -1.4600803852081299,
+        "incorrect_logp": -8.317002296447754,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Yesterday, they",
+        "correct": " played",
+        "incorrect": " play",
+        "correct_logp": -2.5028562545776367,
+        "incorrect_logp": -6.383185863494873,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Tomorrow, we will",
+        "correct": " play",
+        "incorrect": " played",
+        "correct_logp": -2.7028255462646484,
+        "incorrect_logp": -12.091052055358887,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Mia looked at",
+        "correct": " herself",
+        "incorrect": " himself",
+        "correct_logp": -6.305498123168945,
+        "incorrect_logp": -10.684706687927246,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Tom looked at",
+        "correct": " himself",
+        "incorrect": " herself",
+        "correct_logp": -7.21138858795166,
+        "incorrect_logp": -10.116446495056152,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The girl said she",
+        "correct": " was",
+        "incorrect": " were",
+        "correct_logp": -1.0087846517562866,
+        "incorrect_logp": -6.547158241271973,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "He",
+        "correct": " likes",
+        "incorrect": " like",
+        "correct_logp": -6.834903717041016,
+        "incorrect_logp": -11.382587432861328,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The sun is very",
+        "correct": " hot",
+        "incorrect": " cold",
+        "correct_logp": -0.4771044850349426,
+        "incorrect_logp": -7.154311180114746,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Ice is very",
+        "correct": " cold",
+        "incorrect": " hot",
+        "correct_logp": -5.042374610900879,
+        "incorrect_logp": -5.513994216918945,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "A fire is",
+        "correct": " hot",
+        "incorrect": " cold",
+        "correct_logp": -4.020390033721924,
+        "incorrect_logp": -7.098121166229248,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Fish live in the",
+        "correct": " water",
+        "incorrect": " sky",
+        "correct_logp": -3.9526145458221436,
+        "incorrect_logp": -3.3878390789031982,
+        "passed": false
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Birds fly in the",
+        "correct": " sky",
+        "incorrect": " water",
+        "correct_logp": -0.21355709433555603,
+        "incorrect_logp": -5.166057109832764,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "A fish can",
+        "correct": " swim",
+        "incorrect": " fly",
+        "correct_logp": -2.5880889892578125,
+        "incorrect_logp": -5.2405524253845215,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "We see with our",
+        "correct": " eyes",
+        "incorrect": " nose",
+        "correct_logp": -4.722945690155029,
+        "incorrect_logp": -8.206137657165527,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "We smell with our",
+        "correct": " nose",
+        "incorrect": " eyes",
+        "correct_logp": -6.711434364318848,
+        "incorrect_logp": -4.169477462768555,
+        "passed": false
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Grass is",
+        "correct": " green",
+        "incorrect": " purple",
+        "correct_logp": -5.775417327880859,
+        "incorrect_logp": -6.315979957580566,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The sky is",
+        "correct": " blue",
+        "incorrect": " green",
+        "correct_logp": -1.6517788171768188,
+        "incorrect_logp": -6.3055596351623535,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Snow is",
+        "correct": " white",
+        "incorrect": " black",
+        "correct_logp": -5.4643049240112305,
+        "incorrect_logp": -6.180760860443115,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "When it rains, the ground gets",
+        "correct": " wet",
+        "incorrect": " dry",
+        "correct_logp": -0.40118804574012756,
+        "incorrect_logp": -4.209702491760254,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "She was hungry, so she ate some",
+        "correct": " food",
+        "incorrect": " rocks",
+        "correct_logp": -2.011385440826416,
+        "incorrect_logp": -8.893293380737305,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "He was sleepy, so he went to",
+        "correct": " bed",
+        "incorrect": " swim",
+        "correct_logp": -2.2246742248535156,
+        "incorrect_logp": -10.75014591217041,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The water was cold, so she felt",
+        "correct": " cold",
+        "incorrect": " hot",
+        "correct_logp": -3.725580930709839,
+        "incorrect_logp": -6.1900482177734375,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "We use a spoon to eat",
+        "correct": " soup",
+        "incorrect": " rocks",
+        "correct_logp": -4.486650466918945,
+        "incorrect_logp": -10.720686912536621,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "A baby is very",
+        "correct": " small",
+        "incorrect": " old",
+        "correct_logp": -2.864872694015503,
+        "incorrect_logp": -5.474419593811035,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The elephant is very",
+        "correct": " big",
+        "incorrect": " tiny",
+        "correct_logp": -2.969953775405884,
+        "incorrect_logp": -7.543239593505859,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "An ant is very",
+        "correct": " small",
+        "incorrect": " big",
+        "correct_logp": -3.809385299682617,
+        "incorrect_logp": -4.545453071594238,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Tom lost his toy and he felt",
+        "correct": " sad",
+        "incorrect": " happy",
+        "correct_logp": -0.7712873816490173,
+        "incorrect_logp": -5.439648151397705,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Mia got a big present and she felt",
+        "correct": " happy",
+        "incorrect": " sad",
+        "correct_logp": -2.155531883239746,
+        "incorrect_logp": -7.191169738769531,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "The dog was thirsty, so he drank some",
+        "correct": " water",
+        "incorrect": " sand",
+        "correct_logp": -0.25158196687698364,
+        "incorrect_logp": -10.022554397583008,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Ben was tired, so he took a",
+        "correct": " nap",
+        "incorrect": " run",
+        "correct_logp": -0.35592299699783325,
+        "incorrect_logp": -10.755080223083496,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Sam fell down and he started to",
+        "correct": " cry",
+        "incorrect": " dance",
+        "correct_logp": -0.07006016373634338,
+        "incorrect_logp": -9.523025512695312,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Anna won the game and she felt",
+        "correct": " proud",
+        "incorrect": " sad",
+        "correct_logp": -3.8262691497802734,
+        "incorrect_logp": -4.252914905548096,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "The boy was scared, so he ran to his",
+        "correct": " mom",
+        "incorrect": " toy",
+        "correct_logp": -0.5259336829185486,
+        "incorrect_logp": -8.020559310913086,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "It was dark, so she turned on the",
+        "correct": " light",
+        "incorrect": " sun",
+        "correct_logp": -1.2459150552749634,
+        "incorrect_logp": -6.478334903717041,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "He was very hungry, so he wanted to",
+        "correct": " eat",
+        "incorrect": " sleep",
+        "correct_logp": -0.8433130979537964,
+        "incorrect_logp": -8.50515365600586,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "She was very sleepy, so she wanted to",
+        "correct": " sleep",
+        "incorrect": " run",
+        "correct_logp": -2.2137720584869385,
+        "incorrect_logp": -6.648045539855957,
+        "passed": true
+      }
+    ]
+  },
+  "edge_cases": {
+    "all_passed": true,
+    "passed": 14,
+    "total": 14,
+    "cases": [
+      {
+        "name": "single_character_prompt",
+        "passed": true,
+        "detail": "12 tokens"
+      },
+      {
+        "name": "whitespace_prompt",
+        "passed": true,
+        "detail": "12 tokens"
+      },
+      {
+        "name": "newline_prompt",
+        "passed": true,
+        "detail": "12 tokens"
+      },
+      {
+        "name": "unicode_prompt",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "emoji_only_prompt",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "control_token_text_is_inert",
+        "passed": true,
+        "detail": "control strings encode as plain text"
+      },
+      {
+        "name": "prompt_longer_than_context",
+        "passed": true,
+        "detail": "prompt 1795 tokens vs window 512"
+      },
+      {
+        "name": "single_token_generation",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "generation_longer_than_context",
+        "passed": true,
+        "detail": "1024 tokens through a 512-token window"
+      },
+      {
+        "name": "greedy_is_deterministic",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "seeded_sampling_is_reproducible",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "no_state_leaks_between_requests",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "stop_sequence_is_honoured",
+        "passed": true,
+        "detail": "stopped at 'ere'"
+      },
+      {
+        "name": "text_roundtrips_through_tokenizer",
+        "passed": true,
+        "detail": "ok"
+      }
+    ]
+  },
+  "eval_sets": {
+    "prompts": {
+      "path": "/Users/aaravkhanal/Desktop/myllm/aarav-lm/evals/chat_prompts_v1.jsonl",
+      "sha256": "5677dbab3eb49c1de4f9491ab1a68cd0e8f615da34d643d44e6e738320c08bf9",
+      "n": 30
+    },
+    "probes": {
+      "path": "/Users/aaravkhanal/Desktop/myllm/aarav-lm/evals/probes_v1.jsonl",
+      "sha256": "901a559c9e2d267e202ed69a583ff8ea6f710508738801c1b4792fd775df0aac",
+      "n": 55
+    },
+    "instruct": {
+      "path": "/Users/aaravkhanal/Desktop/myllm/aarav-lm/evals/instruct_v2.jsonl",
+      "sha256": "c06287a1a695ec1531c572aad5756213f5c2d9e54695ea605cb44392552c2a14",
+      "n": 208
+    },
+    "dataset_fingerprint": "8552beb3cdc3a0328f965c356f2ebee581440d5c8c6233332562ffb74b90c0bb"
+  },
+  "settings": {
+    "max_new_tokens": 200,
+    "max_windows": 1000,
+    "sampled": {
+      "temperature": 0.8,
+      "top_k": 50,
+      "top_p": 0.95
+    }
+  },
+  "torch": "2.10.0",
+  "eval_seconds": 528.6
+}

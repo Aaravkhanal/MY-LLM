@@ -1,0 +1,41 @@
+{
+  "source": "data/raw/tinystories_v2_400mb.txt",
+  "stories": 512622,
+  "split_counts": {
+    "train": 507604,
+    "val": 2532,
+    "test": 2486
+  },
+  "train_stories_in_reference_sample": 50099,
+  "reference_shingles": 7123235,
+  "shingle_words": 8,
+  "val_overlap_with_train": {
+    "n": 2532,
+    "mean": 0.1137,
+    "p50": 0.1029,
+    "p95": 0.2574,
+    "max": 0.4952,
+    "ge_0.5": 0,
+    "ge_0.8": 0
+  },
+  "test_overlap_with_train": {
+    "n": 2486,
+    "mean": 0.114,
+    "p50": 0.1026,
+    "p95": 0.2582,
+    "max": 0.4911,
+    "ge_0.5": 0,
+    "ge_0.8": 0
+  },
+  "chars": {
+    "min": 24,
+    "p50": 721,
+    "p99": 2236,
+    "max": 4524
+  },
+  "stories_shorter_than_200_chars": 13,
+  "stories_longer_than_2000_chars": 8663,
+  "stories_with_html_url_or_replacement_chars": 2,
+  "stories_with_non_ascii": 13753,
+  "stories_sharing_their_first_24_words_with_an_earlier_story": 12938
+}
