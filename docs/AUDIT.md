@@ -223,7 +223,7 @@ SDK strategy: OpenAI compatibility first; a thin Python client only if it adds s
 | 6 | Data contamination | Medium | Low | Inflated scores | `audit_dataset.py`; content-hash split | Re-run on any new corpus; check against the full train split before publishing numbers |
 | 7 | Training lost to sleep/thermals/OOM | Medium | Medium | Hours wasted | Trainer logs memory and warns | Checkpoints every 200–250 steps; exact resume tested |
 | 8 | Irreproducible run (dirty git) | Low | Happened once | Can't recreate a result | `env.json` records dirty flag | Start runs from a clean tree |
-| 9 | Model-lock wedge / DoS by slow clients | Medium | Fixed | Server unusable | Real-socket regression tests | Add per-request wall-clock timeout (open) |
+| 9 | Model-lock wedge / DoS by slow clients | Medium | Fixed | Server unusable | Real-socket regression tests | Per-request wall-clock timeout added (`--request-timeout`) |
 | 10 | Licence/policy | Medium | Low | Legal | DATASETS.md | CDLA-Sharing-1.0 obligations; choose weight licence before release |
 | 11 | Cost runaway on cloud | Medium | Low | Bill | Budget alert | Alert before first resource; CPU VM first |
 
@@ -255,7 +255,7 @@ SDK strategy: OpenAI compatibility first; a thin Python client only if it adds s
 | **Now** | exp_006 finishes (SFT v3, data fix only) | run completes, no divergence |
 | **After training** | evaluate exp_006 vs exp_004 and exp_005 on the 312-prompt eval; per-kind table; keep whichever wins on evidence | decision recorded in COMPARISON.md; `docs/RESULTS.md` updated |
 | **Improve model** | (a) if instruction following is still weak: more pretraining tokens (extend exp_004 on unused corpus) then re-SFT; (b) decoding-setting sweep vs loop rate; (c) repeat the winner with a second seed | topic/length/name pass rates with CIs; loop rate ≤ 5% |
-| **Inference** | benchmark `small` (tok/s, TTFT, context); package int8 model in `models/`; add per-request timeout | numbers in PERFORMANCE.md; packaged model chats from a fresh clone |
+| **Inference** | benchmark `small` (tok/s, TTFT, context); package int8 model in `models/` | numbers in PERFORMANCE.md; packaged model chats from a fresh clone |
 | **API (Phase 3→4)** | `/v1/models`, `/v1/completions`, `/v1/chat/completions` with SSE; tests | OpenAI Python SDK works against it with only `base_url` changed |
 | **Auth / platform (Phase 4)** | SQLite users/keys/usage/models; key create/list/revoke/rotate; TPM limit; usage recording (counts only); CLI admin | tests for hashing, revocation, limits, usage rows; no key or prompt in logs |
 | **Deployment (Phase 5)** | container; one small CPU VM behind TLS proxy; health checks, metrics, budget alert; load test | 20 concurrent requests without 5xx; p95 latency documented |
