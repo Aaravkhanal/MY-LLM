@@ -118,6 +118,7 @@ Any config value can be overridden on the command line: `train.lr=5e-4 train.max
 
 ```bash
 python scripts/create_key.py --label laptop            # key shown once; only its hash is stored
+#   or accounts with per-key limits, revoke/rotate and usage records:  scripts/manage_keys.py ...  +  serve.py --db secrets/accounts.db
 python scripts/serve.py --checkpoint models/tiny-tinystories-v1-sft-int8.pt
 #   web chat  http://127.0.0.1:8000/     native API: /health /model /stats /generate /chat  (+ "stream": true)
 #   OpenAI-compatible: /v1/models /v1/completions /v1/chat/completions -> works with the `openai` SDK (docs/API.md)
@@ -198,8 +199,7 @@ The `small` preset is trained (above). Its pretraining loss was still falling, a
 instruction data. On 8 GB, roughly 30–50M parameters is the practical ceiling for pretraining; anything
 larger needs rented GPU time.
 
-Not built: user accounts and per-user usage records, key
-list/revoke/rotate through the API, tokens-per-minute limits, preference tuning (DPO), continuous
+Not built: self-service signup and key management over HTTP, a per-request timeout, preference tuning (DPO), continuous
 batching, real int8 kernels, multi-GPU training, cloud deployment. The order they will be tackled in,
 and what has to be true first, is in [docs/AUDIT.md](docs/AUDIT.md).
 

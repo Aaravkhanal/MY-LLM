@@ -26,6 +26,17 @@ def _digest(key: str) -> str:
     return hashlib.sha256(key.encode("utf-8")).hexdigest()
 
 
+class Caller(str):
+    """Who is calling. A `str` (the rate-limit identity, e.g. "key:7"), so code that only wants the identity is unchanged;
+    with the account database it also carries the key's owner and limits."""
+
+    def __new__(cls, identity: str, key_id: Optional[int] = None, user_id: Optional[int] = None,
+                rpm_limit: Optional[float] = None, tpm_limit: Optional[int] = None):
+        obj = super().__new__(cls, identity)
+        obj.key_id, obj.user_id, obj.rpm_limit, obj.tpm_limit = key_id, user_id, rpm_limit, tpm_limit
+        return obj
+
+
 class KeyStore:
     def __init__(self, path: str | Path):
         self.path = Path(path)
@@ -80,20 +91,22 @@ class RateLimiter:
     def __init__(self, per_minute: float, burst: int, clock=time.monotonic):
         if per_minute <= 0 or burst < 1:
             raise ValueError("per_minute must be > 0 and burst >= 1")
+        self.per_minute = per_minute
         self.rate = per_minute / 60.0
         self.burst = burst
         self._clock = clock
         self._buckets: Dict[str, tuple] = {}
         self._lock = threading.Lock()
 
-    def allow(self, identity: str) -> tuple[bool, float]:
-        """(allowed, retry_after_seconds)."""
+    def allow(self, identity: str, per_minute: Optional[float] = None) -> tuple[bool, float]:
+        """(allowed, retry_after_seconds). `per_minute` overrides the refill rate for this identity (a per-key limit)."""
         now = self._clock()
+        rate = (per_minute / 60.0) if per_minute else self.rate
         with self._lock:
             tokens, last = self._buckets.get(identity, (float(self.burst), now))
-            tokens = min(self.burst, tokens + (now - last) * self.rate)
+            tokens = min(self.burst, tokens + (now - last) * rate)
             if tokens >= 1.0:
                 self._buckets[identity] = (tokens - 1.0, now)
                 return True, 0.0
             self._buckets[identity] = (tokens, now)
-            return False, (1.0 - tokens) / self.rate
+            return False, (1.0 - tokens) / rate

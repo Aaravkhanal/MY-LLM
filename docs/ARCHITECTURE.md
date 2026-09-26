@@ -43,7 +43,7 @@ one machine and calls no external model or service.
 | `evaluation` | loss/ppl/accuracy, text metrics, probes, edge cases, suite, regression, compare | inference |
 | `inference` | engine (sampling, streaming), chat template, prompt builder, int8 quantisation | model, tokenizer |
 | `chat` | session state, terminal UI | inference |
-| `api` | FastAPI app, keys, rate limiter | inference |
+| `api` | FastAPI app, OpenAI-compatible routes, keys and accounts (SQLite), rate limiter | inference |
 | `web` | static chat page (HTML/JS/CSS) | api |
 
 Rule: data → tokenizer → model → train → evaluation → inference → chat/api. Nothing lower imports

@@ -32,7 +32,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
-from aarav_lm.api.auth import KeyStore, RateLimiter
+from aarav_lm.api.auth import Caller, KeyStore, RateLimiter
 from aarav_lm.api.openai_compat import add_openai_routes
 from aarav_lm.inference.chat_format import ChatFormatError, Message
 from aarav_lm.inference.engine import GenerationConfig, InferenceEngine
@@ -165,6 +165,7 @@ class Stats:
         self.gen_seconds = 0.0
         self.in_flight = 0
         self.waiting = 0
+        self.usage_write_failures = 0
         self._lock = threading.Lock()
 
     def add(self, **kw: float) -> None:
@@ -177,7 +178,7 @@ class Stats:
             return {
                 "uptime_seconds": round(time.time() - self.started, 1),
                 "requests": self.requests, "rejected": self.rejected, "errors": self.errors,
-                "in_flight": self.in_flight, "waiting": self.waiting,
+                "in_flight": self.in_flight, "waiting": self.waiting, "usage_write_failures": self.usage_write_failures,
                 "prompt_tokens": self.prompt_tokens, "completion_tokens": self.completion_tokens,
                 "avg_tokens_per_sec": round(self.completion_tokens / self.gen_seconds, 1) if self.gen_seconds else 0.0,
             }
@@ -211,22 +212,48 @@ def create_app(
 
     app.add_middleware(BodyLimitMiddleware, max_bytes=MAX_BODY_BYTES)
 
-    async def identify(request: Request) -> str:
-        """Authenticate (if required) and rate-limit. Returns the caller identity."""
-        identity = request.client.host if request.client else "unknown"
+    # The account database (api/store.py) adds per-key limits and usage records; the JSON KeyStore only authenticates.
+    accounts = key_store if hasattr(key_store, "record_usage") else None
+    if accounts is not None:
+        accounts.register_model(model_name, "", engine.info()["params"], engine.info()["context_length"])
+
+    def record(caller, model_id: str, endpoint: str, status: int, error_type: Optional[str] = None,
+               prompt_tokens: int = 0, completion_tokens: int = 0, duration_ms: int = 0) -> None:
+        """One usage row. Recording must never fail a request, but a failure is counted, not hidden (/stats)."""
+        if accounts is None or getattr(caller, "key_id", None) is None:
+            return
+        try:
+            accounts.record_usage(key_id=caller.key_id, user_id=caller.user_id, model_id=model_id, endpoint=endpoint,
+                                  prompt_tokens=prompt_tokens, completion_tokens=completion_tokens, duration_ms=duration_ms,
+                                  status=status, error_type=error_type)
+        except Exception:                                                        # noqa: BLE001
+            stats.add(usage_write_failures=1)
+
+    async def identify(request: Request) -> Caller:
+        """Authenticate (if required) and rate-limit. Returns who is calling (a str identity with the key's limits)."""
+        caller = Caller(request.client.host if request.client else "unknown")
         if require_auth:
             header = request.headers.get("authorization", "")
             token = header[7:].strip() if header.lower().startswith("bearer ") else None
-            key_id = key_store.verify(token) if key_store else None
-            if key_id is None:
+            if key_store is not None and hasattr(key_store, "lookup"):
+                p = key_store.lookup(token)
+                caller = Caller(f"key:{p.key_id}", p.key_id, p.user_id, p.rpm_limit, p.tpm_limit) if p else None
+            else:
+                key_id = key_store.verify(token) if key_store else None
+                caller = Caller(f"key:{key_id}") if key_id is not None else None
+            if caller is None:
                 stats.add(rejected=1)
                 raise HTTPException(401, "missing or invalid API key", headers={"WWW-Authenticate": "Bearer"})
-            identity = f"key:{key_id}"
-        ok, retry = limiter.allow(identity)
+        ok, retry = limiter.allow(caller, caller.rpm_limit)
         if not ok:
             stats.add(rejected=1)
+            record(caller, model_name, request.url.path, 429, "rate_limited")
             raise HTTPException(429, "rate limit exceeded", headers={"Retry-After": str(int(retry) + 1)})
-        return identity
+        if accounts is not None and caller.tpm_limit and accounts.tokens_used_since(caller.key_id, 60) >= caller.tpm_limit:
+            stats.add(rejected=1)
+            record(caller, model_name, request.url.path, 429, "token_limit")
+            raise HTTPException(429, f"token limit of {caller.tpm_limit} per minute reached", headers={"Retry-After": "30"})
+        return caller
 
     def make_config(body: Sampling, stop_ids: tuple = ()) -> GenerationConfig:
         try:
@@ -260,9 +287,18 @@ def create_app(
         stats.add(in_flight=-1)
         engine.lock.release()
 
-    def run(prompt_ids: List[int], cfg: GenerationConfig, stream: bool, extra: dict, fmt=None):
+    def run(prompt_ids: List[int], cfg: GenerationConfig, stream: bool, extra: dict, fmt=None, caller=None, endpoint: str = ""):
         fmt = fmt or NativeFormat()
         stats.add(requests=1, prompt_tokens=len(prompt_ids))
+        started = time.perf_counter()
+        outcome = {"done": False}
+
+        def log_usage(status: int, error_type: Optional[str] = None, completion_tokens: int = 0) -> None:
+            if outcome["done"]:
+                return
+            outcome["done"] = True
+            record(caller, model_name, endpoint, status, error_type, len(prompt_ids), completion_tokens,
+                   int((time.perf_counter() - started) * 1000))
 
         def finish(result) -> dict:
             stats.add(completion_tokens=result.generated_tokens, gen_seconds=result.seconds)
@@ -273,20 +309,30 @@ def create_app(
             }
 
         if not stream:
-            acquire_slot()
+            try:
+                acquire_slot()
+            except HTTPException as e:
+                log_usage(e.status_code, "busy")
+                raise
             try:
                 for _ in engine.stream(prompt_ids, cfg):
                     pass
                 result = engine.last_result
             except Exception:                                        # noqa: BLE001
                 stats.add(errors=1)
+                log_usage(500, "generation_failed")
                 raise HTTPException(500, "generation failed") from None
             finally:
                 release_slot()
+            log_usage(200, None, result.generated_tokens)
             return fmt.final(result.text, finish(result))
 
         # Fail with a real 503 *before* the 200 stream starts if the model is busy.
-        acquire_slot()
+        try:
+            acquire_slot()
+        except HTTPException as e:
+            log_usage(e.status_code, "busy")
+            raise
         release_slot()
 
         end = object()
@@ -312,13 +358,17 @@ def create_app(
                     if delta is end:
                         break
                     yield fmt.chunk(delta)
+                log_usage(200, None, engine.last_result.generated_tokens)
                 yield fmt.done(finish(engine.last_result))
             except HTTPException as e:
+                log_usage(e.status_code, "busy" if e.status_code == 503 else "error")
                 yield fmt.error(e.detail, e.status_code)
             except Exception:                                        # noqa: BLE001
                 stats.add(errors=1)
+                log_usage(500, "generation_failed")
                 yield fmt.error("generation failed", 500)
             finally:
+                log_usage(499, "client_disconnected")               # no-op unless the stream ended without finishing
                 if it is not None:
                     it.close()
                 if held["slot"]:
@@ -357,16 +407,25 @@ def create_app(
     async def get_stats(_: str = Depends(identify)):
         return stats.snapshot()
 
+    @app.get("/v1/usage")
+    async def my_usage(days: float = 30.0, caller: Caller = Depends(identify)):
+        """The calling key's own usage (token counts and request outcomes; prompts are never stored)."""
+        if accounts is None or caller.key_id is None:
+            raise HTTPException(404, "usage tracking needs the account database (--db) and an API key")
+        if not 0 < days <= 366:
+            raise HTTPException(400, "days must be between 0 and 366")
+        return {"object": "usage", "key_id": caller.key_id, **accounts.usage_summary(key_id=caller.key_id, days=days)}
+
     @app.post("/generate")
-    def generate(body: GenerateRequest, _: str = Depends(identify)):
+    def generate(body: GenerateRequest, caller: Caller = Depends(identify)):
         cfg = make_config(body)
         ids = engine.tok.encode(body.prompt)
         if not ids:
             raise HTTPException(422, "prompt is empty after tokenisation")
-        return run(ids, cfg, body.stream, {})
+        return run(ids, cfg, body.stream, {}, caller=caller, endpoint="/generate")
 
     @app.post("/chat")
-    def chat(body: ChatRequest, _: str = Depends(identify)):
+    def chat(body: ChatRequest, caller: Caller = Depends(identify)):
         cfg = make_config(body)
         try:
             prompt = build_prompt(engine, [Message(m.role, m.content) for m in body.messages],
@@ -375,7 +434,7 @@ def create_app(
             raise HTTPException(422, str(e)) from e
         cfg = replace(cfg, stop_ids=tuple({*cfg.stop_ids, *prompt.stop_ids}))
         extra = {"mode": chat_mode, "dropped_messages": prompt.dropped}
-        return run(prompt.ids, cfg, body.stream, extra)
+        return run(prompt.ids, cfg, body.stream, extra, caller=caller, endpoint="/chat")
 
     add_openai_routes(app, identify=identify, make_config=make_config, run=run, engine=engine, chat_mode=chat_mode,
                       model_name=model_name, sampling_cls=Sampling)

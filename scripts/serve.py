@@ -13,6 +13,7 @@ from pathlib import Path
 
 from aarav_lm.api.app import create_app
 from aarav_lm.api.auth import KeyStore
+from aarav_lm.api.store import AccountStore
 from aarav_lm.chat.cli import find_checkpoint, tokenizer_dir_for
 from aarav_lm.inference.engine import InferenceEngine
 from aarav_lm.paths import SECRETS_DIR
@@ -29,6 +30,8 @@ def main() -> None:
     ap.add_argument("--port", type=int, default=8000)
     ap.add_argument("--no-auth", action="store_true", help="disable API keys (only allowed on localhost)")
     ap.add_argument("--keys-file", default=str(SECRETS_DIR / "api_keys.json"))
+    ap.add_argument("--db", help="account database (scripts/manage_keys.py): per-key limits, usage records, revocation. "
+                                 "Overrides --keys-file.")
     ap.add_argument("--max-tokens-cap", type=int, default=512)
     ap.add_argument("--rate-limit-per-min", type=float, default=60.0)
     ap.add_argument("--cors-origin", action="append", default=[], help="allowed browser origin (repeatable)")
@@ -40,7 +43,7 @@ def main() -> None:
     ck = find_checkpoint(args.checkpoint)
     engine = InferenceEngine.from_checkpoint(ck, tokenizer_dir_for(ck, args.tokenizer), args.device)
     app = create_app(
-        engine, KeyStore(args.keys_file), require_auth=not args.no_auth, max_tokens_cap=args.max_tokens_cap,
+        engine, AccountStore(args.db) if args.db else KeyStore(args.keys_file), require_auth=not args.no_auth, max_tokens_cap=args.max_tokens_cap,
         rate_limit_per_min=args.rate_limit_per_min, cors_origins=tuple(args.cors_origin),
         model_name=Path(ck).parent.parent.name,
     )

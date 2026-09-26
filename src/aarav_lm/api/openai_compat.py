@@ -218,7 +218,7 @@ def add_openai_routes(
         return model_object()
 
     @app.post("/v1/completions")
-    def completions(body: CompletionRequest, _: str = Depends(identify)):
+    def completions(body: CompletionRequest, caller: str = Depends(identify)):
         check_model(body.model)
         prompt = body.prompt
         if isinstance(prompt, list):
@@ -231,10 +231,10 @@ def add_openai_routes(
         ids = engine.tok.encode(prompt)
         if not ids:
             raise HTTPException(400, "prompt is empty after tokenisation")
-        return run(ids, cfg, body.stream, {}, CompletionFormat(model_name))
+        return run(ids, cfg, body.stream, {}, CompletionFormat(model_name), caller=caller, endpoint="/v1/completions")
 
     @app.post("/v1/chat/completions")
-    def chat_completions(body: ChatCompletionRequest, _: str = Depends(identify)):
+    def chat_completions(body: ChatCompletionRequest, caller: str = Depends(identify)):
         check_model(body.model)
         messages = []
         for m in body.messages:
@@ -248,4 +248,4 @@ def add_openai_routes(
         except ChatFormatError as e:
             raise HTTPException(400, str(e)) from e
         cfg = replace(cfg, stop_ids=tuple({*cfg.stop_ids, *prompt.stop_ids}))
-        return run(prompt.ids, cfg, body.stream, {}, ChatFormat(model_name))
+        return run(prompt.ids, cfg, body.stream, {}, ChatFormat(model_name), caller=caller, endpoint="/v1/chat/completions")

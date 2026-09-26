@@ -28,12 +28,16 @@ constant-time comparison, and `weights_only` checkpoint loading in the API path.
 ## Known gaps (do not expose publicly until these are closed)
 
 1. **No TLS.** The server speaks plain HTTP; a reverse proxy must terminate HTTPS.
-2. **Keys are a JSON file.** No accounts, no listing/revoking/regenerating through the API, no per-key
-   quotas or expiry, no last-used time. Revocation means editing the file.
+2. ~~Keys are a JSON file.~~ **Closed with `--db`**: users, per-key rpm/tpm limits, expiry, revoke/rotate (effective on
+   the next request), last-used. Not closed: there is no self-service HTTP signup or key management; the owner uses
+   `scripts/manage_keys.py`. The JSON key file remains as the simple mode.
 3. **Rate limit is per process and in memory**; it resets on restart and does not span replicas.
-4. **No tokens-per-minute limit** and no per-request wall-clock timeout for a running generation.
-5. **No usage records**, so no abuse detection or per-user accounting.
-6. **`/stats` and `/model` are visible to any valid key** (fine for one owner, not for many users).
+4. ~~No tokens-per-minute limit~~ **Closed with `--db`** (per-key `tpm_limit`). Still open: no per-request wall-clock
+   timeout for a running generation.
+5. ~~No usage records~~ **Closed with `--db`**: one row per request (counts and outcome only; no prompt text). Still
+   open: nothing reads them for abuse detection, and there is no retention policy.
+6. **`/stats` and `/model` are visible to any valid key** (fine for one owner, not for many users); `/stats` shows
+   server-wide counters.
 7. **No content policy or output filtering.** The model is a small story model; a chat model exposed to
    the public needs a stated policy.
 8. **Unauthenticated `/health` and the web page** are intentional, but the page is only useful on the same origin.

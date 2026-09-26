@@ -2,12 +2,17 @@
 
 Local HTTP API served by `scripts/serve.py` (FastAPI). It has two front doors over one implementation:
 the **OpenAI-compatible** `/v1/...` routes (below, works with the official SDKs) and the original **native**
-routes (`/generate`, `/chat`). Accounts and per-user usage records are **planned, not built** — see
-[AUDIT.md](AUDIT.md) (Phase 4).
+routes (`/generate`, `/chat`). Accounts, per-key limits and usage records are in the SQLite account database (below).
 
 ```bash
-python scripts/create_key.py --label "my laptop"        # prints a key once; only its SHA-256 is stored
+# simplest: one owner, keys in a JSON file (only SHA-256 hashes are stored)
+python scripts/create_key.py --label "my laptop"
 python scripts/serve.py --checkpoint models/tiny-tinystories-v1-sft-int8.pt
+
+# accounts: users, per-key limits, expiry, revoke/rotate, usage records (SQLite)
+python scripts/manage_keys.py user add alice@example.com
+python scripts/manage_keys.py key create alice@example.com --label laptop --rpm 30 --tpm 20000 --expires-days 90
+python scripts/serve.py --db secrets/accounts.db --checkpoint models/tiny-tinystories-v1-sft-int8.pt
 ```
 
 Defaults: binds to `127.0.0.1:8000`, requires a key, 512-token output cap, 60 requests/minute per key
@@ -177,7 +182,31 @@ Errors on `/v1/...` paths are OpenAI's object: `{"error": {"message", "type", "p
 (429, code `rate_limit_exceeded`, with `Retry-After`) and `server_error` (503 busy with `Retry-After`, 500).
 The native routes keep their `{"detail": ...}` shape. The SDK tests are in `tests/test_openai_compat.py`.
 
+## Accounts, limits and usage (`--db`)
+
+With `--db` the server uses the account database instead of the JSON key file (`scripts/manage_keys.py --help`;
+`import-json` carries existing keys over). Schema and rules are in `src/aarav_lm/api/store.py`:
+
+| Table | Holds |
+|---|---|
+| `users` | email (the only personal datum), created, disabled |
+| `api_keys` | SHA-256 of the key (never the key), a 8-character prefix for recognising it in lists, label, expiry, revoked-at, rotated-from, `rpm_limit`, `tpm_limit`, last-used |
+| `usage` | one row per generation request: time, key, user, model, endpoint, prompt tokens, completion tokens, duration, HTTP status, error type. **No prompts or completions.** |
+| `models` | models this server has served (name, parameters, context length) |
+
+* **Revocation, rotation, expiry and disabling a user take effect on the very next request** (checked in the database
+  on every call). Rotation issues a replacement with the same label and limits and revokes the old key in one transaction.
+* **Per-key limits:** `rpm_limit` replaces the server-wide requests-per-minute for that key; `tpm_limit` caps prompt +
+  completion tokens per rolling minute, measured from the usage table. A request is refused (429, `Retry-After`) once the
+  key is already at its limit, so a key can overshoot by at most one request.
+* **Every request leaves exactly one usage row**, whichever way it ends: 200, 429 (`rate_limited` / `token_limit`), 503
+  (`busy`), 500 (`generation_failed`), or 499 (`client_disconnected`, a stream the client abandoned). A failing database
+  never fails a request; it is counted in `GET /stats` as `usage_write_failures`.
+* `GET /v1/usage?days=7` returns the caller's own totals: `{"object": "usage", "key_id", "requests", "prompt_tokens",
+  "completion_tokens", "total_tokens", "errors", "mean_duration_ms"}`. With the JSON key file it is a 404.
+
 ## Not built yet
 
-Accounts; listing, revoking and regenerating keys through the API; per-user usage records; tokens-per-minute
-limits; a per-request wall-clock timeout; several concurrent generations (one runs at a time).
+Self-service signup and key management over HTTP (today the owner uses `scripts/manage_keys.py`); a per-request
+wall-clock timeout; several concurrent generations (one runs at a time); a shared rate-limit store for more than one
+server process.
