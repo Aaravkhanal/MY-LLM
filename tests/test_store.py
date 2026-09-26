@@ -152,3 +152,83 @@ def test_concurrent_use_from_many_threads_is_safe(store, alice):
     threads = [threading.Thread(target=work) for _ in range(8)]
     [t.start() for t in threads]; [t.join() for t in threads]
     assert errors == [] and store.usage_summary(key_id=kid)["requests"] == 200
+
+
+# ── web accounts: passwords and sessions ─────────────────────────────────────
+
+def test_passwords_are_salted_scrypt_hashes_and_never_stored(store, tmp_path):
+    from aarav_lm.api.store import hash_password, verify_password
+    uid = store.signup("New@Example.com", "correct horse battery")
+    row = sqlite3.connect(tmp_path / "accounts.db").execute("SELECT password_hash FROM users WHERE id = ?", (uid,)).fetchone()[0]
+    assert row.startswith("scrypt$") and "correct horse" not in row
+    assert hash_password("x" * 10) != hash_password("x" * 10)                                # random salt
+    assert verify_password("correct horse battery", row) and not verify_password("correct horse batterY", row)
+    assert store.check_password("new@example.com", "correct horse battery") == uid
+    assert store.check_password("NEW@example.com", "wrong password!!") is None
+    assert store.check_password("nobody@example.com", "correct horse battery") is None
+
+
+def test_signup_validation_and_duplicates(store):
+    for bad_email in ("", "nope", "a@b", "a b@c.com", "x" * 260 + "@y.com"):
+        with pytest.raises(ValueError, match="email"):
+            store.signup(bad_email, "long enough password")
+    for bad_pw in ("short", "x" * 129, ""):
+        with pytest.raises(ValueError, match="password"):
+            store.signup("ok@example.com", bad_pw)
+    store.signup("ok@example.com", "long enough password")
+    with pytest.raises(ValueError, match="already exists"):
+        store.signup("OK@example.com", "another long password")
+
+
+def test_unknown_email_takes_as_long_as_a_wrong_password(store):
+    store.signup("real@example.com", "long enough password")
+    def timed(email):
+        t = time.perf_counter()
+        for _ in range(4):
+            store.check_password(email, "wrong wrong wrong")
+        return time.perf_counter() - t
+    known, unknown = timed("real@example.com"), timed("ghost@example.com")
+    assert unknown > 0.5 * known                                                              # both do the full scrypt work
+
+
+def test_sessions_store_only_a_hash_expire_and_die_with_the_user(store):
+    uid = store.signup("s@example.com", "long enough password")
+    token, csrf = store.create_session(uid)
+    info = store.get_session(token)
+    assert (info.user_id, info.email, info.csrf) == (uid, "s@example.com", csrf)
+    raw = store._db.execute("SELECT token_sha256 FROM sessions").fetchone()[0]
+    assert raw == digest(token) and token not in raw
+    assert store.get_session("nope") is None and store.get_session(None) is None
+    short, _ = store.create_session(uid, ttl_days=1e-9)
+    time.sleep(1.1)
+    assert store.get_session(short) is None
+    other, _ = store.create_session(uid)
+    store.end_sessions(uid, keep_token=token)
+    assert store.get_session(token) is not None and store.get_session(other) is None
+    store.set_user_disabled(uid)
+    assert store.get_session(token) is None and store.check_password("s@example.com", "long enough password") is None
+    store.set_user_disabled(uid, False)
+    store.end_session(token)
+    assert store.get_session(token) is None
+
+
+def test_password_change_and_a_database_from_before_web_accounts_still_opens(tmp_path):
+    db = sqlite3.connect(tmp_path / "old.db")
+    db.executescript("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL,"
+                     " disabled INTEGER NOT NULL DEFAULT 0); INSERT INTO users(email, created_at) VALUES ('old@example.com', 'x');")
+    db.commit(); db.close()
+    s = AccountStore(tmp_path / "old.db")                                                   # migrates in place
+    uid = s.get_user("old@example.com")
+    assert s.check_password("old@example.com", "anything long") is None                     # no password yet: cannot log in
+    s.set_password(uid, "a brand new password")
+    assert s.check_password("old@example.com", "a brand new password") == uid
+    s.close()
+
+
+def test_usage_daily_is_zero_filled_and_per_user(store):
+    a, b = store.signup("a@example.com", "long enough password"), store.signup("b@example.com", "long enough password")
+    store.record_usage(key_id=None, user_id=a, model_id="m", endpoint="/x", prompt_tokens=3, completion_tokens=4)
+    store.record_usage(key_id=None, user_id=b, model_id="m", endpoint="/x", prompt_tokens=100, completion_tokens=100)
+    days = store.usage_daily(a, 7)
+    assert len(days) == 7 and sum(d["tokens"] for d in days) == 7 and days[-1]["requests"] == 1 and days[0]["requests"] == 0
+    assert store.tokens_used_by_user_since(a, 60) == 7 and store.count_active_keys(a) == 0

@@ -1,7 +1,8 @@
 """
 aarav-lm · Accounts, API keys and usage records (SQLite)
 
-    users      one row per person (an email is the only personal datum kept)
+    users      one row per person (an email is the only personal datum kept) and, for web accounts, a salted scrypt password hash
+    sessions   browser logins: the SHA-256 of a random cookie value, a CSRF token, an expiry
     api_keys   the SHA-256 of each key, never the key; a short prefix to recognise it in a list; limits, expiry, revocation
     usage      one row per generation request: who, which model and endpoint, token counts, time taken, outcome
     models     the models this server has served (name, parameters, checkpoint) so usage rows stay interpretable
@@ -17,9 +18,11 @@ limits so the server can enforce them.
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import hmac
 import os
+import re
 import secrets
 import sqlite3
 import threading
@@ -37,8 +40,18 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT NOT NULL UNIQUE,
     created_at TEXT NOT NULL,
-    disabled INTEGER NOT NULL DEFAULT 0
+    disabled INTEGER NOT NULL DEFAULT 0,
+    password_hash TEXT
 );
+CREATE TABLE IF NOT EXISTS sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    token_sha256 TEXT NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    csrf TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS sessions_user ON sessions(user_id);
 CREATE TABLE IF NOT EXISTS api_keys (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id),
@@ -77,6 +90,9 @@ CREATE TABLE IF NOT EXISTS usage (
 CREATE INDEX IF NOT EXISTS usage_key_ts ON usage(key_id, ts);
 """
 
+SCRYPT_N, SCRYPT_R, SCRYPT_P = 2**14, 8, 1        # ~16 MB and ~50 ms per hash: cheap for a login, costly to brute-force
+MIN_PASSWORD, MAX_PASSWORD = 10, 128                # the upper bound stops a huge "password" being used as a CPU/memory attack
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 LAST_USED_GRANULARITY_S = 60          # writing last_used_at on every request would make every read a write
 
 
@@ -90,6 +106,44 @@ def _iso(t: datetime) -> str:
 
 def digest(key: str) -> str:
     return hashlib.sha256(key.encode("utf-8")).hexdigest()
+
+
+def hash_password(password: str) -> str:
+    """scrypt with a random 16-byte salt, stored as 'scrypt$N$r$p$salt$hash' so the cost can be raised later."""
+    salt = os.urandom(16)
+    h = hashlib.scrypt(password.encode("utf-8"), salt=salt, n=SCRYPT_N, r=SCRYPT_R, p=SCRYPT_P, dklen=32)
+    b64 = lambda b: base64.b64encode(b).decode()                                      # noqa: E731
+    return f"scrypt${SCRYPT_N}${SCRYPT_R}${SCRYPT_P}${b64(salt)}${b64(h)}"
+
+
+def verify_password(password: str, stored: Optional[str]) -> bool:
+    """Constant-time comparison. With no stored hash it still does the full scrypt work, so a request for an unknown
+    email takes as long as one for a known email (no account-existence timing leak)."""
+    if not stored or not stored.startswith("scrypt$"):
+        hashlib.scrypt(password.encode("utf-8"), salt=b"\0" * 16, n=SCRYPT_N, r=SCRYPT_R, p=SCRYPT_P, dklen=32)
+        return False
+    _, n, r, p, salt, want = stored.split("$")
+    got = hashlib.scrypt(password.encode("utf-8"), salt=base64.b64decode(salt), n=int(n), r=int(r), p=int(p), dklen=32)
+    return hmac.compare_digest(got, base64.b64decode(want))
+
+
+def validate_email(email: str) -> str:
+    email = email.strip().lower()
+    if len(email) > 254 or not EMAIL_RE.match(email):
+        raise ValueError("a valid email address is required")
+    return email
+
+
+def validate_password(password: str) -> None:
+    if not isinstance(password, str) or not MIN_PASSWORD <= len(password) <= MAX_PASSWORD:
+        raise ValueError(f"the password must be {MIN_PASSWORD}-{MAX_PASSWORD} characters")
+
+
+@dataclass(frozen=True)
+class SessionInfo:
+    user_id: int
+    email: str
+    csrf: str
 
 
 @dataclass(frozen=True)
@@ -135,6 +189,9 @@ class AccountStore:
         self._db.execute("PRAGMA journal_mode=WAL")
         self._db.execute("PRAGMA foreign_keys=ON")
         self._db.executescript(SCHEMA)
+        cols = {r["name"] for r in self._db.execute("PRAGMA table_info(users)")}
+        if "password_hash" not in cols:                    # a database created before web accounts existed
+            self._db.execute("ALTER TABLE users ADD COLUMN password_hash TEXT")
         self._last_used_cache: dict = {}
 
     def close(self) -> None:
@@ -172,6 +229,65 @@ class AccountStore:
         with self._tx() as db:
             if db.execute("UPDATE users SET disabled = ? WHERE id = ?", (int(disabled), user_id)).rowcount == 0:
                 raise KeyError(f"no user {user_id}")
+
+    # ── web accounts: passwords and sessions ────────────────────────────────
+    def signup(self, email: str, password: str) -> int:
+        """A user with a password, in one transaction."""
+        email = validate_email(email)
+        validate_password(password)
+        phash = hash_password(password)
+        try:
+            with self._tx() as db:
+                return db.execute("INSERT INTO users(email, created_at, password_hash) VALUES (?,?,?)",
+                                  (email, _iso(_now()), phash)).lastrowid
+        except sqlite3.IntegrityError:
+            raise ValueError("an account with this email already exists") from None
+
+    def check_password(self, email: str, password: str) -> Optional[int]:
+        """The user id if the email and password match an enabled account, else None (same time either way)."""
+        row = self._db.execute("SELECT id, password_hash, disabled FROM users WHERE email = ?", (email.strip().lower(),)).fetchone()
+        ok = verify_password(password if isinstance(password, str) and len(password) <= MAX_PASSWORD else "", row["password_hash"] if row else None)
+        return row["id"] if (ok and row and not row["disabled"]) else None
+
+    def set_password(self, user_id: int, password: str) -> None:
+        validate_password(password)
+        phash = hash_password(password)
+        with self._tx() as db:
+            if db.execute("UPDATE users SET password_hash = ? WHERE id = ?", (phash, user_id)).rowcount == 0:
+                raise KeyError(f"no user {user_id}")
+
+    def user_info(self, user_id: int) -> Optional[dict]:
+        row = self._db.execute("SELECT id, email, created_at, disabled FROM users WHERE id = ?", (user_id,)).fetchone()
+        return dict(row) if row else None
+
+    def create_session(self, user_id: int, ttl_days: float = 7.0) -> tuple:
+        """(cookie value, csrf token). Only the cookie's SHA-256 is stored, so a leaked database cannot log anyone in."""
+        token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(24)
+        now = _now()
+        with self._tx() as db:
+            db.execute("DELETE FROM sessions WHERE expires_at <= ?", (_iso(now),))
+            db.execute("INSERT INTO sessions(token_sha256, user_id, csrf, created_at, expires_at) VALUES (?,?,?,?,?)",
+                       (digest(token), user_id, csrf, _iso(now), _iso(now + timedelta(days=ttl_days))))
+        return token, csrf
+
+    def get_session(self, token: Optional[str]) -> Optional[SessionInfo]:
+        if not token:
+            return None
+        row = self._db.execute(
+            "SELECT s.user_id, s.csrf, s.expires_at, u.email, u.disabled FROM sessions s JOIN users u ON u.id = s.user_id "
+            "WHERE s.token_sha256 = ?", (digest(token),)).fetchone()
+        if row is None or row["disabled"] or row["expires_at"] <= _iso(_now()):
+            return None
+        return SessionInfo(row["user_id"], row["email"], row["csrf"])
+
+    def end_session(self, token: str) -> None:
+        with self._tx() as db:
+            db.execute("DELETE FROM sessions WHERE token_sha256 = ?", (digest(token),))
+
+    def end_sessions(self, user_id: int, keep_token: Optional[str] = None) -> None:
+        """Log a user out everywhere (optionally keeping the current browser): after a password change or a disable."""
+        with self._tx() as db:
+            db.execute("DELETE FROM sessions WHERE user_id = ? AND token_sha256 != ?", (user_id, digest(keep_token) if keep_token else ""))
 
     # ── keys ────────────────────────────────────────────────────────────────
     def create_key(self, user_id: int, label: str = "", rpm_limit: Optional[float] = None,
@@ -293,6 +409,29 @@ class AccountStore:
             "COALESCE(SUM(status >= 400),0) errors, COALESCE(AVG(duration_ms),0) ms FROM usage WHERE " + " AND ".join(where), args).fetchone()
         return {"days": days, "requests": row["n"], "prompt_tokens": row["p"], "completion_tokens": row["c"],
                 "total_tokens": row["p"] + row["c"], "errors": row["errors"], "mean_duration_ms": round(row["ms"], 1)}
+
+    def usage_daily(self, user_id: int, days: int = 14) -> List[dict]:
+        """Requests and tokens per UTC day for the last `days` days, oldest first, zero-filled."""
+        start = (_now() - timedelta(days=days - 1)).date()
+        got = {r["d"]: dict(r) for r in self._db.execute(
+            "SELECT substr(ts, 1, 10) d, COUNT(*) requests, COALESCE(SUM(prompt_tokens + completion_tokens),0) tokens "
+            "FROM usage WHERE user_id = ? AND ts >= ? GROUP BY d", (user_id, start.isoformat()))}
+        out = []
+        for i in range(days):
+            d = (start + timedelta(days=i)).isoformat()
+            out.append({"date": d, "requests": got.get(d, {}).get("requests", 0), "tokens": got.get(d, {}).get("tokens", 0)})
+        return out
+
+    def tokens_used_by_user_since(self, user_id: int, seconds: float) -> int:
+        since = _iso(_now() - timedelta(seconds=seconds))
+        return self._db.execute("SELECT COALESCE(SUM(prompt_tokens + completion_tokens),0) FROM usage WHERE user_id = ? AND ts >= ?",
+                                (user_id, since)).fetchone()[0]
+
+    def user_count(self) -> int:
+        return self._db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+
+    def count_active_keys(self, user_id: int) -> int:
+        return sum(1 for k in self.list_keys(user_id) if k.active)
 
     def usage_rows(self, key_id: int, limit: int = 20) -> List[dict]:
         return [dict(r) for r in self._db.execute("SELECT * FROM usage WHERE key_id = ? ORDER BY id DESC LIMIT ?", (key_id, limit))]

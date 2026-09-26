@@ -32,6 +32,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
+from aarav_lm.api.accounts_web import COOKIE, SAFE_METHODS, add_account_routes, client_ip, csrf_ok
 from aarav_lm.api.auth import Caller, KeyStore, RateLimiter
 from aarav_lm.api.openai_compat import add_openai_routes
 from aarav_lm.inference.chat_format import ChatFormatError, Message
@@ -198,8 +199,19 @@ def create_app(
     model_name: str = "aarav-lm",
     mode: str = "auto",
     serve_web: bool = True,
+    signup_code: Optional[str] = None,
+    open_signup: bool = False,
+    web_rpm: float = 20.0,
+    web_tpm: int = 30_000,
+    default_key_rpm: float = 20.0,
+    default_key_tpm: int = 30_000,
+    max_keys_per_user: int = 5,
+    cookie_secure: Optional[bool] = None,
+    trust_proxy: bool = False,
 ) -> FastAPI:
-    if require_auth and (key_store is None or len(key_store) == 0):
+    can_sign_up = bool(signup_code) or open_signup
+    has_users = key_store is not None and hasattr(key_store, "user_count") and key_store.user_count() > 0
+    if require_auth and (key_store is None or (len(key_store) == 0 and not can_sign_up and not has_users)):
         raise RuntimeError("authentication is on but there are no API keys — run scripts/create_key.py "
                            "or start the server with --no-auth (localhost only)")
     app = FastAPI(title="aarav-lm", version="0.1.0", docs_url=None, redoc_url=None)
@@ -221,7 +233,7 @@ def create_app(
     def record(caller, model_id: str, endpoint: str, status: int, error_type: Optional[str] = None,
                prompt_tokens: int = 0, completion_tokens: int = 0, duration_ms: int = 0) -> None:
         """One usage row. Recording must never fail a request, but a failure is counted, not hidden (/stats)."""
-        if accounts is None or getattr(caller, "key_id", None) is None:
+        if accounts is None or (getattr(caller, "key_id", None) is None and getattr(caller, "user_id", None) is None):
             return
         try:
             accounts.record_usage(key_id=caller.key_id, user_id=caller.user_id, model_id=model_id, endpoint=endpoint,
@@ -232,11 +244,16 @@ def create_app(
 
     async def identify(request: Request) -> Caller:
         """Authenticate (if required) and rate-limit. Returns who is calling (a str identity with the key's limits)."""
-        caller = Caller(request.client.host if request.client else "unknown")
+        caller = Caller(client_ip(request, trust_proxy))
         if require_auth:
             header = request.headers.get("authorization", "")
             token = header[7:].strip() if header.lower().startswith("bearer ") else None
-            if key_store is not None and hasattr(key_store, "lookup"):
+            session = accounts.get_session(request.cookies.get(COOKIE)) if (accounts is not None and not header) else None
+            if session is not None:                                     # a signed-in browser (the web chat)
+                if request.method not in SAFE_METHODS and not csrf_ok(request, session):
+                    raise HTTPException(403, "missing or invalid CSRF token")
+                caller = Caller(f"user:{session.user_id}", None, session.user_id, web_rpm, web_tpm)
+            elif key_store is not None and hasattr(key_store, "lookup"):
                 p = key_store.lookup(token)
                 caller = Caller(f"key:{p.key_id}", p.key_id, p.user_id, p.rpm_limit, p.tpm_limit) if p else None
             else:
@@ -250,7 +267,11 @@ def create_app(
             stats.add(rejected=1)
             record(caller, model_name, request.url.path, 429, "rate_limited")
             raise HTTPException(429, "rate limit exceeded", headers={"Retry-After": str(int(retry) + 1)})
-        if accounts is not None and caller.tpm_limit and accounts.tokens_used_since(caller.key_id, 60) >= caller.tpm_limit:
+        used = 0
+        if accounts is not None and caller.tpm_limit:
+            used = (accounts.tokens_used_since(caller.key_id, 60) if caller.key_id is not None
+                    else accounts.tokens_used_by_user_since(caller.user_id, 60) if caller.user_id is not None else 0)
+        if caller.tpm_limit and used >= caller.tpm_limit:
             stats.add(rejected=1)
             record(caller, model_name, request.url.path, 429, "token_limit")
             raise HTTPException(429, f"token limit of {caller.tpm_limit} per minute reached", headers={"Retry-After": "30"})
@@ -438,6 +459,15 @@ def create_app(
         extra = {"mode": chat_mode, "dropped_messages": prompt.dropped}
         return run(prompt.ids, cfg, body.stream, extra, caller=caller, endpoint="/chat")
 
+    auth_mode = "none" if not require_auth else ("account" if accounts is not None else "key")
+    if accounts is not None:
+        add_account_routes(app, accounts, model_name=model_name, auth_mode=auth_mode, signup_code=signup_code, open_signup=open_signup,
+                           default_key_rpm=default_key_rpm, default_key_tpm=default_key_tpm, web_rpm=web_rpm, web_tpm=web_tpm,
+                           max_keys_per_user=max_keys_per_user, cookie_secure=cookie_secure, trust_proxy=trust_proxy)
+    else:
+        @app.get("/app/config")
+        async def app_config():
+            return {"auth": auth_mode, "signup": "closed", "model": model_name, "limits": {}}
     add_openai_routes(app, identify=identify, make_config=make_config, run=run, engine=engine, chat_mode=chat_mode,
                       model_name=model_name, sampling_cls=Sampling)
     return app

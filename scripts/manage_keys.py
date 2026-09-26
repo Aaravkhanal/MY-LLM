@@ -1,6 +1,7 @@
 """Manage users, API keys and usage in the account database.
 
-    python scripts/manage_keys.py user add alice@example.com
+    python scripts/manage_keys.py user add alice@example.com [--password]    # --password: also a web login
+    python scripts/manage_keys.py user set-password alice@example.com
     python scripts/manage_keys.py key create alice@example.com --label laptop --rpm 30 --tpm 20000 --expires-days 90
     python scripts/manage_keys.py key list [alice@example.com]
     python scripts/manage_keys.py key rotate 3
@@ -20,13 +21,24 @@ from aarav_lm.api.store import AccountStore
 from aarav_lm.paths import SECRETS_DIR
 
 
+def _ask_password() -> str:
+    import getpass
+    first = getpass.getpass("password (10-128 characters): ")
+    if first != getpass.getpass("again: "):
+        sys.exit("the two passwords differ")
+    return first
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--db", default=str(SECRETS_DIR / "accounts.db"))
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     u = sub.add_parser("user").add_subparsers(dest="action", required=True)
-    u.add_parser("add").add_argument("email")
+    ua = u.add_parser("add")
+    ua.add_argument("email")
+    ua.add_argument("--password", action="store_true", help="also set a web password (prompted, not echoed)")
+    u.add_parser("set-password").add_argument("email")
     u.add_parser("disable").add_argument("email")
     u.add_parser("enable").add_argument("email")
 
@@ -52,7 +64,16 @@ def main() -> None:
     try:
         if args.cmd == "user":
             if args.action == "add":
-                print(f"user {store.create_user(args.email)} created")
+                uid = store.create_user(args.email)
+                if args.password:
+                    store.set_password(uid, _ask_password())
+                print(f"user {uid} created")
+            elif args.action == "set-password":
+                uid = store.get_user(args.email)
+                if uid is None:
+                    sys.exit(f"no such user: {args.email}")
+                store.set_password(uid, _ask_password())
+                print(f"password set for user {uid}")
             else:
                 uid = store.get_user(args.email)
                 if uid is None:
