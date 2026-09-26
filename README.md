@@ -73,6 +73,7 @@ python -m venv --system-site-packages .venv && .venv/bin/pip install -e ".[api,d
 
 # 2. is everything fundamentally working?  (~10 s, no downloads, no real data)
 python tests/smoke_test.py            # add --mps to also run a few steps on the Apple GPU
+scripts/ci_local.sh                   # what CI runs, on a fresh clone in a clean venv (run before pushing)
 
 # 3. chat with the packaged model straight away
 python chat.py                                                    # newest experiment, else the packaged SFT model

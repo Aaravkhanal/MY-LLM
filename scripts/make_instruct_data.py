@@ -30,6 +30,8 @@ def main() -> None:
                     help="a topic/place/emotion request needs a story that mentions that word at least this often")
     ap.add_argument("--first-mention-max", type=int, default=None,
                     help="...and it must first appear within this many words of the story's start")
+    ap.add_argument("--length-boost", type=float, default=1.0,
+                    help="multiply the sampling weight of the short/long request kinds (1.0 = unchanged)")
     ap.add_argument("--balance-alpha", type=float, default=1.0,
                     help="1.0 follows the corpus distribution; <1 flattens toward rare topics/places/names (0 = uniform)")
     ap.add_argument("--augment", type=float, default=0.0, help="share of requests rewritten in casual typing")
@@ -46,7 +48,7 @@ def main() -> None:
     recs = list(make_conversations(stories, args.n_train, args.seed,
                                    templates=TRAIN_TEMPLATES_V4 if args.templates == "v4" else TRAIN_TEMPLATES,
                                    min_mentions=args.min_mentions, balance_alpha=args.balance_alpha, augment=args.augment,
-                                   first_mention_max=args.first_mention_max))
+                                   first_mention_max=args.first_mention_max, length_boost=args.length_boost))
     n = write_jsonl(recs, resolve(args.out))
     kinds = {}
     for r in recs:
