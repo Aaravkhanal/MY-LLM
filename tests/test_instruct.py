@@ -354,3 +354,19 @@ def test_final_eval_wordings_share_nothing_with_any_training_or_earlier_eval_wor
     assert set(EVAL_TEMPLATES_FINAL) == set(TRAIN_TEMPLATES)
     openers = lambda d: {t.split()[0] for ts in d.values() for t in ts}                  # noqa: E731
     assert len(openers(EVAL_TEMPLATES_FINAL) - openers(TRAIN_TEMPLATES_V4) - openers(EVAL_TEMPLATES)) >= 5   # genuinely new openers
+
+
+def test_length_boost_shifts_the_task_mix_and_is_a_no_op_at_one():
+    import hashlib
+    import json
+    from collections import Counter
+    from aarav_lm.data.instruct_data import LENGTH_KINDS, make_conversations
+    stories = {"train": _synthetic_pool(3000, 11)}
+    def share(**kw):
+        c = Counter(r["task"] for r in make_conversations(stories, 2000, seed=2, **kw))
+        return sum(c[k] for k in LENGTH_KINDS) / sum(c.values())
+    assert share(length_boost=3.0) > 1.5 * share(length_boost=1.0)
+    assert share(length_boost=3.0, balance_alpha=0.5) > 1.5 * share(balance_alpha=0.5)          # both code paths
+    a = list(make_conversations(stories, 500, seed=2))
+    b = list(make_conversations(stories, 500, seed=2, length_boost=1.0))
+    assert json.dumps(a, sort_keys=True) == json.dumps(b, sort_keys=True)

@@ -37,6 +37,14 @@ def _finish(rng: random.Random, task, story: str, short: List[str], system_frac:
     return msgs
 
 
+LENGTH_KINDS = ("short", "long", "short_topic", "long_topic")
+
+
+def _weights(length_boost: float) -> List[float]:
+    """TASK_WEIGHTS in kind order, with the length kinds multiplied by `length_boost` (1.0 = unchanged)."""
+    return [w * (length_boost if k in LENGTH_KINDS else 1.0) for k, w in TASK_WEIGHTS.items()]
+
+
 def _feature_value(kind: str, f) -> object:
     """The value a request of this kind asks for, used to balance sampling across rare and common values."""
     if kind in ("topic", "short_topic", "long_topic", "name_topic", "two_topics"):
@@ -69,7 +77,7 @@ def make_conversations(
     stories: Dict[str, List[str]], n_train: int, seed: int = 0, system_frac: float = 0.3,
     two_turn_prob_if_short: float = 0.5, short_chars: int = 420,
     templates: Dict[str, List[str]] = TRAIN_TEMPLATES, min_mentions: int = 1, balance_alpha: float = 1.0,
-    augment: float = 0.0, first_mention_max: Optional[int] = None,
+    augment: float = 0.0, first_mention_max: Optional[int] = None, length_boost: float = 1.0,
 ) -> Iterator[dict]:
     """One conversation per story (each story used at most once).
 
@@ -82,6 +90,8 @@ def make_conversations(
       templates       request wording (TRAIN_TEMPLATES_V4 has ~3x more frames)
       min_mentions    a topic/place/emotion request needs a story that mentions that word at least this often
       first_mention_max  ... and (if set) first mentions it within this many words of the start
+      length_boost    multiply the sampling weight of the four length kinds (short, long, short_topic, long_topic): with many
+                      request wordings each one is seen less often, and length control did not survive that (exp_007)
       balance_alpha   1.0 = follow the corpus (park is 40% of place requests); 0.5 flattens toward rare values
                       (probability proportional to count**alpha); 0 = uniform over values
       augment         share of requests rewritten in casual typing (lowercase, no final punctuation)
@@ -109,9 +119,9 @@ def make_conversations(
         used: set = set()
         if balance_alpha != 1.0:
             yield from _balanced_train(pool, feats, by_kind, n_train, rng, templates, balance_alpha, augment, short, system_frac,
-                                       two_turn_prob_if_short, short_chars)
+                                       two_turn_prob_if_short, short_chars, length_boost)
             continue
-        kinds = rng.choices(list(TASK_WEIGHTS), weights=list(TASK_WEIGHTS.values()), k=min(n_train, len(pool)))
+        kinds = rng.choices(list(TASK_WEIGHTS), weights=_weights(length_boost), k=min(n_train, len(pool)))
         for kind in kinds:
             lst = by_kind[kind]
             while lst and lst[-1] in used:
@@ -130,7 +140,7 @@ def make_conversations(
 
 
 def _balanced_train(pool, feats, by_kind, n_train, rng, templates, alpha, augment, short, system_frac,
-                    two_turn_prob_if_short, short_chars) -> Iterator[dict]:
+                    two_turn_prob_if_short, short_chars, length_boost=1.0) -> Iterator[dict]:
     """Same task-first sampling as the default path, but the story is drawn value-first: pick a topic/place/name
     with probability proportional to (its remaining stories) ** alpha, then a story that has it."""
     buckets: Dict[str, Dict[object, List[int]]] = {}
@@ -153,7 +163,7 @@ def _balanced_train(pool, feats, by_kind, n_train, rng, templates, alpha, augmen
             if b[v]:
                 return b[v].pop()
 
-    kinds = rng.choices(list(TASK_WEIGHTS), weights=list(TASK_WEIGHTS.values()), k=min(n_train, len(pool)))
+    kinds = rng.choices(list(TASK_WEIGHTS), weights=_weights(length_boost), k=min(n_train, len(pool)))
     for kind in kinds:
         i = draw(kind)
         if i is None:                                     # this kind is exhausted: fall back to a generic request

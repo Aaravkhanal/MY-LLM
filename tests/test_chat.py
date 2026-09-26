@@ -248,3 +248,11 @@ def test_session_file_schema_covers_every_generation_setting():
     from dataclasses import fields
     from aarav_lm.chat.session import _GEN_TYPES
     assert set(_GEN_TYPES) == {f.name for f in fields(GenerationConfig)}
+
+
+def test_session_files_know_every_generation_setting():
+    """A field added to GenerationConfig but not to the session whitelist breaks save/load for everyone (it did, once)."""
+    from dataclasses import fields
+    from aarav_lm.chat.session import _GEN_TYPES
+    from aarav_lm.inference.engine import GenerationConfig
+    assert set(_GEN_TYPES) == {f.name for f in fields(GenerationConfig)}
