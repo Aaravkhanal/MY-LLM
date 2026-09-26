@@ -344,3 +344,13 @@ def test_first_mention_positions_and_the_early_mention_filter():
         story = [m for m in r["messages"] if m["role"] == "assistant"][0]["content"]
         f = extract_features(story)
         assert f.topic_first <= 20 and f.topic_first < 10**9
+
+
+def test_final_eval_wordings_share_nothing_with_any_training_or_earlier_eval_wording():
+    from aarav_lm.data.instruct_tasks import EVAL_TEMPLATES_FINAL, TRAIN_TEMPLATES_V4
+    final = {t for ts in EVAL_TEMPLATES_FINAL.values() for t in ts}
+    seen = {t for d in (TRAIN_TEMPLATES, TRAIN_TEMPLATES_V4, EVAL_TEMPLATES) for ts in d.values() for t in ts}
+    assert not final & seen
+    assert set(EVAL_TEMPLATES_FINAL) == set(TRAIN_TEMPLATES)
+    openers = lambda d: {t.split()[0] for ts in d.values() for t in ts}                  # noqa: E731
+    assert len(openers(EVAL_TEMPLATES_FINAL) - openers(TRAIN_TEMPLATES_V4) - openers(EVAL_TEMPLATES)) >= 5   # genuinely new openers

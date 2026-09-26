@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 
 from aarav_lm.data.instruct_data import chance_levels, make_eval_prompts, write_jsonl
-from aarav_lm.data.instruct_tasks import TRAIN_TEMPLATES
+from aarav_lm.data.instruct_tasks import EVAL_TEMPLATES_FINAL, TRAIN_TEMPLATES
 from aarav_lm.data.story_requests import load_stories
 from aarav_lm.paths import resolve
 
@@ -25,6 +25,8 @@ def main() -> None:
     ap.add_argument("--eval", required=True, help="the held-out eval file (instruct_vN.jsonl)")
     ap.add_argument("--stories", nargs="+", required=True)
     ap.add_argument("--per-kind", type=int, default=24)
+    ap.add_argument("--final-out", help="also write the FINAL held-out set here (new wording, different stories) and its chance file")
+    ap.add_argument("--final-seed", type=int, default=1, help="different from --seed, so different stories are drawn")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--split-seed", type=int, default=1337, help="must equal data.seed of the pretraining config")
     ap.add_argument("--val-fraction", type=float, default=0.005)
@@ -46,6 +48,12 @@ def main() -> None:
     write_jsonl(in_template, ctrl)
     ctrl.with_suffix(".chance.json").write_text(json.dumps(chance_levels(in_template, stories), indent=2) + "\n")
     print(f"wrote {ctrl} ({len(in_template)} prompts) and its chance file")
+    if args.final_out:
+        final = make_eval_prompts(stories, args.per_kind, args.final_seed, templates=EVAL_TEMPLATES_FINAL)
+        fpath = resolve(args.final_out)
+        write_jsonl(final, fpath)
+        fpath.with_suffix(".chance.json").write_text(json.dumps(chance_levels(final, stories), indent=2) + "\n")
+        print(f"wrote {fpath} ({len(final)} prompts) and its chance file")
     for kind, rate in json.loads(chance_path.read_text())["by_kind"].items():
         print(f"  chance {kind:13s} {100 * rate:5.1f}%")
 

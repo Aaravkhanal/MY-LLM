@@ -135,6 +135,34 @@ EVAL_TEMPLATES: Dict[str, List[str]] = {
     "generic": ["Surprise me with a story.", "Any story will do.", "Give me a story.", "Compose a tale."],
 }
 
+# A THIRD family of wordings, for the final held-out set (evals/instruct_v4_final.jsonl). Written and committed
+# before any model was scored on it: the v3 eval set has been looked at while designing fixes, so improvements are
+# confirmed here. New openers throughout ("Craft", "Spin", "Got", "Dream up", "Narrate", "Whip up") and new length words.
+EVAL_TEMPLATES_FINAL: Dict[str, List[str]] = {
+    "name": ["Craft a tale featuring {name}.", "Spin a yarn starring {name}.", "Got a story about someone called {name}?",
+             "Dream up an adventure for {name}.", "Narrate the adventures of {name}."],
+    "topic": ["Craft a tale featuring a {topic}.", "Spin a yarn about a {topic}.", "Got a story with a {topic} in it?",
+              "Dream up an adventure involving a {topic}.", "Narrate a tale centred on a {topic}."],
+    "name_topic": ["Craft a tale where {name} meets a {topic}.", "Spin a yarn about {name} and a {topic}.",
+                   "Got a story about {name} finding a {topic}?"],
+    "two_topics": ["Craft a tale featuring both a {topic} and a {topic2}.", "Spin a yarn that has a {topic} and a {topic2} in it.",
+                   "Got a story involving a {topic} and a {topic2}?"],
+    "place": ["Craft a tale that happens at the {place}.", "Spin a yarn set at the {place}.", "Got a story that takes us to the {place}?"],
+    "emotion": ["Craft a tale about someone who is {emotion}.", "Spin a yarn where the hero feels {emotion}.",
+                "Got a story about a {emotion} child?"],
+    "name_emotion": ["Craft a tale in which {name} is {emotion}.", "Spin a yarn about {name} feeling {emotion}."],
+    "short": ["Craft a tiny tale.", "Spin a brief yarn.", "Got a really short story?", "Dream up a quick little story.",
+              "Narrate a compact tale.", "Whip up a mini story."],
+    "long": ["Craft an epic long tale.", "Spin a lengthy yarn.", "Got a nice long story?", "Dream up a big, long story.",
+             "Narrate a drawn-out tale.", "Whip up a long adventure story."],
+    "short_topic": ["Craft a tiny tale about a {topic}.", "Spin a brief yarn with a {topic}.", "Got a really short story about a {topic}?"],
+    "long_topic": ["Craft an epic long tale about a {topic}.", "Spin a lengthy yarn with a {topic}.",
+                   "Got a nice long story about a {topic}?"],
+    "dialogue": ["Craft a tale packed with dialogue.", "Spin a yarn where the characters chat constantly.",
+                 "Got a story with lots of back-and-forth talk?", "Narrate a story full of speech."],
+    "generic": ["Craft a tale.", "Got a story?", "Spin me a yarn.", "Any tale at all."],
+}
+
 TASK_WEIGHTS = {"name": 15, "topic": 15, "name_topic": 10, "two_topics": 8, "place": 9, "emotion": 8,
                 "name_emotion": 6, "short": 5, "long": 5, "short_topic": 4, "long_topic": 4, "dialogue": 5, "generic": 10}
 

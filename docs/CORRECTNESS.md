@@ -46,8 +46,12 @@ bigger model or more data), and only the pair of numbers distinguishes them. Ful
 **Fix.** `scripts/make_eval_controls.py` builds the control from the training templates and the held-out
 stories; `make_eval_prompts(..., templates=...)` makes any phrasing family. Both sets are reported together.
 
-**Caveat.** The held-out set has now been looked at while designing fixes. Improvements will be confirmed on a
-fresh set (new wording, new stories) that is written down before any model is scored on it.
+**Caveat and pre-registration.** The held-out set has been looked at while designing fixes, so a gain measured on
+it could be partly tuning to it. `evals/instruct_v4_final.jsonl` (312 prompts, 13 kinds x 24) is the confirmation
+set: new request wordings (`EVAL_TEMPLATES_FINAL`: openers "Craft", "Spin", "Got", "Dream up", "Narrate", "Whip up";
+none appears in any training or earlier eval wording, enforced by a test) and different held-out stories
+(`--final-seed 1`). It was committed **before any model was scored on it**; the commit that added it is the
+proof. Use it once per candidate model, report every model that was tried on it, and do not tune against it.
 
 ---
 

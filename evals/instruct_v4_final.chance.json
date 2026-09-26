@@ -1,0 +1,18 @@
+{
+  "by_kind": {
+    "dialogue": 0.6685,
+    "emotion": 0.1929,
+    "long": 0.1159,
+    "long_topic": 0.0072,
+    "name": 0.0624,
+    "name_emotion": 0.012,
+    "name_topic": 0.004,
+    "place": 0.1023,
+    "short": 0.0144,
+    "short_topic": 0.0023,
+    "topic": 0.0569,
+    "two_topics": 0.0218
+  },
+  "n_stories": 2356,
+  "note": "share of held-out stories passing a prompt's checks, averaged over the kind's prompts"
+}
