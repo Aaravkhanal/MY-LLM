@@ -256,13 +256,57 @@ def test_missing_metric_in_new_results_is_a_failure(engine, tiny_run, small_sets
     assert not ok and any(r.metric == "probes.accuracy" and r.note == "metric missing" for r in results)
 
 
-def test_default_rules_reference_real_result_paths(engine, tiny_run, small_sets):
+@pytest.fixture()
+def instruct_file(tmp_path):
+    rows = [
+        {"id": "a", "kind": "topic", "prompt": "Tell me about a dog", "checks": [{"kind": "contains_all", "words": ["dog"], "n": 0}], "unseen_name": False},
+        {"id": "b", "kind": "short", "prompt": "Write a tiny story", "checks": [{"kind": "max_words", "words": [], "n": 400}], "unseen_name": False},
+        {"id": "c", "kind": "name", "prompt": "A story about Zara", "checks": [{"kind": "contains_all", "words": ["Zara"], "n": 0}], "unseen_name": True},
+        {"id": "d", "kind": "generic", "prompt": "Tell me a story", "checks": [], "unseen_name": False},
+    ]
+    f = tmp_path / "instruct.jsonl"
+    f.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    return f
+
+
+def test_default_rules_reference_real_result_paths(engine, tiny_run, small_sets, instruct_file):
     from aarav_lm.evaluation.regression import get_path
-    res = _suite(engine, tiny_run, small_sets)
+    res = run_suite(engine, tiny_run["exp"].data.out_dir, small_sets[0], small_sets[1], max_new_tokens=15,
+                    max_windows=8, log=lambda _: None, instruct_path=instruct_file)
     for path, _, _ in DEFAULT_RULES:
         if path.endswith("entity_consistency"):
             continue                                                  # legitimately None without entity prompts
         assert get_path(res, path) is not None, path
+
+
+def test_instruction_section_structure_and_ci(engine, tiny_run, small_sets, instruct_file):
+    res = run_suite(engine, tiny_run["exp"].data.out_dir, small_sets[0], small_sets[1], max_new_tokens=15,
+                    max_windows=8, log=lambda _: None, instruct_path=instruct_file)
+    ins = res["instruction"]
+    assert set(ins) == {"greedy", "sampled"} and res["eval_sets"]["instruct"]["n"] == 4
+    for mode in ins.values():
+        assert mode["prompts"] == 4 and mode["scored"] == 3                       # the check-less prompt is excluded from rates
+        r = mode["pass_rate"]
+        assert r["n"] == 3 and 0 <= r["ci95"][0] <= r["rate"] <= r["ci95"][1] <= 1
+        assert set(mode["by_task"]) == {"topic", "short", "name"}
+        assert mode["name_unseen"]["n"] == 1 and mode["name_seen"] is None
+    plain = run_suite(engine, tiny_run["exp"].data.out_dir, small_sets[0], small_sets[1], max_new_tokens=15,
+                      max_windows=8, log=lambda _: None)
+    assert plain["instruction"] is None and plain["eval_sets"]["instruct"] is None
+
+
+def test_regression_refuses_different_instruction_sets_and_flags_a_drop(engine, tiny_run, small_sets, instruct_file):
+    base = run_suite(engine, tiny_run["exp"].data.out_dir, small_sets[0], small_sets[1], max_new_tokens=15,
+                     max_windows=8, log=lambda _: None, instruct_path=instruct_file)
+    other = copy.deepcopy(base)
+    other["eval_sets"]["instruct"]["sha256"] = "0" * 64
+    ok, results = compare_to_baseline(other, base)
+    assert not ok and "instruction-following prompt sets" in results[0].note
+    worse = copy.deepcopy(base)
+    worse["instruction"]["sampled"]["pass_rate"]["rate"] = max(0.0, base["instruction"]["sampled"]["pass_rate"]["rate"] - 0.2)
+    if base["instruction"]["sampled"]["pass_rate"]["rate"] >= 0.2:
+        ok, results = compare_to_baseline(worse, base)
+        assert not ok and any(r.metric == "instruction.sampled.pass_rate.rate" and not r.passed for r in results)
 
 
 def test_comparison_report(engine, tiny_run, small_sets, tmp_path):

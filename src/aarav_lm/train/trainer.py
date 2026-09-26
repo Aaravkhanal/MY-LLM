@@ -133,6 +133,7 @@ class Trainer:
             )
         self._validate_data()
         self.seq_len = self.model_cfg.block_size
+        self.eval_batch_size = self.cfg.eval_batch_size or self.cfg.batch_size
         self._build_data()
         self.data_id = [int(self.train_tokens), int(self.val_tokens), int(getattr(self, "n_train_examples", 0))]
         self.model = self._init_model()
@@ -218,7 +219,7 @@ class Trainer:
         train_ds = TokenDataset(Shard.open(out / "train.bin"), self.seq_len)
         val_ds = TokenDataset(Shard.open(out / "val.bin"), self.seq_len)
         self.stream = BatchStream(train_ds, self.cfg.batch_size, seed=self.cfg.seed)
-        self.val_batches = val_ds.fixed_eval_batches(self.cfg.batch_size, self.cfg.eval_iters)
+        self.val_batches = val_ds.fixed_eval_batches(self.eval_batch_size, self.cfg.eval_iters)
         self.train_tokens, self.val_tokens = train_ds.shard.n_tokens, val_ds.shard.n_tokens
         self.data_summary = f"train {self.train_tokens:,} tok / val {self.val_tokens:,} tok"
 

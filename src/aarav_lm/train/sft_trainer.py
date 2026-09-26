@@ -49,7 +49,7 @@ class SFTTrainer(Trainer):
             raise RuntimeError("SFT validation split is empty; raise data.val_fraction")
         self.n_train_examples = len(train)
         self.stream = SFTBatchStream(train, self.cfg.batch_size, seed=self.cfg.seed)
-        self.val_batches = val.fixed_eval_batches(self.cfg.batch_size, self.cfg.eval_iters)
+        self.val_batches = val.fixed_eval_batches(self.eval_batch_size, self.cfg.eval_iters)
         self.train_tokens, self.val_tokens = train.n_tokens, val.n_tokens
         self.data_summary = f"train {len(train):,} conversations ({train.n_tokens:,} tok) / val {len(val):,}"
 

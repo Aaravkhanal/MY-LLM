@@ -28,6 +28,8 @@ DEFAULT_RULES: List[Tuple[str, str, float]] = [
     ("generation.sampled.loop_fraction", "abs_increase", 0.10),
     ("generation.sampled.nonword_rate", "abs_increase", 0.03),
     ("generation.sampled.entity_consistency", "abs_drop", 0.10),
+    ("instruction.greedy.pass_rate.rate", "abs_drop", 0.05),
+    ("instruction.sampled.pass_rate.rate", "abs_drop", 0.05),
     ("edge_cases.all_passed", "must_be_true", 0.0),
 ]
 
@@ -36,6 +38,7 @@ DEFAULT_RULES: List[Tuple[str, str, float]] = [
 COMPARABILITY_KEYS: List[Tuple[str, str]] = [
     ("eval_sets.prompts.sha256", "evaluation prompt sets"),
     ("eval_sets.probes.sha256", "probe sets"),
+    ("eval_sets.instruct.sha256", "instruction-following prompt sets"),
     ("eval_sets.dataset_fingerprint", "held-out datasets"),
     ("model.tokenizer_fingerprint", "tokenizers (per-token loss is not comparable across vocabularies)"),
     ("settings.max_new_tokens", "generation lengths"),

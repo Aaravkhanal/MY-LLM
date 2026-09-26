@@ -241,3 +241,10 @@ def test_packaged_models_load_and_generate_if_present():
         assert e.meta["quantization"] == "int8-per-row"
         res = e.generate("Once upon a time", GenerationConfig(max_new_tokens=12, temperature=0.0, top_k=None, top_p=None, stop_at_eot=False))
         assert res.generated_tokens == 12 and res.text.strip()
+
+
+def test_session_file_schema_covers_every_generation_setting():
+    """If GenerationConfig gains a field, saved sessions must still load (this once broke silently)."""
+    from dataclasses import fields
+    from aarav_lm.chat.session import _GEN_TYPES
+    assert set(_GEN_TYPES) == {f.name for f in fields(GenerationConfig)}

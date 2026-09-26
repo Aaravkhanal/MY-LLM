@@ -117,6 +117,7 @@ class Sampling(BaseModel):
     top_k: Optional[int] = Field(50, ge=1, le=100_000)
     top_p: Optional[float] = Field(0.95, gt=0.0, le=1.0)
     repetition_penalty: float = Field(1.0, ge=0.5, le=2.0)
+    no_repeat_ngram_size: int = Field(0, ge=0, le=8)
     stop: List[str] = Field(default_factory=list, max_length=4)
     seed: Optional[int] = Field(None, ge=0, le=2**62)
     stream: bool = False
@@ -214,6 +215,7 @@ def create_app(
             return GenerationConfig(
                 max_new_tokens=min(body.max_tokens, max_tokens_cap), temperature=body.temperature,
                 top_k=body.top_k, top_p=body.top_p, repetition_penalty=body.repetition_penalty,
+                no_repeat_ngram_size=body.no_repeat_ngram_size,
                 stop_sequences=tuple(s for s in body.stop if s), stop_ids=stop_ids, seed=body.seed,
             ).validate()
         except ValueError as e:

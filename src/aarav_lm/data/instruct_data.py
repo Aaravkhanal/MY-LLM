@@ -1,0 +1,118 @@
+"""
+aarav-lm · Instruction data and evaluation prompts built from the corpus (no external model)
+
+Training conversations: a real corpus story answers a request whose constraints that story
+satisfies. Held-out prompts: requests for stories from the validation split, using request
+templates that were never used for training and, for name tasks, names that never occur in the
+corpus. Both come from instruct_tasks.py, so training labels and evaluation checks agree.
+"""
+
+from __future__ import annotations
+
+import json
+import random
+from pathlib import Path
+from typing import Dict, Iterator, List
+
+from aarav_lm.data.instruct_tasks import (
+    EVAL_TEMPLATES, NAME_RE, TASK_WEIGHTS, TRAIN_TEMPLATES, UNSEEN_NAMES, applicable_tasks, build_task,
+    extract_features, pick_task, unseen_name_task,
+)
+
+SYSTEMS = ["You are a friendly storyteller for children.", "You tell short, happy stories.",
+           "You are a helpful assistant that writes simple stories."]
+FOLLOW_UPS = ["Tell me another one.", "Another story, please.", "Can you tell me a different story?", "One more!"]
+
+
+def _finish(rng: random.Random, task, story: str, short: List[str], system_frac: float,
+            two_turn_prob_if_short: float, short_chars: int) -> List[dict]:
+    msgs: List[dict] = []
+    if rng.random() < system_frac:
+        msgs.append({"role": "system", "content": rng.choice(SYSTEMS)})
+    msgs += [{"role": "user", "content": task.request}, {"role": "assistant", "content": story}]
+    if len(story) <= short_chars and short and rng.random() < two_turn_prob_if_short:
+        second = rng.choice(short)
+        if second != story:
+            msgs += [{"role": "user", "content": rng.choice(FOLLOW_UPS)}, {"role": "assistant", "content": second}]
+    return msgs
+
+
+def make_conversations(
+    stories: Dict[str, List[str]], n_train: int, seed: int = 0, system_frac: float = 0.3,
+    two_turn_prob_if_short: float = 0.5, short_chars: int = 420,
+) -> Iterator[dict]:
+    """One conversation per story (each story used at most once).
+
+    Training: the task kind is drawn FIRST from TASK_WEIGHTS, then a story that satisfies it is
+    drawn. (Picking the story first starves rare kinds: only ~1% of stories are short enough for a
+    "very short story" request, so length control would get a few dozen examples.)
+    Validation/test: every story of that held-out split, with a task drawn from those it fits.
+    """
+    rng = random.Random(seed)
+    for split, pool in stories.items():
+        pool = list(pool)
+        short = [s for s in pool if len(s) <= short_chars]
+        feats = [extract_features(st) for st in pool]
+        if split != "train":
+            order = list(range(len(pool)))
+            rng.shuffle(order)
+            for i in order:
+                task = pick_task(feats[i], rng)
+                yield {"split": split, "task": task.kind,
+                       "messages": _finish(rng, task, pool[i], short, system_frac, two_turn_prob_if_short, short_chars)}
+            continue
+        by_kind: Dict[str, List[int]] = {k: [] for k in TASK_WEIGHTS}
+        for i, f in enumerate(feats):
+            for k in applicable_tasks(f):
+                by_kind[k].append(i)
+        for lst in by_kind.values():
+            rng.shuffle(lst)
+        used: set = set()
+        kinds = rng.choices(list(TASK_WEIGHTS), weights=list(TASK_WEIGHTS.values()), k=min(n_train, len(pool)))
+        for kind in kinds:
+            lst = by_kind[kind]
+            while lst and lst[-1] in used:
+                lst.pop()
+            if not lst:                                   # this kind is exhausted: fall back to a generic request
+                kind, lst = "generic", by_kind["generic"]
+                while lst and lst[-1] in used:
+                    lst.pop()
+                if not lst:
+                    break
+            i = lst.pop()
+            used.add(i)
+            task = build_task(kind, feats[i], rng, TRAIN_TEMPLATES)
+            yield {"split": split, "task": task.kind,
+                   "messages": _finish(rng, task, pool[i], short, system_frac, two_turn_prob_if_short, short_chars)}
+
+
+def make_eval_prompts(val_stories: List[str], per_kind: int = 16, seed: int = 0) -> List[dict]:
+    """Balanced held-out prompts: `per_kind` for every task kind, built from validation stories."""
+    rng = random.Random(seed)
+    stories = list(val_stories)
+    rng.shuffle(stories)
+    feats = [(s, extract_features(s)) for s in stories]
+    rows: List[dict] = []
+    for kind in TASK_WEIGHTS:
+        pool = [f for _, f in feats if kind in applicable_tasks(f)]
+        if not pool:
+            continue
+        for i in range(per_kind):
+            f = pool[i % len(pool)]
+            unseen = kind in ("name", "name_topic", "name_emotion") and i % 2 == 1
+            task = (unseen_name_task(kind, UNSEEN_NAMES[(i // 2) % len(UNSEEN_NAMES)], f, rng, EVAL_TEMPLATES) if unseen
+                    else build_task(kind, f, rng, EVAL_TEMPLATES))
+            rows.append({"id": f"i{len(rows):03d}", "kind": kind, "prompt": task.request,
+                         "checks": [c.to_dict() for c in task.checks], "unseen_name": unseen})
+    return rows
+
+
+def write_jsonl(records, path: str | Path) -> int:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    n = 0
+    with open(path, "w", encoding="utf-8") as f:
+        for r in records:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+            n += 1
+    return n

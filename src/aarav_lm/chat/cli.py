@@ -6,7 +6,7 @@ aarav-lm · Terminal chat
     python chat.py --temperature 0.7 --top-k 40 --max-tokens 150 --system "You tell short stories."
 
 Commands:  /help /clear /reset /save [file] /load [file] /stats /system <text>
-           /set temperature|top_k|top_p|max_tokens|repetition_penalty|seed <value>  /exit
+           /set temperature|top_k|top_p|max_tokens|repetition_penalty|no_repeat|seed <value>  /exit
 
 Everything runs on this machine with your own checkpoint. No network calls are made.
 """
@@ -32,13 +32,13 @@ HELP = """\
   /load [file]                   load a saved conversation
   /stats                         model, context and speed information
   /system <text>                 set the system prompt (chat mode)
-  /set <name> <value>            temperature, top_k, top_p, max_tokens, repetition_penalty, seed
+  /set <name> <value>            temperature, top_k, top_p, max_tokens, repetition_penalty, no_repeat, seed
   /exit                          quit  (also /quit, Ctrl-D)"""
 
 SETTABLE = {
     "temperature": ("temperature", float), "top_k": ("top_k", int), "top_p": ("top_p", float),
     "max_tokens": ("max_new_tokens", int), "repetition_penalty": ("repetition_penalty", float),
-    "seed": ("seed", int),
+    "seed": ("seed", int), "no_repeat": ("no_repeat_ngram_size", int),
 }
 
 

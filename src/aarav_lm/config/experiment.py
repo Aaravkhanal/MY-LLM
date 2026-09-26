@@ -29,6 +29,7 @@ class TokenizerConfig:
     vocab_size: int = 2048
     artifact_dir: str = "artifacts/tokenizer"   # versioned tokenizer output
     train_files: List[str] = field(default_factory=list)
+    train_sample_mb: float = 0.0      # >0: train the BPE on an evenly spaced sample of this many MB (0 = all)
 
 
 @dataclass
@@ -63,6 +64,7 @@ class TrainConfig:
     grad_clip: float = 1.0
     eval_interval: int = 200
     eval_iters: int = 20
+    eval_batch_size: int = 0          # 0 = same as batch_size; evaluation has no gradients, so it can be larger
     log_interval: int = 20
     ckpt_interval: int = 200
     early_stop_patience: int = 0      # evals without improvement; 0 disables
@@ -77,7 +79,7 @@ class TrainConfig:
         for name in positive:
             if getattr(self, name) < 1:
                 raise ValueError(f"train.{name} must be >= 1, got {getattr(self, name)}")
-        for name in ("warmup_steps", "keep_last", "early_stop_patience", "lora_rank"):
+        for name in ("warmup_steps", "keep_last", "early_stop_patience", "lora_rank", "eval_batch_size"):
             if getattr(self, name) < 0:
                 raise ValueError(f"train.{name} must be >= 0, got {getattr(self, name)}")
         if not (0.0 <= self.min_lr_ratio <= 1.0):

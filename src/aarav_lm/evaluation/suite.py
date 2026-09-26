@@ -31,6 +31,7 @@ from aarav_lm.data.dataset import TokenDataset
 from aarav_lm.data.sft import SFTDataset
 from aarav_lm.data.shards import Shard
 from aarav_lm.evaluation.edge_cases import run_edge_cases
+from aarav_lm.evaluation.instruct import run_instruction_eval
 from aarav_lm.evaluation.loss import evaluate_loss, next_token_accuracy
 from aarav_lm.evaluation.metrics import build_vocabulary, summarize_generations
 from aarav_lm.evaluation.probes import load_jsonl, run_probes
@@ -152,6 +153,7 @@ def run_suite(
     max_new_tokens: int = 200,
     max_windows: int = 1000,
     log: Callable[[str], None] = print,
+    instruct_path: str | Path | None = None,
 ) -> Dict:
     data_dir = Path(data_dir)
     t0 = time.time()
@@ -164,6 +166,13 @@ def run_suite(
         f"test loss {loss['test']['loss']:.4f}  top1 {loss['val']['top1']:.3f}")
     log(f"[eval] generation on {len(prompts)} fixed prompts (greedy + sampled)")
     generation = generation_section(engine, prompts, vocabulary, max_new_tokens)
+    instruction = None
+    if instruct_path:
+        instruct = load_jsonl(instruct_path)
+        log(f"[eval] instruction following on {len(instruct)} prompts with rule-based checks")
+        instruction = run_instruction_eval(engine, instruct, max_new_tokens=max(max_new_tokens, 400))
+        for mode, r in instruction.items():
+            log(f"[eval]   {mode}: pass {r['pass_rate']['rate']:.3f}  95% CI {r['pass_rate']['ci95']}")
     log("[eval] probes")
     probe_res = run_probes(engine, probes)
     log(f"[eval]   probe accuracy {probe_res['accuracy']:.3f} over {probe_res['n']} items")
@@ -177,11 +186,14 @@ def run_suite(
         "model": engine.info(),
         "loss": loss,
         "generation": generation,
+        "instruction": instruction,
         "probes": {k: v for k, v in probe_res.items() if k != "items"} | {"items": probe_res["items"]},
         "edge_cases": edge,
         "eval_sets": {
             "prompts": {"path": str(prompts_path), "sha256": file_sha256(prompts_path), "n": len(prompts)},
             "probes": {"path": str(probes_path), "sha256": file_sha256(probes_path), "n": len(probes)},
+            "instruct": ({"path": str(instruct_path), "sha256": file_sha256(instruct_path), "n": len(instruct)}
+                         if instruct_path else None),
             "dataset_fingerprint": dataset_fingerprint(data_dir),
         },
         "settings": {"max_new_tokens": max_new_tokens, "max_windows": max_windows, "sampled": SAMPLED},

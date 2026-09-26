@@ -271,3 +271,26 @@ def test_existing_tokenizer_with_other_vocab_is_not_silently_reused(tmp_path):
     exp.tokenizer.vocab_size = 400
     with pytest.raises(RuntimeError, match="vocab"):
         build_dataset(exp, log=lambda _: None)
+
+
+# ── tokenizer sampling ───────────────────────────────────────────────────────
+
+def test_tokenizer_sample_is_deterministic_evenly_spaced_and_about_the_requested_size():
+    from aarav_lm.data.pipeline import sample_for_tokenizer
+    docs = [f"document number {i} " + "x" * 100 for i in range(1000)]
+    total_mb = sum(len(d) for d in docs) / 1e6
+    assert sample_for_tokenizer(docs, 0) is docs and sample_for_tokenizer(docs, total_mb * 2) is docs
+    a = sample_for_tokenizer(docs, total_mb / 4)
+    assert a == sample_for_tokenizer(docs, total_mb / 4)
+    assert 0.2 * total_mb <= sum(len(d) for d in a) / 1e6 <= 0.3 * total_mb
+    ids = [int(d.split()[2]) for d in a]
+    assert ids[0] == 0 and len({b - a_ for a_, b in zip(ids, ids[1:])}) == 1          # constant stride: no ordering bias
+
+
+def test_build_with_tokenizer_sampling_records_it_and_still_validates(tmp_path):
+    exp = _tiny_exp(tmp_path)
+    exp.tokenizer.train_sample_mb = 0.02
+    m = build_dataset(exp, log=lambda _: None)
+    tok = AaravTokenizer.load(exp.tokenizer.artifact_dir)
+    assert 0 < tok.meta["corpus"]["n_docs_used"] < tok.meta["corpus"]["n_train_docs"]
+    assert tok.meta["corpus"]["sample_mb"] == 0.02 and validate_dataset(exp.data.out_dir, tok) == []

@@ -4,6 +4,7 @@ import shutil
 import signal
 
 import pytest
+from aarav_lm.config import ExperimentConfig
 import torch
 
 from aarav_lm.model.core import AaravLM
@@ -196,3 +197,14 @@ def test_rng_state_round_trip():
     a = torch.rand(4)
     ck.restore_rng_state(state)
     assert torch.equal(a, torch.rand(4))
+
+
+def test_eval_batch_size_is_independent_of_the_training_micro_batch(tmp_path):
+    exp = tiny_experiment(tmp_path, max_steps=4, batch_size=1, grad_accum=8, eval_batch_size=3, eval_iters=2)
+    t = Trainer(exp, tmp_path / "run", log=quiet)
+    t.run()
+    assert [x.shape[0] for x, _ in t.val_batches] == [3, 3]           # evaluation batches of 3 while training used 1
+    d = ExperimentConfig.from_dict(exp.to_dict()).to_dict()
+    d["train"]["eval_batch_size"] = -1
+    with pytest.raises(ValueError):
+        ExperimentConfig.from_dict(d)

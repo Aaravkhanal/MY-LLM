@@ -443,3 +443,10 @@ def test_control_tokens_in_prompts_never_become_special_ids(engine, keys):
     finally:
         engine.stream = real
     assert seen["ids"] and not set(seen["ids"]) & set(engine.tok.special_ids.values())
+
+
+def test_no_repeat_ngram_is_exposed_and_validated(client):
+    ok = client.post("/generate", json={"prompt": "Once upon a time", "max_tokens": 12, "temperature": 0, "no_repeat_ngram_size": 3})
+    assert ok.status_code == 200
+    for bad in (1, 9, -1):
+        assert client.post("/generate", json={"prompt": "x", "no_repeat_ngram_size": bad}).status_code == 422

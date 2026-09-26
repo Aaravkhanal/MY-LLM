@@ -33,7 +33,7 @@ class SessionFileError(ValueError):
 _GEN_TYPES = {                      # field -> accepted types (bool is never a valid number)
     "max_new_tokens": (int,), "temperature": (int, float), "top_k": (int, type(None)),
     "top_p": (int, float, type(None)), "repetition_penalty": (int, float), "stop_sequences": (list,),
-    "stop_ids": (list,), "stop_at_eot": (bool,), "seed": (int, type(None)),
+    "stop_ids": (list,), "stop_at_eot": (bool,), "seed": (int, type(None)), "no_repeat_ngram_size": (int,),
 }
 
 

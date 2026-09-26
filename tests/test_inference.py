@@ -213,3 +213,39 @@ def test_auto_device_uses_the_cpu_for_small_models_and_honours_explicit_choices(
     monkeypatch.setattr(dev, "pick_device", lambda name: torch.device("mps") if name == "auto" else torch.device(name))
     assert dev.pick_inference_device("auto", 200_000_000).type == "mps"               # big models still use the accelerator
     assert dev.pick_inference_device("mps", 5_000_000).type == "mps"                  # explicit choice wins
+
+
+# ── no-repeat n-gram ─────────────────────────────────────────────────────────
+
+def test_banned_by_ngram():
+    from aarav_lm.inference.engine import banned_by_ngram
+    assert banned_by_ngram([1, 2, 3, 1, 2], 3) == {3}                # "1 2" was followed by 3 before
+    assert banned_by_ngram([1, 2, 3, 4], 3) == set()                 # the current prefix "3 4" is new
+    assert banned_by_ngram([5, 5, 5], 2) == {5}
+    assert banned_by_ngram([1], 3) == set() and banned_by_ngram([], 2) == set()
+    assert banned_by_ngram([1, 2, 9, 1, 2, 8, 1, 2], 3) == {9, 8}    # every earlier continuation is banned
+
+
+def test_no_repeat_ngram_changes_the_choice_but_never_bans_stop_tokens():
+    logits = torch.zeros(10)
+    logits[3], logits[4] = 2.0, 1.0
+    cfg = greedy(no_repeat_ngram_size=3)
+    ctx = [1, 2, 3, 1, 2]                                            # "1 2" -> 3 already happened
+    assert sample_next(logits, greedy(), None, recent_ids=ctx) == 3
+    assert sample_next(logits, cfg, None, recent_ids=ctx) == 4       # 3 is banned, next best wins
+    assert sample_next(logits, cfg, None, recent_ids=ctx, exempt_ids=[3]) == 3   # a stop token is never banned
+
+
+def test_generation_with_no_repeat_ngram_never_repeats_a_trigram(engine):
+    cfg = GenerationConfig(max_new_tokens=60, temperature=0.0, top_k=None, top_p=None, stop_at_eot=False, no_repeat_ngram_size=3)
+    ids = engine.generate("Once upon a time there was a dog", cfg).token_ids
+    grams = [tuple(ids[i:i + 3]) for i in range(len(ids) - 2)]
+    assert len(grams) == len(set(grams)) and len(ids) == 60
+
+
+def test_invalid_no_repeat_settings_are_rejected():
+    for bad in (1, -2):
+        with pytest.raises(ValueError):
+            GenerationConfig(no_repeat_ngram_size=bad).validate()
+    GenerationConfig(no_repeat_ngram_size=0).validate()
+    GenerationConfig(no_repeat_ngram_size=4).validate()

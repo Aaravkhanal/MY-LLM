@@ -73,6 +73,22 @@ def collect_documents(exp: ExperimentConfig) -> tuple[Dict[str, List[str]], dict
     return docs, counters
 
 
+def sample_for_tokenizer(texts: List[str], sample_mb: float) -> List[str]:
+    """Deterministic, evenly spaced subset of about `sample_mb` MB (all of it when sample_mb <= 0).
+
+    A 4k-token BPE saturates on ~100 MB; training it on 400 MB would only cost memory and time.
+    Striding (rather than taking the first N documents) avoids any ordering bias in the source.
+    """
+    if sample_mb <= 0:
+        return texts
+    limit = sample_mb * 1_000_000
+    total = sum(len(t) for t in texts)
+    if total <= limit:
+        return texts
+    stride = -(-int(total) // int(limit))
+    return texts[::stride]
+
+
 def _tokenize_split(
     texts: List[str], tok: AaravTokenizer, writer: ShardWriter
 ) -> tuple[np.ndarray, int]:
@@ -126,11 +142,14 @@ def build_dataset(exp: ExperimentConfig, log: Callable[[str], None] = print, for
             )
         log(f"[tok] reusing tokenizer {tok.fingerprint[:12]} from {tok_dir}")
     else:
-        log(f"[tok] training byte-level BPE (vocab {exp.tokenizer.vocab_size}) on {len(docs['train']):,} train docs")
+        sample = sample_for_tokenizer(docs["train"], exp.tokenizer.train_sample_mb)
+        log(f"[tok] training byte-level BPE (vocab {exp.tokenizer.vocab_size}) on {len(sample):,} of "
+            f"{len(docs['train']):,} train docs")
         tok = train_tokenizer(
-            docs["train"],
+            sample,
             vocab_size=exp.tokenizer.vocab_size,
-            corpus_info={"n_train_docs": len(docs["train"]), "data_seed": exp.data.seed},
+            corpus_info={"n_train_docs": len(docs["train"]), "n_docs_used": len(sample),
+                         "sample_mb": exp.tokenizer.train_sample_mb, "data_seed": exp.data.seed},
         )
         tok.save(tok_dir)
         log(f"[tok] saved {tok_dir}  vocab {tok.vocab_size}  fingerprint {tok.fingerprint[:12]}")

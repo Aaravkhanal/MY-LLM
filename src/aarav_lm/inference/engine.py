@@ -42,6 +42,7 @@ class GenerationConfig:
     top_k: Optional[int] = 50
     top_p: Optional[float] = 0.95
     repetition_penalty: float = 1.0     # >1 discourages repeating recent tokens
+    no_repeat_ngram_size: int = 0       # >=2: never repeat an n-gram already generated (0 = off)
     stop_sequences: Tuple[str, ...] = ()
     stop_ids: Tuple[int, ...] = ()      # extra token ids that end generation (e.g. <|end|>)
     stop_at_eot: bool = True
@@ -58,6 +59,8 @@ class GenerationConfig:
             raise ValueError("top_p must be in (0, 1]")
         if self.repetition_penalty <= 0:
             raise ValueError("repetition_penalty must be > 0")
+        if self.no_repeat_ngram_size == 1 or self.no_repeat_ngram_size < 0:
+            raise ValueError("no_repeat_ngram_size must be 0 (off) or >= 2")
         if any(not s for s in self.stop_sequences):
             raise ValueError("stop sequences must be non-empty")
         return self
@@ -77,6 +80,17 @@ class GenerationResult:
         return self.generated_tokens / self.seconds if self.seconds > 0 else 0.0
 
 
+def banned_by_ngram(ids: Sequence[int], n: int) -> set:
+    """Tokens that would complete an n-gram already present in `ids`.
+
+    If the last n-1 tokens have occurred before, whatever followed them then is banned now.
+    """
+    if len(ids) < n:
+        return set()
+    prefix = tuple(ids[-(n - 1):])
+    return {ids[i + n - 1] for i in range(len(ids) - n + 1) if tuple(ids[i:i + n - 1]) == prefix}
+
+
 def sample_next(
     logits: torch.Tensor,
     cfg: GenerationConfig,
@@ -90,6 +104,10 @@ def sample_next(
     `exempt_ids` (stop tokens): penalising the end-of-turn token would make replies ramble on.
     """
     logits = logits.float().clone()
+    if cfg.no_repeat_ngram_size >= 2:
+        banned = banned_by_ngram(recent_ids, cfg.no_repeat_ngram_size) - set(exempt_ids)
+        if banned:
+            logits[torch.tensor(sorted(banned), dtype=torch.long)] = float("-inf")
     if cfg.repetition_penalty != 1.0:
         penalised = sorted(set(recent_ids[-REPETITION_WINDOW:]) - set(exempt_ids))
         if penalised:
