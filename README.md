@@ -66,6 +66,8 @@ capitalised correctly, ~0% non-words, 80% of stories end by themselves; the char
 prompt was reused in all 20 name prompts). On 55 held-out probes `tiny` scores **92.7%** and `small`
 **94.5%** (grammar, story logic, common sense; chance is 50%).
 
+![request following on the final held-out set](docs/img/final_set.png)
+
 They are also very small models. Story logic drifts ("the pillow was not a pillow"), names and
 pronouns sometimes disagree, greedy decoding loops in 12.5% of `tiny` samples (sampling: 0%), and
 common-sense facts are shaky. Each knows one domain. **It is not a general assistant**: it has no world

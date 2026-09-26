@@ -238,6 +238,10 @@ complete table, not a selection:
 | dev, in-template, greedy | 41.7 | 56.9 | 62.2 | 60.8 | **64.2** |
 | dev, in-template, sampled | 45.1 | 43.1 | 56.2 | 58.0 | 56.9 |
 
+![final set](img/final_set.png)
+
+(`python scripts/plot_results.py` regenerates this from the result files.)
+
 What the paired tests say:
 
 * **007, 008 and 009 cannot be told apart** on the final set (009 vs 007: −1.7 [−9.5, +5.7] greedy, +1.4 [−4.5, +7.3] sampled; 008 vs

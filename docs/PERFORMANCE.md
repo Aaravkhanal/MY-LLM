@@ -102,3 +102,12 @@ What this means for hosting: a wave of 16 users takes about 2.7 s for 48 tokens 
 about 0.45 s each one after another (7 s for the last). Batching raises throughput when many users arrive together and costs a few
 milliseconds of waiting (`--batch-wait-ms`, default 15) when they do not. **It is off by default** until it has been measured
 on an idle machine; enable it with `--batch-size 8` for multi-user hosting.
+
+### Tried and rejected: half-precision weights for decoding
+
+Where the time goes (profiler, batch 1, 14M model, CPU): 55% is the matrix multiplies of the linear layers (about 3.1 ms of a
+5.6 ms step), the rest is per-operation overhead. Hypothesis: single-user decoding is memory-bandwidth-bound (54 MB of fp32 weights
+per token), so 16-bit weights should be up to ~1.7x faster. **Not supported:** batch 1 did not speed up (fp32 5.4 ms, fp16 5.8 ms,
+bf16 6.8 ms at one thread; 7.9 / 7.7 / 7.5 ms at four), and the logits drifted (max 0.017 fp16, 0.16 bf16). Only larger batches
+gained (batch 8, four threads: 38.8 ms fp32 vs 15.2 ms fp16), which batching already provides. Measured on a machine that was training,
+so the ratios are indicative; not adopted.
