@@ -103,6 +103,10 @@ class BatchScheduler:
             self._cond.notify()
         return ticket
 
+    def alive(self) -> bool:
+        """Whether the scheduler thread is running (a stopped one would leave every request waiting forever)."""
+        return self._thread.is_alive() and not self._closed
+
     def waiting(self) -> int:
         with self._cond:
             return len(self._pending)

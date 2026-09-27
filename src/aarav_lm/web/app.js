@@ -185,7 +185,7 @@ function viewSignin() {
   } },
   el("label", null, "Email", email), el("label", null, "Password", pass), codeLabel, err,
   el("p", { class: "small inline" }, submit, toggle));
-  mount(heading, el("p", { class: "muted", text: c.signup === "closed" ? "Accounts are by invitation. Ask the owner for one." : "Free to use while capacity lasts." }), form);
+  mount(heading, el("p", { class: "muted", text: c.signup === "closed" ? "Accounts are by invitation. Ask the owner for one." : c.signup === "invite" ? "Free to use while capacity lasts. Creating an account needs an invite code from the owner." : "Free to use while capacity lasts." }), form);
   email.focus();
 }
 

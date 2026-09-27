@@ -24,6 +24,7 @@ import json
 import threading
 import time
 from dataclasses import replace
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator, List, Literal, Optional
 
@@ -37,6 +38,7 @@ from aarav_lm.api.accounts_web import COOKIE, SAFE_METHODS, add_account_routes, 
 from aarav_lm.api.auth import Caller, KeyStore, RateLimiter
 from aarav_lm.api.openai_compat import add_openai_routes
 from aarav_lm.inference.chat_format import ChatFormatError, Message
+from aarav_lm.api.web_static import add_web_routes
 from aarav_lm.inference.engine import GenerationConfig, InferenceEngine
 from aarav_lm.inference.scheduler import BatchScheduler, QueueFull
 from aarav_lm.inference.prompting import build_prompt, resolve_mode
@@ -45,18 +47,6 @@ MAX_BODY_BYTES = 1_000_000
 MAX_TEXT_CHARS = 20_000
 
 WEB_DIR = Path(__file__).resolve().parents[1] / "web"
-# Only these files are ever served (no directory listing, no path traversal surface).
-WEB_FILES = {
-    "/": ("index.html", "text/html; charset=utf-8"),
-    "/app.js": ("app.js", "text/javascript; charset=utf-8"),
-    "/style.css": ("style.css", "text/css; charset=utf-8"),
-    "/results.json": ("results.json", "application/json"),
-}
-SECURITY_HEADERS = {
-    "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
-                               "img-src 'self' data:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
-    "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "Cache-Control": "no-cache",
-}
 
 
 class _TooLarge(Exception):
@@ -186,6 +176,18 @@ class Stats:
                 "prompt_tokens": self.prompt_tokens, "completion_tokens": self.completion_tokens,
                 "avg_tokens_per_sec": round(self.completion_tokens / self.gen_seconds, 1) if self.gen_seconds else 0.0,
             }
+
+
+def architecture_info(engine: InferenceEngine) -> dict:
+    """The running model's real architecture, read from the loaded weights' configuration (never typed in)."""
+    m, c = engine.model, engine.model.cfg
+    mlp = m.blocks[0].mlp
+    hidden = getattr(getattr(mlp, "gate", None), "out_features", None) or getattr(getattr(mlp, "fc", None), "out_features", None)
+    return {"family": c.arch, "layers": c.n_layer, "width": c.n_embd, "heads": c.n_head, "kv_heads": c.n_kv_head,
+            "head_size": c.n_embd // c.n_head, "ffn_hidden": hidden, "vocab_size": c.vocab_size, "context_length": c.block_size,
+            "norm": c.norm_type, "activation": c.activation, "positions": "learned" if c.arch == "gpt2" else "rope", "rope_theta": c.rope_theta,
+            "tied_embeddings": c.tie_embeddings, "bias": c.bias,
+            "parameters": m.num_params(), "parameters_body": m.num_params(exclude_embeddings=True)}
 
 
 def create_app(
@@ -522,16 +524,45 @@ def create_app(
         return StreamingResponse(events(), media_type="text/event-stream",
                                  headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
+    web_assets: dict = {}
     if serve_web:
-        def web_route(filename: str, media_type: str):
-            body = (WEB_DIR / filename).read_bytes()          # read once at start-up; assets are static
+        web_assets = add_web_routes(app, WEB_DIR)
 
-            def handler() -> Response:
-                return Response(body, media_type=media_type, headers=SECURITY_HEADERS)
-            return handler
+    @app.get("/status.json")
+    def status() -> Response:
+        """Public, no user data: what this process can see about itself. It cannot see beyond the process (a crashed server cannot
+        answer), which is why the page reports "cannot reach the server" when this request fails."""
+        snap = stats.snapshot()
+        limit = batch_queue if scheduler is not None else max_waiters
+        services: dict = {"api": {"state": "operational", "detail": "answering requests"}}
 
-        for route, (filename, media_type) in WEB_FILES.items():
-            app.add_api_route(route, web_route(filename, media_type), methods=["GET"], include_in_schema=False)
+        if scheduler is not None and not scheduler.alive():
+            services["inference"] = {"state": "outage", "detail": "the batch scheduler thread has stopped"}
+        elif snap["waiting"] >= limit:
+            services["inference"] = {"state": "degraded", "detail": f"the request queue is full ({snap['waiting']} of {limit}); new requests get 503"}
+        elif snap["requests"] >= 20 and snap["errors"] / snap["requests"] > 0.2:
+            services["inference"] = {"state": "degraded", "detail": f"{snap['errors']} of {snap['requests']} requests since start failed"}
+        else:
+            services["inference"] = {"state": "operational", "detail": "model loaded" + (f", batching up to {batch_size}" if scheduler is not None else "")}
+
+        if accounts is None:
+            services["authentication"] = {"state": "operational", "detail": "accounts are not enabled on this server"}
+        else:
+            try:
+                accounts.ping()
+                services["authentication"] = {"state": "operational", "detail": "account database reachable"}
+            except Exception:                                            # noqa: BLE001 - reported, never raised to the visitor
+                services["authentication"] = {"state": "outage", "detail": "the account database is not answering"}
+
+        has_shell = serve_web and ("/js/main.js" in web_assets or "/app.js" in web_assets)
+        services["playground"] = ({"state": "operational", "detail": "web app files are being served"} if has_shell
+                                  else {"state": "outage", "detail": "the web app is not being served"})
+        order = {"operational": 0, "degraded": 1, "outage": 2}
+        overall = max((v["state"] for v in services.values()), key=order.__getitem__)
+        body = {"overall": overall, "services": services, "model": model_name,
+                "uptime_seconds": snap["uptime_seconds"], "queue": {"waiting": snap["waiting"], "limit": limit, "in_flight": snap["in_flight"]},
+                "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+        return Response(json.dumps(body), media_type="application/json", headers={"Cache-Control": "no-store"})
 
     @app.get("/health")
     async def health():
@@ -588,7 +619,8 @@ def create_app(
         """What the public home page may say about the model: size and kind, nothing about paths."""
         info = engine.info()
         return {"parameters": info["params"], "context_length": info["context_length"], "vocab_size": info["vocab_size"],
-                "instruction_tuned": chat_mode == "chat", "batching": batch_size if scheduler is not None else 1}
+                "instruction_tuned": chat_mode == "chat", "batching": batch_size if scheduler is not None else 1,
+                "architecture": architecture_info(engine)}
 
     auth_mode = "none" if not require_auth else ("account" if accounts is not None else "key")
     if accounts is not None:

@@ -407,8 +407,17 @@ class AccountStore:
         row = self._db.execute(
             "SELECT COUNT(*) n, COALESCE(SUM(prompt_tokens),0) p, COALESCE(SUM(completion_tokens),0) c, "
             "COALESCE(SUM(status >= 400),0) errors, COALESCE(AVG(duration_ms),0) ms FROM usage WHERE " + " AND ".join(where), args).fetchone()
+        # latency of the requests that succeeded (a refused request answers in microseconds and would flatter the number)
+        ms = [r[0] for r in self._db.execute("SELECT duration_ms FROM usage WHERE status < 400 AND duration_ms IS NOT NULL AND "
+                                             + " AND ".join(where) + " ORDER BY duration_ms", args)]
+        pct = lambda q: round(ms[min(len(ms) - 1, int(q * len(ms)))], 1) if ms else None          # noqa: E731
         return {"days": days, "requests": row["n"], "prompt_tokens": row["p"], "completion_tokens": row["c"],
-                "total_tokens": row["p"] + row["c"], "errors": row["errors"], "mean_duration_ms": round(row["ms"], 1)}
+                "total_tokens": row["p"] + row["c"], "errors": row["errors"], "mean_duration_ms": round(row["ms"], 1),
+                "latency_p50_ms": pct(0.5), "latency_p95_ms": pct(0.95)}
+
+    def ping(self) -> None:
+        """Raises if the database cannot answer a query (used by the public status check)."""
+        self._db.execute("SELECT 1").fetchone()
 
     def usage_daily(self, user_id: int, days: int = 14) -> List[dict]:
         """Requests and tokens per UTC day for the last `days` days, oldest first, zero-filled."""

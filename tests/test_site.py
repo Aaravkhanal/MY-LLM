@@ -28,7 +28,7 @@ def test_the_site_data_is_exactly_what_the_evaluation_files_say():
 def test_the_site_data_is_complete_and_sane():
     d = json.loads((WEB / "results.json").read_text())
     assert [m["id"] for m in d["models"]][0] == "base" and len(d["models"]) == 7 and len(d["kinds"]) == 12
-    assert [s["id"] for s in d["sets"]] == ["final", "template"]
+    assert [s["id"] for s in d["sets"]] == ["final", "template", "dev"]
     for s in d["sets"]:
         for m in d["models"]:
             for mode in ("greedy", "sampled"):
@@ -58,3 +58,32 @@ def test_the_home_page_keeps_its_interactive_parts():
         assert part in js, part
     assert 'default "home"' not in js and '|| "home"' in js                       # the front page is the default route
     assert '"home"' in js and "needsAccount" in js
+
+
+def test_the_site_data_carries_paired_comparisons_that_match_what_the_results_document_says():
+    """The claims in docs/RESULTS.md about exp_012 are numbers in this file: if the evaluation or the document changes, one of them must too."""
+    d = json.loads((WEB / "results.json").read_text())
+    by = {s["id"]: s for s in d["sets"]}
+    assert d["default_model"] == "exp012" and {m["id"] for m in d["models"]} >= {"base", "exp009", "exp012"}
+    final = by["final"]["vs_base"]["exp012"]["sampled"]["ALL"]
+    assert round(100 * final["diff"], 1) == 9.4 and round(100 * final["lo"], 1) == 0.3 and round(100 * final["hi"], 1) == 18.0
+    dev = by["dev"]["vs_base"]["exp012"]["sampled"]["ALL"]
+    assert round(100 * dev["diff"], 1) == 14.2 and round(100 * dev["lo"], 1) == 6.2 and round(100 * dev["hi"], 1) == 22.2
+    assert by["final"]["vs_base"]["exp012"]["greedy"]["ALL"]["lo"] < 0 < by["final"]["vs_base"]["exp012"]["greedy"]["ALL"]["hi"]   # greedy: not established
+    for s in d["sets"]:                                                     # every comparison is over the same prompts as the results
+        assert s["prompts"] > 0 and 0 < s["scored"] <= s["prompts"] and len(s["sha256"]) == 64
+        for m, modes in s["vs_base"].items():
+            for mode, kinds in modes.items():
+                assert set(kinds) == {"ALL"} | {k["id"] for k in d["kinds"]}
+                assert all(c["lo"] <= c["diff"] <= c["hi"] and 0 < c["p"] <= 1 for c in kinds.values()), (s["id"], m, mode)
+    assert d["decoding"]["greedy"]["temperature"] == 0 and d["decoding"]["sampled"]["temperature"] == 0.7
+
+
+def test_the_site_data_carries_training_facts_read_from_the_run_folders():
+    d = json.loads((WEB / "results.json").read_text())
+    stages = {s["experiment"]: s for s in d["training"]["stages"]}
+    assert stages["exp_010_small_long_tinystories"]["steps"] == 9000 and stages["exp_010_small_long_tinystories"]["tokens_seen"] == 147_456_000
+    assert stages["exp_004_small_tinystories"]["params"] == 14_162_304
+    full = d["training"]["full_split_loss"]
+    assert full["exp_010_small_long_tinystories"]["val"]["loss"] < full["exp_004_small_tinystories"]["val"]["loss"]
+    assert full["exp_004_small_tinystories"]["val"]["windows"] == full["exp_010_small_long_tinystories"]["val"]["windows"] == 2927
