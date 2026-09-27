@@ -240,13 +240,34 @@ class Trainer:
     def _model_from_checkpoint(self) -> AaravLM:
         """Continued pretraining: start from another run's weights. Only the weights carry over; the optimiser,
         LR schedule and data order start fresh (the schedule warms up again, so expect a small loss bump before
-        the gain). Architecture and tokenizer must match exactly."""
+        the gain). Architecture and tokenizer must match exactly, with one deliberate exception: `block_size`.
+
+        RoPE positions are a non-persistent buffer (model/core.py: `persistent=False`), rebuilt from `block_size` at
+        construction time and never part of a saved state dict, so a checkpoint's weights are exactly as valid at a
+        different block_size as at the one they were trained with (context extension). Every other field must still
+        match exactly, so a real architecture mismatch (layers, width, heads, vocabulary, ...) still fails loudly."""
         path = resolve(self.exp.init_from)
-        model, raw = ckpt.load_model(path, "cpu", self.tok.fingerprint)
-        if raw["model_config"] != self.model_cfg.to_dict():
+        model, raw = ckpt.load_model(path, "cpu", self.tok.fingerprint)      # built at the CHECKPOINT's own block_size
+        theirs, ours = dict(raw["model_config"]), self.model_cfg.to_dict()
+        their_block, our_block = theirs.pop("block_size"), ours.pop("block_size")
+        if theirs != ours:
             raise RuntimeError(f"{path.name} has a different architecture than this experiment's model config")
         self.init_from_name = f"{path.parent.parent.name}/{path.name}"
-        self.log(f"[init] continuing pretraining from {self.init_from_name} (weights only; optimiser and schedule start fresh)")
+        if their_block != our_block:
+            # load_model built `model` at the checkpoint's own (old) block_size, which would silently keep the old
+            # context length and RoPE table; rebuild at this experiment's block_size and transfer the same weights
+            # (identical state dict either way: RoPE is a non-persistent buffer, never part of a checkpoint).
+            model = AaravLM(self.model_cfg)
+            if raw["kind"] == "model_int8":
+                from aarav_lm.inference.quantize import dequantize_checkpoint
+                model.load_state_dict(dequantize_checkpoint(raw))
+            else:
+                model.load_state_dict(raw["model"])
+            model.eval()
+            self.log(f"[init] continuing pretraining from {self.init_from_name} at a new block_size "
+                     f"({their_block} -> {our_block}; weights only, RoPE recomputed for the new length)")
+        else:
+            self.log(f"[init] continuing pretraining from {self.init_from_name} (weights only; optimiser and schedule start fresh)")
         return model
 
     def _export_model(self) -> AaravLM:

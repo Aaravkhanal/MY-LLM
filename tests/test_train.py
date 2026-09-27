@@ -314,3 +314,42 @@ def test_continued_pretraining_rejects_a_different_architecture_or_tokenizer(tmp
     other.init_from = str(tmp_path / "a" / "checkpoints" / "final.pt")
     with pytest.raises(RuntimeError, match="different architecture"):
         Trainer(other, tmp_path / "b", log=quiet).run()
+
+
+def test_continued_pretraining_at_a_different_block_size_is_context_extension_not_an_error(tmp_path):
+    """block_size is the one field init_from is allowed to change: RoPE positions are a non-persistent buffer, rebuilt
+    from block_size at construction, never saved in the checkpoint, so the weights are equally valid at a new length."""
+    exp = tiny_experiment(tmp_path, max_steps=20, eval_interval=20)
+    Trainer(exp, tmp_path / "a", log=quiet).run()
+    fresh_long = tiny_experiment(tmp_path, name="fresh_long", max_steps=4, eval_interval=4)
+    fresh_long.model_overrides = {**fresh_long.model_overrides, "block_size": 64}  # double the tiny_experiment's 32
+    Trainer(fresh_long, tmp_path / "fresh", log=quiet).run()
+
+    longer = tiny_experiment(tmp_path, max_steps=4, eval_interval=4)
+    longer.model_overrides = {**longer.model_overrides, "block_size": 64}
+    longer.init_from = str(tmp_path / "a" / "checkpoints" / "final.pt")
+    logged = []
+    summary = Trainer(longer, tmp_path / "b", log=logged.append).run()
+
+    assert summary["steps"] == 4                                                   # ran to completion, no exception
+    assert any("block_size" in line and "32 -> 64" in line for line in logged)      # the change is logged, never silent
+
+    def step0(run):
+        evals = [json.loads(line) for line in (run / "metrics.jsonl").read_text().splitlines() if '"eval"' in line]
+        return next(e for e in evals if e["step"] == 0)["val_loss"]
+    assert step0(tmp_path / "b") < step0(tmp_path / "fresh") - 1.0                  # trained weights, not a silent reinit
+
+    from aarav_lm.train import checkpoint as ckpt
+    model, raw = ckpt.load_model(tmp_path / "b" / "checkpoints" / "final.pt", "cpu")
+    assert raw["model_config"]["block_size"] == 64 and model.cfg.block_size == 64
+    assert all("rope" not in k for k in model.state_dict())                        # confirms the buffers are excluded, as claimed
+
+
+def test_a_real_field_mismatch_still_fails_even_when_block_size_also_differs(tmp_path):
+    exp = tiny_experiment(tmp_path, max_steps=4, eval_interval=4)
+    Trainer(exp, tmp_path / "a", log=quiet).run()
+    other = tiny_experiment(tmp_path, max_steps=4, eval_interval=4)
+    other.model_overrides = {**other.model_overrides, "n_layer": 3, "block_size": 64}
+    other.init_from = str(tmp_path / "a" / "checkpoints" / "final.pt")
+    with pytest.raises(RuntimeError, match="different architecture"):
+        Trainer(other, tmp_path / "b", log=quiet).run()

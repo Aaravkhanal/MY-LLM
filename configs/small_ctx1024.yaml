@@ -1,0 +1,55 @@
+# exp_017: context extension. Doubles the `small` model's context from 512 to 1024 tokens by continuing pretraining of the best
+# existing base (exp_010, 237.6M tokens seen at block_size 512) with block_size=1024.
+#
+# Why this works without discarding weights: positions are RoPE (rotary), computed at whatever sequence length is asked for, not a
+# fixed learned table, so a checkpoint trained at 512 already produces valid (if under-practiced) attention at 1024 before any further
+# training. Data needs no re-tokenizing: the 1200 MB corpus is stored as a raw token stream and windowed by block_size at load time
+# (src/aarav_lm/data/dataset.py), so the same shards support the longer window directly.
+#
+# Same tokens-per-step budget as exp_010's continuation (16,384 = batch_size x grad_accum x block_size), so per-step cost is similar;
+# fewer steps are used because context EXTENSION needs far fewer tokens than the original pretraining (a small fraction is standard
+# practice), not because less token throughput is needed. rope_theta is left at the base's value (10000): scaling it is a further lever
+# if 1024 alone under-delivers, tried as a follow-up rather than combined with this change.
+name: small_ctx1024
+description: "exp_010 continued at block_size 1024 (double the context): does the model learn to use the longer window, and at what quality cost to the original 512-token behaviour?"
+init_from: experiments/exp_010_small_long_tinystories/checkpoints/best.pt
+model_preset: small
+model_overrides:
+  block_size: 1024
+
+tokenizer:
+  kind: bpe
+  vocab_size: 4096
+  artifact_dir: artifacts/tokenizer_tinystories_v2
+  train_files: []
+
+data:
+  sources: [data/raw/tinystories_v2_400mb.txt, data/raw/tinystories_v2_part2.txt]
+  format: txt
+  doc_separator: "<|endoftext|>"
+  out_dir: data/processed/tinystories_v2_1200mb
+  val_fraction: 0.005
+  test_fraction: 0.005
+  min_chars: 100
+  max_chars: 20000
+  dedup: true
+  seed: 1337
+
+train:
+  seed: 1337
+  device: auto
+  precision: fp32
+  max_steps: 3000
+  batch_size: 1
+  grad_accum: 16
+  eval_batch_size: 2
+  lr: 0.0002
+  min_lr_ratio: 0.1
+  warmup_steps: 100
+  weight_decay: 0.1
+  grad_clip: 1.0
+  eval_interval: 300
+  eval_iters: 50
+  log_interval: 25
+  ckpt_interval: 300
+  keep_last: 2
