@@ -17,6 +17,7 @@ MODELS = [
     ("exp008", "Fine-tuned, exp_008", "exp_008_sft_small_instruct_v5"),
     ("exp009", "Fine-tuned, exp_009", "exp_009_sft_small_instruct_v6"),
     ("exp011", "Fine-tuned, exp_011 (longer-pretrained base)", "exp_011_sft_small_instruct_v6_long"),
+    ("exp012", "Fine-tuned, exp_012 (longer base, 2 epochs)", "exp_012_sft_small_instruct_v6_long_2ep"),
 ]
 SETS = [
     ("final", "Wording it has never seen (final set, written before any model was scored)", "instruct_v4_final"),

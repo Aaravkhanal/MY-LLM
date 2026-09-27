@@ -27,7 +27,7 @@ def test_the_site_data_is_exactly_what_the_evaluation_files_say():
 
 def test_the_site_data_is_complete_and_sane():
     d = json.loads((WEB / "results.json").read_text())
-    assert [m["id"] for m in d["models"]][0] == "base" and len(d["models"]) == 6 and len(d["kinds"]) == 12
+    assert [m["id"] for m in d["models"]][0] == "base" and len(d["models"]) == 7 and len(d["kinds"]) == 12
     assert [s["id"] for s in d["sets"]] == ["final", "template"]
     for s in d["sets"]:
         for m in d["models"]:

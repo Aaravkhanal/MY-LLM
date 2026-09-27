@@ -14,7 +14,8 @@ from pathlib import Path
 MODELS = [("untuned 14M base", "exp_004_small_tinystories"), ("fine-tuned, exp_006", "exp_006_sft_small_instruct_v3"),
           ("fine-tuned, exp_007", "exp_007_sft_small_instruct_v4"), ("fine-tuned, exp_008", "exp_008_sft_small_instruct_v5"),
           ("fine-tuned, exp_009", "exp_009_sft_small_instruct_v6"),
-          ("fine-tuned, exp_011", "exp_011_sft_small_instruct_v6_long")]
+          ("fine-tuned, exp_011", "exp_011_sft_small_instruct_v6_long"),
+          ("fine-tuned, exp_012", "exp_012_sft_small_instruct_v6_long_2ep")]
 BG, INK, MUTED, RULE = "#fcfcfb", "#1b1b19", "#66645c", "#e6e4dd"
 GREEN, OCHRE = "#2f8558", "#a8611f"
 

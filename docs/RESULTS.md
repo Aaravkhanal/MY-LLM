@@ -294,17 +294,50 @@ exp_009 is ahead by **8.3 [+2.8, +13.8] (p = 0.004)**.
 * Length control vanished: `short` 75% to 0% in-template (paired p < 0.001), `short_topic` 33% to 4%, and on the final set `short_topic` 38% to 4%
   (p = 0.026) and `short` 17% to 0%. The model produces its usual length whatever is asked, the same failure seen in exp_007 and exp_008.
 
-**Conclusion, stated against my own earlier prediction.** I predicted that the remaining lever was the base model. The result says
+**Conclusion for exp_011 alone, stated against my own earlier prediction (revised by exp_012 below).** I predicted that the remaining lever was the base model. The result says
 otherwise: a 0.116-nat lower language-modelling loss did not move instruction following in aggregate on wording the model had not seen. Better
 prediction of stories helps the model dwell on requested content, but length control is a different skill that this one-epoch,
 14M-parameter recipe does not teach reliably, and it is not helped by a better base. What this rules out: more pretraining alone.
-What it leaves open (not tested): data that teaches length explicitly *and* stays varied, a larger model, more than one fine-tuning epoch, or a
-different task mix. The final set has now been used to score two candidates after the pre-registered ones; it is reported, not tuned on.
-Nothing was changed after seeing these numbers.
+What it leaves open was tested next (exp_012, below): a second fine-tuning epoch. Still untested: data that teaches length explicitly *and*
+stays varied, a larger model, a different task mix. The final set has now been used to score three candidates after the pre-registered
+ones (exp_011, exp_012, and the recorded exp_009 recipe); it is reported, not tuned on. Nothing was changed after seeing the exp_011 numbers.
 
-**Which model is served.** exp_009 remains the default for chat (it is best on the training-style requests and keeps length control
-for the wordings it knows); exp_011 is the better language model. Both are listed in the site's results explorer. Records:
-`experiments/exp_010_*/` and `experiments/exp_011_*/` (configs, metrics, logs and evaluation JSON, not checkpoints).
+### exp_012: a second epoch on the better base recovers "long", not "short"
+
+exp_011 saw the fine-tuning data for 0.96 of an epoch. **exp_012** (`configs/sft_small_instruct_v6_long_2ep.yaml`) is exactly exp_011 with
+3,600 steps (about 1.9 epochs); data, seed, learning rate and warm-up are unchanged, the cosine schedule simply stretches over twice
+the steps. Its fine-tuning validation loss is 1.2388 (exp_011: 1.2284), so the second epoch did not lower the loss; it changed *what* the model does.
+
+| pass rate | untuned exp_004 | exp_009 | exp_011 | **exp_012** |
+|---|---|---|---|---|
+| final set (never-seen wording), greedy | 39.9% | 46.5% | 44.4% | **45.1%** |
+| final set, sampled | 34.7% | 41.7% | 41.7% | **44.1%** |
+| in-template, greedy | 41.7% | 64.2% | 55.9% | **61.1%** |
+| in-template, sampled | 45.1% | 56.9% | 53.5% | **62.8%** |
+| dev set (`instruct_v3`), greedy | 40.6% | 50.3% | 44.1% | **49.0%** |
+| dev set, sampled | 35.1% | 44.8% | 43.1% | **49.3%** |
+
+* **Against exp_009 and exp_011, nothing is established in aggregate** on wording it has not seen. exp_012 vs exp_009 on the final set:
+  +1.4 [−9.8, +12.6] greedy, −2.4 [−8.0, +3.3] sampled; vs exp_011: −0.7 [−10.5, +9.6] and −2.4 [−7.2, +2.4]. The noise floor of this evaluation is about ±10 points.
+* **Against the untuned base, sampled decoding now shows a gain, the first for a fine-tuned model on unseen wording:** final set +9.4 points
+  [+0.3, +18.0] (p = 0.050, the interval only just excludes zero) and dev set +14.2 [+6.2, +22.2] (p = 0.002). Greedy decoding does not:
+  final +5.2 [−8.0, +18.6], dev +8.3 [−7.5, +25.4].
+* **Length control came partly back.** `long` requests, greedy: in-template 21% (exp_011) to **79%** (paired p < 0.001; exp_009 had 21%),
+  dev set 0% to 79% (exp_009 4%, p = 0.003). On the final set `short_topic` went 4% to 46% (p < 0.001 vs exp_011). `short` alone is only 25% in-template
+  (exp_009 had 75%, p = 0.011) and about 4% on the final set (five distinct prompts): the models trade one length for the other rather than controlling both.
+* Content requests: named character plus a feeling on the final set, greedy, 29% (exp_009) to 58% (p = 0.008), though sampled it is 46% to 42%
+  (not different). In-template sampled, exp_012 vs exp_011: +9.4 points [+2.7, +15.7] (p = 0.006).
+
+**Conclusion.** Training longer on the better base repaired the length skill that one epoch missed, so exp_011's failure was under-training
+on a skill that is harder to learn, not a defect of the base model; my earlier "the base model is not the lever" was too strong, and the corrected
+statement is "a better base is not enough by itself, but it does help once fine-tuning runs long enough". exp_012 has the best sampled pass rate on
+all three sets, a sampled gain over the untuned model that is borderline on the final set and clear on the dev set, the better language model
+(validation loss 1.288) and working `long` requests. Choosing it as the default is a judgement made with the final set already seen; the gaps
+between fine-tuned models remain inside the noise.
+
+**Which model is served.** exp_012 is now the default for the demo site (best sampled aggregate on every set; better base; `long` works), with
+exp_009 kept for `short` requests in the training wording. All are listed in the site's results explorer. Records: `experiments/exp_010_*/`,
+`experiments/exp_011_*/`, `experiments/exp_012_*/` (configs, metrics, logs and evaluation JSON, not checkpoints).
 
 Reproduce: `python scripts/make_eval_controls.py --eval evals/instruct_v3.jsonl --stories <TinyStories file>`,
 then `python scripts/eval_instruct.py --checkpoint <run>/checkpoints/best.pt --instruct evals/instruct_v3.jsonl
