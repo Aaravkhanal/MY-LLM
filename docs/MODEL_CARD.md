@@ -15,8 +15,8 @@ It is a research and portfolio artefact, **not a general assistant**.
 | exp_004 / exp_010 | the pretrained bases (no fine-tuning) | `experiments/exp_004_*`, `exp_010_*` |
 | tiny (5M) | earlier, smaller model, packaged as int8 in `models/` | `models/README.md` |
 
-Weights are not committed (`experiments/*/checkpoints/` is git-ignored); the configs, logs, metrics and evaluation records are, and
-every number below can be regenerated from them ([RESULTS.md](RESULTS.md)).
+The default version is packaged as an int8 file in the repository (`models/small-14m-sft-int8.pt`, 14 MB, +0.01% loss versus fp32); other checkpoints are
+not committed (`experiments/*/checkpoints/` is git-ignored). The configs, logs, metrics and evaluation records are, and every number below can be regenerated from them ([RESULTS.md](RESULTS.md)).
 
 ## Architecture
 

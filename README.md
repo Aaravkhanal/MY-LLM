@@ -52,7 +52,7 @@ Two models have been trained from random initialisation on the M3, each with the
 | **Pretraining** | 3,000 steps, 49.2M tokens (3.1 epochs), **79 min** | 5,500 steps, 90.1M tokens (0.87 epoch), **4.1 h** |
 | **Validation loss** (full split, ± std. error) | 7.66 → **1.642** (perplexity 5.17) | 8.43 → **1.395 ± 0.007** (perplexity 4.03); test 1.406 ± 0.007; 0.51 bits per byte |
 | **Probes** (55 minimal pairs, chance 50%) | 92.7% | 94.5% |
-| **Size** | 19.8 MB fp32, **5.06 MB int8** (+0.01% loss) — packaged in `models/` | 54 MB fp32 (not packaged yet) |
+| **Size** | 19.8 MB fp32, **5.06 MB int8** (+0.01% loss) — packaged in `models/` | 56.7 MB fp32, **14.35 MB int8** (+0.01% loss) — packaged in `models/` |
 
 Around them: SFT and LoRA fine-tuning, an evaluation suite with a regression gate, terminal chat, an
 HTTP API with hashed keys and rate limiting, and a web platform. **558 pytest tests** (run in CI on every push) plus a 12-check

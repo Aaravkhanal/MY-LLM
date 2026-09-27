@@ -1,12 +1,13 @@
 # Packaged models
 
-Small int8 checkpoints (5 MB each) so the chat and API work straight after cloning, without
-retraining. Their tokenizer is `artifacts/tokenizer_tinystories_v1`; the scripts find it by the
-fingerprint stored inside each checkpoint.
+Small int8 checkpoints so the chat and API work straight after cloning, without
+retraining: two 5 MB `tiny` models (tokenizer `artifacts/tokenizer_tinystories_v1`) and the 14 MB `small` model (tokenizer
+`artifacts/tokenizer_tinystories_v2`). The scripts find the tokenizer by the fingerprint stored inside each checkpoint.
 
 | File | What it is | Val loss (ppl) | Notes |
 |---|---|---|---|
 | `tiny-tinystories-v1-int8.pt` | Base model: 4.95M parameters, pretrained from scratch for 3,000 steps (49M tokens) on a 60 MB TinyStories slice | 1.644 (5.18) | Continues text. `python chat.py --checkpoint models/tiny-tinystories-v1-int8.pt` |
+| `small-14m-sft-int8.pt` | **The model the demo site serves:** the 14.16M-parameter `small` model (8 layers, width 384, context 512), pretrained 237.6M tokens (exp_004 then exp_010), then fine-tuned about two epochs on rule-checkable story requests (exp_013, training seed 1338). fp32 checkpoint 56.7 MB, int8 14.35 MB | held-out fine-tuning loss 1.2547 -> 1.2548 after quantisation (+0.01%) | `python chat.py --checkpoint models/small-14m-sft-int8.pt` or `scripts/serve.py --checkpoint models/small-14m-sft-int8.pt`. 4 of 5 greedy replies were identical to the fp32 model on a spot check. On unseen request wording it passes 52% (greedy) and 50% (sampled) against 40% and 35% for the untuned base, but this is one draw of three training seeds (45 to 53% greedy), see docs/RESULTS.md and docs/MODEL_CARD.md |
 | `tiny-tinystories-v1-sft-int8.pt` | The base model fine-tuned for 600 steps on 19.8k templated story-request conversations | 1.421 (4.14), chat-format assistant tokens | Speaks the chat template; see limits below |
 
 ```
