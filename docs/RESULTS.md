@@ -391,6 +391,50 @@ Reproduce: `python scripts/make_eval_controls.py --eval evals/instruct_v3.jsonl 
 then `python scripts/eval_instruct.py --checkpoint <run>/checkpoints/best.pt --instruct evals/instruct_v3.jsonl
 evals/instruct_v3.intemplate.jsonl` and `python scripts/compare_instruct.py A.json B.json`.
 
+### exp_017: doubling the context window (512 → 1024 tokens)
+
+A user asked directly whether the context window (and so the maximum reply length) could be increased. The
+mechanism: positions are RoPE (rotary), computed at whatever sequence length is asked for at inference time, not
+baked into a fixed learned table, so a checkpoint's weights are exactly as valid at a longer `block_size` as at
+the one they were trained with — the only real question is whether the model gets any *better* at using the
+longer context without further training on it, and whether doing so costs anything at the original length.
+
+Building this uncovered a real bug in `init_from` (continued pretraining): the trainer always rebuilt the model at
+the **checkpoint's own saved** `block_size`, silently discarding the new experiment's intended longer context, so
+the run would have trained at the old length regardless of what the config asked for. Fixed properly: the
+architecture-equality check now explicitly allows `block_size` to differ (every other field must still match
+exactly), and the model is rebuilt at the *new* `block_size` before the old weights are loaded into it.
+`tests/test_train.py` has two new tests, one of which fails on the old code (a longer sequence raised "Sequence
+length N exceeds block_size" because the rebuilt model was still sized at the old length).
+
+**exp_017**: continued exp_010's checkpoint (237.6M tokens seen, `block_size=512`) for 3,000 more steps at
+`block_size=1024`, ~49.2M further tokens (286.8M total), same tokenizer, `rope_theta` unchanged. Full-split loss
+on the 1200 MB corpus, every window scored, at both the model's new native length and the original one:
+
+| | val loss | perplexity | top-1 | bits/byte |
+|---|---|---|---|---|
+| exp_010 (block_size 512, no further training) | 1.2876 ± 0.0037 | 3.624 | 65.6% | 0.4697 |
+| exp_017 at block_size 512 (same weights, shorter windows) | 1.2753 ± 0.0037 | 3.580 | 65.9% | 0.4652 |
+| **exp_017 at block_size 1024 (native)** | **1.2448 ± 0.0042** | **3.472** | **66.5%** | **0.4541** |
+
+Two comparisons, both clean:
+
+* **exp_017 at 512 vs. exp_010** (same context length; the only difference is the extra training): 0.0123 nats
+  lower, about 2.4 combined standard errors — a real, if modest, improvement. Expected: it is 49.2M further
+  tokens of pretraining, and the earlier exp_004→exp_010 continuation showed the same kind of gain from more
+  tokens alone. **No regression at the original length** — the thing this comparison exists to rule out.
+* **exp_017 at 1024 vs. its own 512 result** (identical weights, only the window length differs): 0.0305 nats
+  lower, about 5.4 combined standard errors — a strong result, and the more interesting one: the model is not
+  merely tolerating the longer context, it is *using* it to predict better, exactly what context extension is
+  supposed to buy.
+
+**Not yet done:** this is a pretraining-only result. Whether a longer context is any use for the instruction-tuned
+model would need a fresh SFT pass at `block_size=1024` on top of exp_017 (the current served model, exp_013, was
+fine-tuned at 512 on the pre-extension base) — not run yet, since the seed-variance work above showed that a
+single SFT run proves little on its own, and this would need at least the same three-seed treatment to say
+anything trustworthy about it. The served model has not been changed; this section documents the pretraining base
+only.
+
 ## Efficiency
 
 See PERFORMANCE.md. Headlines: 18k tokens/s training in 1.3 GB of GPU memory; bf16 no faster than

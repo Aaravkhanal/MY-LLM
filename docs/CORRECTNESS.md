@@ -6,6 +6,7 @@ only if a test proves it, and says **measured** only if the number came from a r
 
 | # | Problem | Status |
 |---|---|---|
+| 11 | `init_from` silently kept a checkpoint's OLD `block_size` instead of the new experiment's, so a context-extension run would have trained at the original length regardless of the config | **fixed** (tests, one fails on the old code) |
 | 10 | Every comparison between fine-tuning recipes came from one training run; the prompt-level test cannot see retraining variance | **measured** (3 seeds); earlier small differences downgraded |
 | 9 | The OpenAI routes returned `finish_reason: "eot"`, which no OpenAI client knows | **fixed** (test) |
 | 8 | Under load an unbatched stream got HTTP 200 and then an error event, instead of a clean 503 | **fixed** (test failed 5/5 before, passes after), found by a load test |
@@ -16,6 +17,32 @@ only if a test proves it, and says **measured** only if the number came from a r
 | 3 | Instruction-following pass rates had no chance-level control, inflated sample sizes and no paired test | **fixed** (tests) |
 | 2 | SFT gradient accumulation weighted micro-batches equally instead of by scored tokens | **fixed** (test), effect on real runs not yet measured |
 | 1 | Validation loss depends on how many conversations are scored (1.2895 / 1.3276 / 1.3190 for one checkpoint; noise sd 0.031 at 160) | **fixed** (tests): the full split is scored by default, with a standard error |
+
+## 11. `init_from` silently ignored a requested context-length change
+
+**Problem.** Continuing pretraining at a different `block_size` (context extension) is architecturally valid for this model: RoPE
+positions are computed at whatever sequence length is asked for, not baked into a fixed learned table, so a checkpoint's weights are
+exactly as valid at 1024 as at the 512 they were trained at. But `_model_from_checkpoint` rebuilt the model using
+`ModelConfig.from_dict(ckpt["model_config"])` — the *checkpoint's own saved* config — not the current experiment's. A context-extension
+run would silently train at the OLD length no matter what the new config asked for.
+
+**How found.** Building a context-extension experiment (exp_017: continue exp_010 at `block_size=1024`) and feeding it a sequence
+longer than 512 immediately raised `Sequence length T exceeds block_size 512` — the rebuilt model was still sized at the old length even
+though the experiment config said 1024.
+
+**Fix.** The architecture-equality check now explicitly excludes `block_size` from the "must match exactly" comparison (every other field
+still must match exactly, so a real architecture mismatch still fails loudly) and logs the change when it happens; the model is then
+rebuilt at the *current experiment's* `model_cfg` (which has the new `block_size`) and the checkpoint's weights loaded into it, instead of
+using the model object `ckpt.load_model` already built at the old size. `tests/test_train.py` has two new tests:
+`test_continued_pretraining_at_a_different_block_size_is_context_extension_not_an_error` (proves weight transfer really happened, via
+step-0 loss far below a fresh random init at the new length — not just "it didn't crash") and
+`test_a_real_field_mismatch_still_fails_even_when_block_size_also_differs` (a genuine architecture change is still rejected). The first
+test fails on the pre-fix code with exactly the `Sequence length exceeds block_size` error found live.
+
+**Result.** exp_017 (see RESULTS.md) trained cleanly at the new length: no regression at the original 512 tokens (in fact an
+improvement, from further training), and a real, 5-standard-error gain at the new 1024-token length on the same weights.
+
+---
 
 ## 10. One run per recipe, and a test that only sees prompt noise
 
