@@ -22,7 +22,8 @@ constant-time comparison, and `weights_only` checkpoint loading in the API path.
 | No code execution from checkpoints | `torch.load(weights_only=True)`; tokenizer text can't inject special tokens |
 | Safe-by-default binding | `127.0.0.1`; `--no-auth` refused on any other host |
 | Web accounts | scrypt password hashes, equal-time login for unknown emails, sign-in/signup rate limits, invite-gated signup, HttpOnly + SameSite=Strict + Secure cookies with only the session hash stored, CSRF token on every state-changing request, other users' keys look like missing ones, 5 active keys per user (`tests/test_web_accounts.py`) |
-| Browser hardening for the bundled UI | strict CSP, `nosniff`, `no-referrer`, `frame-ancestors 'none'`; only three static files are served |
+| Browser hardening for the bundled UI | strict CSP, `nosniff`, `no-referrer`, `frame-ancestors 'none'`; only files found under `web/` at start-up with an allowed extension are served, and only a fixed list of page paths gets the shell (`api/web_static.py`; tests for traversal and unknown paths); no inline script or style, no third-party host; no `innerHTML` anywhere |
+| Public demo (opt-in) | `--public-demo`: one 300-character prompt, output capped, sampling fixed, per-address token bucket (burst 3, then 6 a minute), never attributed to a user, same queue and 503 behaviour as everyone else (`tests/test_demo.py`). Behind a proxy it needs `--trust-proxy` or every visitor shares one address |
 | CORS | off unless `--cors-origin` is given; then only those origins, `GET`/`POST`, `Authorization`/`Content-Type` |
 | Secrets in logs | keys are only ever in the `Authorization` header, which uvicorn's access log does not print; request bodies are not logged |
 
@@ -44,7 +45,7 @@ constant-time comparison, and `weights_only` checkpoint loading in the API path.
    server-wide counters.
 7. **No content policy or output filtering.** The model is a small story model; a chat model exposed to
    the public needs a stated policy.
-8. **Unauthenticated `/health` and the web page** are intentional, but the page is only useful on the same origin.
+8. **Unauthenticated `/health`, `/status.json` and the web pages** are intentional (`/status.json` carries states, queue depth and uptime, no user data). The demo, if enabled, is a public way to use the model: cap it low and watch `/stats`.
 9. **Dependency and supply-chain checks** are not automated (no lock file audit in CI).
 10. **The `--no-auth` local mode** is one flag away; keep it out of any service definition.
 

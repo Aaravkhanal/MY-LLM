@@ -51,13 +51,19 @@ def test_results_are_served_publicly_with_strict_headers_and_the_config_says_wha
     assert "path" not in json.dumps(cfg).lower() and "checkpoint" not in json.dumps(cfg).lower()      # nothing about the filesystem
 
 
-def test_the_home_page_keeps_its_interactive_parts():
-    js = (WEB / "app.js").read_text()
-    for part in ("function viewHome", "function explorer", "function pipeline", "function tabs", "/results.json", 'role: "tablist"',
-                 "aria-expanded", "aria-pressed", "ArrowRight", "aria-live", "Not stored", "Honest limits"):
+def test_the_landing_page_keeps_its_parts():
+    js = (WEB / "js" / "pages" / "landing.js").read_text()
+    for part in ("function hero", "function demoSection", "/demo/chat", "IntervalChart", "fillBuilt", "CodeTabs", "Limitations", "readDifference",
+                 "/models/aarav-lm/evaluations", "/playground", "/docs"):
         assert part in js, part
-    assert 'default "home"' not in js and '|| "home"' in js                       # the front page is the default route
-    assert '"home"' in js and "needsAccount" in js
+    assert "aria-live" in js and "aria-busy" in js                               # the demo announces its progress to screen readers
+
+
+def test_the_evaluation_page_separates_measured_uncertain_and_interpreted():
+    js = (WEB / "js" / "pages" / "evaluations.js").read_text()
+    for part in ("SegmentedControl", "Select", "IntervalChart", "DataTable", "vs_base", "Overlapping intervals neither prove nor rule out",
+                 "Measured", "Uncertain", "Interpreted", "not established", "set=", "history.replaceState"):
+        assert part in js or part.replace("=", "") in js, part
 
 
 def test_the_site_data_carries_paired_comparisons_that_match_what_the_results_document_says():

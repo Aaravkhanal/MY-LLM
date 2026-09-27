@@ -6,6 +6,8 @@ only if a test proves it, and says **measured** only if the number came from a r
 
 | # | Problem | Status |
 |---|---|---|
+| 9 | The OpenAI routes returned `finish_reason: "eot"`, which no OpenAI client knows | **fixed** (test) |
+| 8 | Under load an unbatched stream got HTTP 200 and then an error event, instead of a clean 503 | **fixed** (test failed 5/5 before, passes after), found by a load test |
 | 7 | The new training diagnostics crashed a run (exp_007, step ~625) | **fixed** (tests), found by a real run |
 | 6 | Content requests (topic, place, emotion) are barely learnable from the data as generated | **fixed** by data changes (exp_007), at the cost of length control |
 | 5 | One pass rate hid two different failures: not learning the task vs not generalising to new wording | **measured**; in-template control added |
@@ -13,6 +15,22 @@ only if a test proves it, and says **measured** only if the number came from a r
 | 3 | Instruction-following pass rates had no chance-level control, inflated sample sizes and no paired test | **fixed** (tests) |
 | 2 | SFT gradient accumulation weighted micro-batches equally instead of by scored tokens | **fixed** (test), effect on real runs not yet measured |
 | 1 | Validation loss depends on how many conversations are scored (1.2895 / 1.3276 / 1.3190 for one checkpoint; noise sd 0.031 at 160) | **fixed** (tests): the full split is scored by default, with a standard error |
+
+## 9. `finish_reason: "eot"` on the OpenAI routes
+
+The engine's own reasons include `eot` (the model wrote its end-of-text token). The OpenAI-compatible routes passed it through, so a client that
+validates the field (`stop` or `length`) would reject a normal reply. Found while adding real token counts to the closing stream frame: the new test
+asserted `stop` or `length` and saw `eot`. **Fix:** `eot`, stop sequences and cancellation read `stop`; a time-out reads `length`
+(`tests/test_demo.py::test_finish_reasons_are_the_two_values_openai_clients_know`). The native routes keep the engine's own values.
+
+## 8. Streams that failed after the 200
+
+`scripts/loadtest.py` against 16 concurrent streaming users of an unbatched server reported three "faults": HTTP 200 streams that ended in an
+error event, "too many requests waiting". The stream path checked admission (acquire the model slot, release it) before sending the 200 header,
+then took the slot again inside the stream; under load the second check could hit the waiter limit after the header was sent, so a request
+that had been admitted was refused with no status code to carry it. **Fix:** the second acquisition skips the waiter limit, because the request was
+already admitted. `tests/test_loadtest.py::test_streams_are_refused_with_a_real_503_never_as_an_error_after_the_200` (24 concurrent streams, waiter
+limit 2) failed on 5 of 5 runs before the fix and passes after. Overload now always shows as a clean 503 before the stream starts.
 
 ---
 

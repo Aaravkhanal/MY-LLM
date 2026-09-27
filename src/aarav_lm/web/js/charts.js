@@ -38,7 +38,7 @@ export function IntervalChart({ rows, series, chance, ariaLabel, valueFormat = (
     });
     s.append(grid);
     if (chance !== undefined && chance !== null) {
-      s.append(svg("line", { class: "chance", x1: x(chance), x2: x(chance), y1: T - 6, y2: H - B }), svg("text", { class: "chance-label", x: x(chance) + 4, y: T - 10 }, `chance ${valueFormat(chance)}`));
+      s.append(svg("line", { class: "chance", x1: x(chance), x2: x(chance), y1: T - 6, y2: H - B }), svg("text", { class: "chance-label", x: x(chance) + 4, y: T - 10 }, `chance ${chance}%`));
     }
     const t = tip(host);
     rows.forEach((r, i) => {

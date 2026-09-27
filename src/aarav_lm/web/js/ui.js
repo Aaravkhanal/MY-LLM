@@ -1,5 +1,5 @@
 /* The component library. Each component is a function that returns DOM nodes; none of them writes HTML strings. Styling lives in
-   css/components.css. Components: Button, Badge, CodeBlock, CodeTabs, Stat, MetricCard, StatusIndicator, Tabs, TabNav, Sidebar,
+   css/components.css. Components: Button, Badge, CodeBlock, CodeTabs, Stat, MetricCard, ModelCard, StatusIndicator, Tabs, TabNav, Sidebar,
    DataTable, Input, Textarea, Select, Slider, Dropdown, Modal (confirmDialog), Toast, Skeleton, EmptyState, ErrorState, SegmentedControl,
    Accordion. Charts are in charts.js. */
 import { el, icon, append } from "./dom.js";
@@ -23,6 +23,13 @@ const STATUS = { operational: ["dot", "Operational"], degraded: ["half", "Degrad
 export function StatusIndicator(stateName, label) {
   const [shape, word] = STATUS[stateName] || STATUS.unknown;
   return el("span", { class: "status status-" + (STATUS[stateName] ? stateName : "unknown") }, icon(shape, 16), el("span", { text: label || word }));
+}
+
+/* ── ModelCard: one model in a list (hairline-delimited, not a box) ────── */
+export function ModelCard({ name, href, description, badges = [], status, actions }) {
+  return el("section", { class: "model-row", "aria-label": name },
+    el("div", { class: "grow" }, el("h2", null, el("a", { href, text: name })), el("p", { class: "muted", text: description }), el("div", { class: "row" }, badges.map((b) => Badge(b)))),
+    el("div", { class: "model-row-side" }, status || null, actions || null));
 }
 
 /* ── Stat, MetricCard ──────────────────────────────────────────────────── */
@@ -112,10 +119,10 @@ export function Sidebar(groups, ariaLabel) {
 
 /* ── DataTable ─────────────────────────────────────────────────────────── */
 export function DataTable({ caption, columns, rows, empty = "Nothing to show yet." }) {
-  const head = el("tr", null, columns.map((c) => el("th", { scope: "col", class: c.num ? "num" : false, text: c.label })));
+  const head = el("tr", null, columns.map((c) => el("th", { scope: "col", class: [c.num ? "num" : "", c.nowrap ? "nowrap" : ""].filter(Boolean).join(" ") || false, text: c.label })));
   const body = rows.length ? rows.map((r) => el("tr", { class: r._muted ? "is-muted" : false }, columns.map((c, i) => {
     const v = c.render ? c.render(r) : r[c.key];
-    return i === 0 && c.rowHeader ? el("th", { scope: "row", text: v }) : el("td", { class: c.num ? "num" : false }, v);
+    return i === 0 && c.rowHeader ? el("th", { scope: "row" }, v) : el("td", { class: [c.num ? "num" : "", c.nowrap ? "nowrap" : ""].filter(Boolean).join(" ") || false }, v);
   }))) : [el("tr", null, el("td", { colspan: columns.length, class: "muted", text: empty }))];
   return el("div", { class: "table-wrap", tabindex: "0", role: "region", "aria-label": caption }, el("table", { class: "table" },
     el("caption", { text: caption }), el("thead", null, head), el("tbody", null, body)));
@@ -252,7 +259,7 @@ export function Accordion(items) {
   const list = el("ol", { class: "accordion" });
   items.forEach((it, i) => {
     const id = nextId("acc");
-    const body = el("div", { class: "panel-body", id, hidden: true, role: "region", "aria-labelledby": id + "-t" }, it.body);
+    const body = el("div", { class: "accordion-body", id, hidden: true, role: "region", "aria-labelledby": id + "-t" }, it.body);
     const btn = el("button", { class: "trigger", type: "button", id: id + "-t", "aria-expanded": "false", "aria-controls": id,
       onclick: () => {
         const open = btn.getAttribute("aria-expanded") === "true";

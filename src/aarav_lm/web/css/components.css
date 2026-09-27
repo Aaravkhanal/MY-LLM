@@ -63,13 +63,14 @@
 }
 .tab:hover, .tabnav a:hover { color: var(--ink); text-decoration: none; }
 .tab[aria-selected="true"], .tabnav a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
-.tabnav { display: flex; gap: var(--s1); border-bottom: var(--hairline) solid var(--rule); overflow-x: auto; }
+.tabnav { display: flex; gap: var(--s1); border-bottom: var(--hairline) solid var(--rule); overflow-x: auto; margin-bottom: var(--s6); }
+.tabnav a:first-child { padding-left: 0; }
 
 /* ── Stat, MetricCard ───────────────────────────────────────────────────── */
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: var(--s5) var(--s6); margin: 0; }
 .stat { margin: 0; }
 .stat dt { font-size: var(--fs-xs); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: var(--s1); }
-.stat dd { margin: 0; font-size: var(--fs-xl); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.stat dd { overflow-wrap: anywhere; margin: 0; font-size: var(--fs-xl); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .stat dd small { display: block; font-size: var(--fs-xs); font-weight: 400; color: var(--muted); letter-spacing: 0; }
 .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 0 var(--s6); }
 .metric { padding: var(--s4) 0; border-top: var(--hairline) solid var(--rule); }
@@ -96,6 +97,8 @@ table.table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
 .table thead th { font-size: var(--fs-xs); font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
 .table tbody tr:last-child td, .table tbody tr:last-child th { border-bottom: 0; }
 .table tbody th { font-weight: 500; }
+.table .nowrap { white-space: nowrap; }
+.table td .row { flex-wrap: nowrap; }
 .table .num, .table th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .table tr.is-muted { color: var(--muted); }
 .table tbody tr:hover { background: var(--bg-hover); }
@@ -147,7 +150,7 @@ dialog.modal::backdrop { background: var(--bg); opacity: 0.8; }
 .modal .actions { display: flex; justify-content: flex-end; gap: var(--s2); margin-top: var(--s5); }
 
 /* ── Toast ──────────────────────────────────────────────────────────────── */
-#toasts { position: fixed; right: var(--s4); bottom: var(--s4); z-index: 50; display: flex; flex-direction: column; gap: var(--s2); width: min(24rem, calc(100vw - 2rem)); pointer-events: none; }
+#toasts { position: fixed; right: var(--s4); top: calc(var(--header-h) + var(--s3)); z-index: 50; display: flex; flex-direction: column; gap: var(--s2); width: min(24rem, calc(100vw - 2rem)); pointer-events: none; }
 .toast { pointer-events: auto; display: flex; align-items: flex-start; gap: var(--s3); padding: var(--s3) var(--s4); background: var(--bg); border: var(--hairline) solid var(--rule-strong); border-left: 3px solid var(--accent); border-radius: var(--radius); font-size: var(--fs-sm); animation: toast-in var(--dur) var(--ease); }
 .toast-danger { border-left-color: var(--danger); }
 .toast-warn { border-left-color: var(--warn); }
@@ -189,6 +192,8 @@ dialog.modal::backdrop { background: var(--bg); opacity: 0.8; }
 .tip { position: absolute; transform: translate(-50%, -110%); pointer-events: none; white-space: nowrap; padding: var(--s1) var(--s2); background: var(--bg); border: var(--hairline) solid var(--rule-strong); border-radius: var(--radius); font-size: var(--fs-xs); z-index: 5; }
 .legend { display: flex; flex-wrap: wrap; gap: var(--s4); font-size: var(--fs-xs); color: var(--muted); margin: var(--s2) 0; }
 .legend span { display: inline-flex; align-items: center; gap: var(--s2); }
+.legend .dot { fill: var(--mark); }
+.legend .dot-2 { fill: var(--mark-2); }
 
 /* segmented control (a group of toggle buttons) */
 .seg { display: inline-flex; border: var(--hairline) solid var(--rule-strong); border-radius: var(--radius); overflow: hidden; }
@@ -205,4 +210,4 @@ dialog.modal::backdrop { background: var(--bg); opacity: 0.8; }
 .accordion .n { font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted); min-width: 1.6rem; }
 .accordion .chev { margin-left: auto; color: var(--muted); transition: transform var(--dur) var(--ease); align-self: center; }
 .accordion button[aria-expanded="true"] .chev { transform: rotate(180deg); }
-.accordion .panel-body { padding: 0 0 var(--s5) calc(1.6rem + var(--s4)); max-width: calc(var(--prose) + 2rem); }
+.accordion .accordion-body { padding: 0 0 var(--s5) calc(1.6rem + var(--s4)); max-width: calc(var(--prose) + 2rem); }

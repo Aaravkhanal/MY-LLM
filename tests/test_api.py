@@ -1,4 +1,5 @@
 import json
+import re
 import os
 import stat
 import threading
@@ -209,23 +210,26 @@ def test_concurrent_requests_are_serialised_and_all_succeed(engine, keys):
 
 # ── web UI ───────────────────────────────────────────────────────────────────
 
-WEB = Path(__file__).resolve().parents[1] / "src/aarav_lm/web"
+import web_sources                                                   # noqa: E402  (tests/web_sources.py)
+
+WEB = web_sources.WEB
 
 
 def test_web_ui_is_served_without_a_key_with_strict_headers(engine, keys):
     c = TestClient(create_app(engine, keys[0]))                      # auth ON: the static shell holds no data
-    for path, ctype in (("/", "text/html"), ("/app.js", "text/javascript"), ("/style.css", "text/css")):
+    for path, ctype in (("/", "text/html"), ("/js/main.js", "text/javascript"), ("/js/router.js", "text/javascript"), ("/css/tokens.css", "text/css"),
+                        ("/css/components.css", "text/css"), ("/favicon.svg", "image/svg+xml")):
         r = c.get(path)
         assert r.status_code == 200 and r.headers["content-type"].startswith(ctype), path
         csp = r.headers["content-security-policy"]
         assert "default-src 'none'" in csp and "script-src 'self'" in csp and "unsafe-inline" not in csp
         assert r.headers["x-content-type-options"] == "nosniff"
-    assert "<title>aarav</title>" in c.get("/").text
+    assert "<title>aarav-lm</title>" in c.get("/").text
 
 
 def test_only_whitelisted_web_files_are_served(engine, keys):
     c = TestClient(create_app(engine, keys[0]))
-    for path in ("/index.html", "/../secrets/api_keys.json", "/%2e%2e/pyproject.toml", "/web/app.js", "/static/app.js"):
+    for path in ("/index.html", "/../secrets/api_keys.json", "/%2e%2e/pyproject.toml", "/web/js/main.js", "/static/js/main.js", "/js/../index.html"):
         assert c.get(path).status_code in (404, 405), path
 
 
@@ -234,10 +238,10 @@ def test_web_ui_can_be_disabled(engine, keys):
 
 
 def test_ui_never_writes_model_output_as_html():
-    js = (WEB / "app.js").read_text()
-    for banned in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write", "eval(", "new Function"):
-        assert banned not in js, banned
-    assert "<script" not in (WEB / "index.html").read_text().replace('<script src="/app.js"></script>', "")
+    for banned in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write", "eval(", "new Function", "setAttribute(\"style\""):
+        assert banned not in web_sources.JS, banned
+    scripts = re.findall(r"<script[^>]*>", web_sources.HTML)
+    assert scripts == ['<script src="/js/theme.js">', '<script type="module" src="/js/main.js">']          # no inline script, nothing else
 
 
 def test_ui_javascript_parses():
@@ -246,28 +250,27 @@ def test_ui_javascript_parses():
     node = shutil.which("node")
     if not node:
         pytest.skip("node not installed")
-    r = subprocess.run([node, "--check", str(WEB / "app.js")], capture_output=True, text=True)
-    assert r.returncode == 0, r.stderr
+    for path in web_sources.JS_FILES:                                # ES modules, checked from stdin so `import` is understood
+        r = subprocess.run([node, "--input-type=module", "--check"], input=path.read_text(), capture_output=True, text=True)
+        assert r.returncode == 0, (path.name, r.stderr)
 
 
 def test_ui_references_only_same_origin_assets():
-    import re
-    html = (WEB / "index.html").read_text()
-    urls = re.findall(r'(?:src|href)="([^"]+)"', html)
-    # same-origin paths, in-page anchors, or the empty inline icon (data:,) — never a third-party host
-    assert urls and all((u.startswith("/") and not u.startswith("//")) or u.startswith("#") or u == "data:," for u in urls), urls
-    js = (WEB / "app.js").read_text()
-    assert not re.search(r"https?://(?!\$\{)", js.replace("http://www.w3.org/2000/svg", ""))             # the SVG namespace is an identifier, never fetched       # the JS calls no third-party host either
+    urls = re.findall(r'(?:src|href)="([^"]+)"', web_sources.HTML)
+    # same-origin paths or in-page anchors, never a third-party host
+    assert urls and all((u.startswith("/") and not u.startswith("//")) or u.startswith("#") for u in urls), urls
+    assert not re.search(r"https?://(?!\$\{)", web_sources.JS.replace("http://www.w3.org/2000/svg", ""))      # the SVG namespace is an identifier, never fetched
+    assert not re.search(r"https?://|@import|url\(", web_sources.CSS)                                           # nor does the stylesheet load anything remote
 
 
 def test_ui_has_the_requested_features():
-    """Guards the feature list: history, streaming, clear, system prompt, model info, params, loading, errors, accounts, keys."""
-    js = (WEB / "app.js").read_text()
-    for name in ("messages", "clear", "system", "model-info", "temperature", "top_p", "top_k", "max_tokens", "repetition_penalty",
-                 "seed", "stop", "banner", "composer", "settings-toggle"):
-        assert f'"{name}"' in js, name
-    for behaviour in ("stream: true", "getReader", "AbortController", "state.history", "describeError", "dots",
-                      "/account/login", "/account/signup", "/account/keys", "/account/usage", "X-CSRF-Token", "/v1/chat/completions"):
+    """Guards the feature list: streaming, regenerate, clear, system prompt, sampling settings, error handling, accounts, keys, status."""
+    js = web_sources.JS
+    for name in ("pg-temp", "pg-topp", "pg-max", "pg-system", "pg-topk", "pg-rep", "pg-seed", "Regenerate", "Clear", "Copy", "Reset settings"):
+        assert f'"{name}"' in js or f"'{name}'" in js or f"{name}" in js, name
+    for behaviour in ("stream: true", "getReader", "AbortController", "describeError", "dots", "/account/login", "/account/signup", "/account/keys",
+                      "/account/usage", "X-CSRF-Token", "/v1/chat/completions", "/demo/chat", "/status.json", "aria-live", "role: \"alert\"",
+                      "confirmDialog", "showModal", "retry"):
         assert behaviour in js, behaviour
     for status in ("401", "429", "503", "422"):
         assert status in js, f"no handling for HTTP {status}"

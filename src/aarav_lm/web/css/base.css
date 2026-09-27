@@ -87,7 +87,7 @@ kbd { padding: 0.05em 0.4em; border: var(--hairline) solid var(--rule-strong); b
 .footer-grid a { color: var(--ink); }
 .footer-note { margin-top: var(--s6); padding-top: var(--s4); border-top: var(--hairline) solid var(--rule); }
 
-.page { padding: var(--s7) 0 0; }
+.page { padding-top: var(--s7); }
 .page-head { margin-bottom: var(--s6); }
 .page-head h1 { margin-bottom: var(--s2); }
 .page-head p { color: var(--muted); max-width: var(--prose); margin: 0; }

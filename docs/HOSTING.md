@@ -59,7 +59,8 @@ tested; 2.3x at a wave of 8 and 3.3x at 16 in the raw decode benchmark, +42% thr
    ```bash
    python scripts/manage_keys.py user add you@example.com --password      # your own login
    AARAV_SIGNUP_CODE='a-long-random-invite' caffeinate -i python scripts/serve.py \
-       --db secrets/accounts.db --checkpoint models/tiny-tinystories-v1-sft-int8.pt --trust-proxy --cookie-secure
+       --db secrets/accounts.db --checkpoint models/tiny-tinystories-v1-sft-int8.pt --trust-proxy --cookie-secure \
+       --public-demo            # optional: visitors without an account can try one short prompt on the home page (rate limited)
    ```
 3. In another terminal: `brew install cloudflared`, then `cloudflared tunnel --url http://127.0.0.1:8000`. It prints a public
    `https://….trycloudflare.com` address. Share that address and the invite code.

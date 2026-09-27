@@ -85,7 +85,7 @@ def test_only_files_with_allowed_extensions_are_served_and_each_at_its_own_path(
 
 def test_the_real_web_directory_is_served_completely(client):
     served = collect_assets(WEB)
-    assert "/style.css" in served or "/css/tokens.css" in served
+    assert "/css/tokens.css" in served and "/js/main.js" in served
     for path, (body, media) in served.items():
         r = client.get(path)
         assert r.status_code == 200 and r.content == body and r.headers["content-type"].startswith(media.split(";")[0]), path
@@ -197,3 +197,68 @@ def test_usage_latency_percentiles_count_only_successful_requests(tmp_path):
     empty = s.usage_summary(user_id=uid + 99)
     assert empty["requests"] == 0 and empty["latency_p50_ms"] is None and empty["latency_p95_ms"] is None
     s.close()
+
+
+# ── the client and the server agree ──────────────────────────────────────────
+
+import re                                                            # noqa: E402
+
+import web_sources                                                   # noqa: E402
+
+
+def test_the_client_router_and_the_server_page_list_are_the_same_list():
+    router = (WEB / "js" / "router.js").read_text()
+    client = re.findall(r'path: "(/[^"]*)"', router)
+    assert client == list(PAGE_ROUTES), (set(client) ^ set(PAGE_ROUTES))
+
+
+def test_every_module_import_resolves_to_a_file_the_server_will_serve():
+    served = collect_assets(WEB)
+    for path in web_sources.JS_FILES:
+        src = path.read_text()
+        for rel in re.findall(r'(?:from |import\()\s*"(\.{1,2}/[^"]+)"', src):
+            target = (path.parent / rel).resolve().relative_to(WEB.resolve()).as_posix()
+            assert "/" + target in served, (path.name, rel)
+
+
+def test_every_internal_link_points_at_a_page_or_a_file():
+    served = collect_assets(WEB)
+    known = set(PAGE_ROUTES) | set(served)
+    links = set()
+    for text in (web_sources.JS, web_sources.HTML):
+        links |= set(re.findall(r'(?:href: ?|href=|navigate\(|href: `)"(/[^"?#]*)', text))
+    links -= {"/v1", "/account"}                                     # API bases, not pages
+    unknown = {l for l in links if l.rstrip("/") not in known and l not in known and not l.startswith("/v1") and not l.startswith("/account")}
+    assert not unknown, unknown
+    assert len(links) > 15                                           # the check is actually looking at the site's links
+
+
+def test_every_page_module_exists_and_exports_a_page_function():
+    router = (WEB / "js" / "router.js").read_text()
+    for rel in set(re.findall(r'import\("\./(pages/[a-z]+\.js)"\)', router)):
+        src = (WEB / "js" / rel).read_text()
+        assert "export default async function page" in src, rel
+
+
+# ── compression ──────────────────────────────────────────────────────────────
+
+def test_static_files_are_gzipped_only_for_clients_that_accept_it_and_decode_to_the_same_bytes(client):
+    import gzip
+    plain = client.get("/js/ui.js", headers={"Accept-Encoding": "identity"})
+    assert plain.status_code == 200 and "content-encoding" not in plain.headers and plain.headers["vary"] == "Accept-Encoding"
+    packed = client.get("/js/ui.js", headers={"Accept-Encoding": "gzip"})
+    assert packed.headers["content-encoding"] == "gzip" and packed.headers["vary"] == "Accept-Encoding"
+    assert packed.content == plain.content and len(plain.content) > 1000                   # same bytes after decoding
+    shell = client.get("/playground", headers={"Accept-Encoding": "gzip"})
+    assert shell.text == client.get("/", headers={"Accept-Encoding": "identity"}).text and "unsafe-inline" not in shell.headers["content-security-policy"]
+
+
+def test_compression_never_touches_api_responses(client):
+    r = client.get("/status.json", headers={"Accept-Encoding": "gzip"})
+    assert "content-encoding" not in r.headers and r.json()["overall"] == "operational"
+
+
+def test_gzip_output_is_deterministic_and_smaller():
+    from aarav_lm.api.web_static import _gzipped
+    body = (WEB / "js" / "ui.js").read_bytes()
+    assert _gzipped(body) == _gzipped(body) and len(_gzipped(body)) < 0.5 * len(body)

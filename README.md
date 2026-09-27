@@ -32,9 +32,11 @@ play with her toys in the kitchen. One day, she found a big box in the kitchen. 
   per-key limits, usage records that never store prompts, request timeouts, and **exact batched decoding** so concurrent users share
   each model step (outputs verified identical to running each alone). Backups and a load tester included
   ([PLATFORM.md](docs/PLATFORM.md), [HOSTING.md](docs/HOSTING.md), [API.md](docs/API.md)).
-* **A minimal web app** (chat, keys, usage, docs) with no boxes, blue or purple, and tests that enforce those rules and the
-  accessibility contrast ratios.
-* **Engineering discipline.** 476 tests, CI on every push, a script that re-runs CI on a fresh clone (it caught a real production bug
+* **A developer platform around it:** landing page with a live demo, a full-page playground, model card, evaluation dashboard, architecture page
+  read from the running model, API docs whose examples were run against a live server, a dashboard with keys and usage, and a status page. Dark,
+  restrained, no blue or purple; tests enforce the design rules and contrast ratios, and a real browser drove every route and failure state
+  ([PLATFORM.md](docs/PLATFORM.md), [UI_REDESIGN.md](docs/UI_REDESIGN.md)).
+* **Engineering discipline.** 558 tests, CI on every push, a script that re-runs CI on a fresh clone (it caught a real production bug
   before it shipped), and honest limits stated everywhere: this is a small story model, not a general assistant.
 
 ## What was built, and what came out
@@ -53,7 +55,7 @@ Two models have been trained from random initialisation on the M3, each with the
 | **Size** | 19.8 MB fp32, **5.06 MB int8** (+0.01% loss) — packaged in `models/` | 54 MB fp32 (not packaged yet) |
 
 Around them: SFT and LoRA fine-tuning, an evaluation suite with a regression gate, terminal chat, an
-HTTP API with hashed keys and rate limiting, and a web chat page. **476 pytest tests** (run in CI on every push) plus a 12-check
+HTTP API with hashed keys and rate limiting, and a web platform. **558 pytest tests** (run in CI on every push) plus a 12-check
 end-to-end smoke test (~10 s).
 
 Token counts are not parameter counts: the corpus is 103M *tokens*, the model 14.2M *parameters*
@@ -149,14 +151,17 @@ python scripts/manage_keys.py user add you@example.com --password
 AARAV_SIGNUP_CODE='an-invite-code' python scripts/serve.py --db secrets/accounts.db      # http://127.0.0.1:8000
 ```
 
-People sign up with the invite code, chat in the browser, create their own API keys and see their usage; the same server is
-an OpenAI-compatible API. The interface is deliberately minimal: type and whitespace only, no boxes, warm neutrals and one green,
-no blue or purple (tests enforce it). See [docs/PLATFORM.md](docs/PLATFORM.md) and, for putting it online,
-[docs/HOSTING.md](docs/HOSTING.md).
+People sign up with the invite code, use the playground, create their own API keys and see their usage; the same server is an
+OpenAI-compatible API. Add `--public-demo` to let visitors try the model on the home page without an account (rate limited, off by default).
+The interface is a small developer platform: landing page, playground, model pages with the evaluation dashboard and architecture, documentation,
+dashboard and status. It is dark and restrained, with one green and no blue or purple (tests enforce it). See [docs/PLATFORM.md](docs/PLATFORM.md)
+and, for putting it online, [docs/HOSTING.md](docs/HOSTING.md).
 
-![home page](docs/img/home.png)
+![landing page](docs/img/ui-landing.png)
 
-![chat](docs/img/chat.png)
+| | |
+|---|---|
+| ![playground](docs/img/ui-playground.png) | ![evaluations](docs/img/ui-evaluations.png) |
 
 ### Serve it (simplest)
 
@@ -164,7 +169,7 @@ no blue or purple (tests enforce it). See [docs/PLATFORM.md](docs/PLATFORM.md) a
 python scripts/create_key.py --label laptop            # key shown once; only its hash is stored
 #   or accounts with per-key limits, revoke/rotate and usage records:  scripts/manage_keys.py ...  +  serve.py --db secrets/accounts.db
 python scripts/serve.py --checkpoint models/tiny-tinystories-v1-sft-int8.pt
-#   web chat  http://127.0.0.1:8000/     native API: /health /model /stats /generate /chat  (+ "stream": true)
+#   web app   http://127.0.0.1:8000/     native API: /health /model /stats /generate /chat  (+ "stream": true)
 #   OpenAI-compatible: /v1/models /v1/completions /v1/chat/completions -> works with the `openai` SDK (docs/API.md)
 python scripts/serve.py --no-auth                      # localhost only, no key
 ```
@@ -187,7 +192,7 @@ src/aarav_lm/
   evaluation/  loss · text metrics · probes · edge cases · suite · regression · comparison
   inference/   engine (streaming, sampling, stop sequences) · chat template · int8 quantisation
   chat/        session + terminal UI            api/  FastAPI app, keys, rate limiter
-  web/         the browser chat page
+  web/         the web app (pages, components, styles; no build step)
 configs/  evals/  scripts/  tests/  docs/  models/  artifacts/  experiments/
 ```
 

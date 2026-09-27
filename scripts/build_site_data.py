@@ -107,13 +107,9 @@ def build() -> dict:
 
 def main() -> None:
     data = build()
-    for name in ("web", "web2"):                                     # web2 exists only while the redesign is being built
-        folder = ROOT / "src" / "aarav_lm" / name
-        if not folder.is_dir():
-            continue
-        path = folder / "results.json"
-        path.write_text(json.dumps(data, separators=(",", ":")) + "\n")
-        print(f"wrote {path} ({path.stat().st_size / 1024:.0f} KB)")
+    path = ROOT / "src" / "aarav_lm" / "web" / "results.json"
+    path.write_text(json.dumps(data, separators=(",", ":")) + "\n")
+    print(f"wrote {path} ({path.stat().st_size / 1024:.0f} KB)")
 
 
 if __name__ == "__main__":

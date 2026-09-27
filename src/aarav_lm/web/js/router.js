@@ -93,6 +93,7 @@ async function render(initial) {
   const desc = document.querySelector('meta[name="description"]');
   if (desc && result.description) desc.setAttribute("content", result.description);
   markCurrent(document);
+  document.body.dataset.page = path.split("/")[1] || "home";
   hooks.onRoute(path);
   if (!initial) {
     const hash = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));

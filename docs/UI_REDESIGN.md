@@ -128,3 +128,87 @@ pages so the numbers exist in exactly one place.
   every internal link resolves to a route, JavaScript syntax with `node --check`.
 * Browser (Playwright with real Chrome): every route at three widths in both themes, console and page errors, failed requests,
   a real streamed generation, sign-up, key creation, rotation and revocation, keyboard-only navigation of the tab strips and dialogs.
+
+---
+
+# Implementation audit
+
+Written after the work, from the repository and the test runs; the numbers are counts of what exists.
+
+## What was built, by phase
+
+1. **Backend and data** (commit `05a3a0c`): page routes and an exact asset map (`api/web_static.py`), the public `/status.json`, the running model's
+   architecture in `/app/config`, latency percentiles, and richer `results.json` (development set, paired comparisons, training facts).
+2. **Public demo, API fixes, foundation** (`6e2ddb2`): `POST /demo/chat`, the `finish_reason` fix, usage in the closing stream frame, `--web-dir`, the design tokens,
+   the component library, charts, the API layer with streaming, the router and the frame.
+3. **Pages, cut-over, tests, docs** (this commit): the landing page, playground, status, sign-in, models, model card, evaluations, architecture, documentation,
+   dashboard; the new frontend replaced the old one; tests rewritten; gzip for static files; screenshots and documentation.
+
+## Files changed
+
+* **Frontend, replaced:** `web/app.js` (672 lines), `web/style.css` (287) and `web/index.html` were removed.
+* **Frontend, added under `src/aarav_lm/web/`:** `index.html`, `favicon.svg`, `css/` (4 files: tokens, base, components, pages), `js/` (13 modules: api, charts,
+  chrome, data, dom, format, highlight, main, model_shared, router, snippets, state, theme, ui) and `js/pages/` (11 modules: landing, playground, models, model,
+  evaluations, architecture, docs, dashboard, status, signin, notfound); about 2,800 lines in all. `results.json` is generated.
+* **Backend:** `api/web_static.py` (new), `api/app.py`, `api/openai_compat.py`, `api/store.py`, `inference/scheduler.py`, `scripts/serve.py`,
+  `scripts/build_site_data.py`.
+* **Tests:** `tests/web_sources.py`, `test_web_routes.py`, `test_demo.py` (new); `test_web_design.py` (rewritten), `test_site.py`, `test_api.py` (updated).
+* **Docs:** `UI_REDESIGN.md`, `PLATFORM.md` (rewritten), `API.md`, `SECURITY.md`, `HOSTING.md`, `CORRECTNESS.md`, `README.md`; ten screenshots in `docs/img/`.
+
+## Routes added
+
+24 page routes (section 3), all served as one shell and rendered by the client router: `/`, `/playground`, `/models`, `/models/aarav-lm`, `/models/aarav-lm/evaluations`,
+`/models/aarav-lm/architecture`, 12 under `/docs`, 4 under `/dashboard`, `/status`, `/signin`. Old `#/chat`-style links redirect on load. **API routes added:**
+`GET /status.json`, `POST /demo/chat` (opt-in). Nothing existing was removed or renamed.
+
+## Components added
+
+Button, Badge, CodeBlock and CodeTabs (with an in-house highlighter), Stat, MetricCard, ModelCard, StatusIndicator (shape plus word), Tabs (ARIA) and TabNav (routes),
+Sidebar, DataTable, Input, Textarea, Select, Slider, SegmentedControl, Dropdown (menu button), Modal (native dialog, `confirmDialog`), Toast, Skeleton and LoadingRegion,
+EmptyState, ErrorState (with retry), Accordion, CopyButton; charts: IntervalChart (dots and 95% intervals, responsive layout) and BarChart, each with a table alternative.
+
+## Backend and API changes
+
+* Page paths and an exact asset map; static files gzip-compressed once at start-up and negotiated by `Accept-Encoding`.
+* `/status.json`; architecture and demo info in `/app/config`; p50 and p95 latency in `/account/usage` and `/v1/usage`; usage in the closing stream frame.
+* `POST /demo/chat` with `--public-demo` and `--demo-per-minute`; `serve.py --web-dir`.
+* **Fixes found on the way:** streams that failed after the 200 header under load (CORRECTNESS 8); `finish_reason: "eot"` on the OpenAI routes (CORRECTNESS 9).
+* Not changed: model weights, training code, the request and response shapes of existing endpoints (additions only), authentication.
+
+## UX improvements
+
+Path URLs and instant navigation; focus and a screen-reader announcement on every page change; a live demo on the landing page; a full-page playground with sampling controls,
+regenerate, copy, real token counts and a live status light; evaluation filters (wording, decoding, kind) that persist in the URL, a chart and a table for the same data, and each
+comparison labelled measured, uncertain or interpreted; an architecture page whose parameter breakdown is computed and checked against the model; documentation with tabs, copy buttons and
+highlighting, every example run against a live server; a dashboard with real metrics and key management where a secret is shown once; a status page that admits what it cannot see; light and dark themes;
+skeleton, empty, error and retry states everywhere data loads.
+
+## Tests performed
+
+* **Automated:** the suite went from 482 tests before the redesign to 558 (all pass; the count includes tests that were rewritten); new or rewritten files: `test_web_routes.py` (page list, traversal, unknown paths,
+  asset map, status truth including a stopped scheduler, a dead database and a full queue, architecture equals the model, latency percentiles, gzip, client and server route lists agree,
+  every import and link resolves), `test_demo.py` (off by default, streaming, rate limit, cap, no usage row, 503 when busy, closing usage frame, finish reasons),
+  `test_web_design.py` (hue, warmth, contrast AA, validated chart colours, colours only in tokens, no shadows, gradients, blur or cards, icon-only buttons named, motion),
+  `test_site.py` (results equal the evaluation files; the documented paired numbers), `test_api.py` (CSP, no HTML from model output, JavaScript parses, no third-party host).
+* **Real Chrome:** 24 routes x 3 widths (390, 768, 1280) x 2 themes: no console errors, no horizontal overflow, no empty pages, no broken internal links. Flows: sign-up and
+  sign-in with return, streamed chat, regenerate, clear (dialog focus trapped and returned), the demo and its rate limit, key create/rotate/revoke (secret shown once and gone after reload),
+  password form, status degraded/outage/unreachable (mocked), playground 503, 429, network failure and a raw-traceback 500 (never shown), evaluation results failing and slow (skeleton, error state),
+  and keyboard-only use of the skip link, the account menu, tab strips (arrows, End) and the accordion.
+* **API examples:** the cURL, Python (OpenAI SDK) and Node examples for chat and streaming, plus models, usage and the error shapes, were run against a live server with a real key.
+* **Performance:** the home page is 192 KB uncompressed and about 47 KB gzipped over 23 requests (first contentful paint about 0.6 s cold on localhost); the playground 104 KB / 32 KB.
+
+## Bugs the browser testing found (all fixed)
+
+A chat error banner that was erased the moment it appeared; table cells that printed `[object HTMLSpanElement]`; arrays passed to `replaceChildren` printed as text; a toast covering the Send button;
+the page content padded to zero because a later CSS rule overrode the container's padding; a stray `null` printed under the status summary.
+
+## Remaining issues and known limitations
+
+* Docker, Caddy and cloudflared are still unrun here; the public-hosting steps are documented, not exercised.
+* **One model at a time.** The model selector shows what `/v1/models` returns, which is one entry. Other versions are on the evaluation page only.
+* Dashboard charts show tokens per day only; there is no per-endpoint or per-key breakdown, and keys cannot be renamed after creation (the name is set at creation).
+* Account deletion, email verification and password reset are not built.
+* Status is self-reported from inside the process, keeps no history, and cannot detect a crashed server (the page reports it cannot reach it).
+* No automated visual regression tests: the browser runs were manual scripts, not part of CI (CI has no Chrome); the design rules that can be checked without a browser are tests.
+* Colour-blind separation of the two chart colours is a validator warning (deutan/protan about 7); the charts add marker shapes, direct labels and a legend, and there is a table view.
+* Older screenshots in git history show the previous interface.

@@ -14,10 +14,11 @@ Two rules keep this small and safe:
 
 from __future__ import annotations
 
+import gzip
 from pathlib import Path
 from typing import Dict, Tuple
 
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Request, Response
 
 ASSET_TYPES = {
     ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json",
@@ -56,21 +57,32 @@ def collect_assets(web_dir: Path) -> Dict[str, Tuple[bytes, str]]:
     return out
 
 
+def _gzipped(body: bytes) -> bytes:
+    return gzip.compress(body, compresslevel=9, mtime=0)                # mtime=0: the same bytes every start-up
+
+
 def add_web_routes(app: FastAPI, web_dir: Path) -> Dict[str, Tuple[bytes, str]]:
-    """Register the assets and the page shell. Returns the asset map (the status check looks at it)."""
+    """Register the assets and the page shell. Returns the asset map (the status check looks at it).
+
+    Each file is compressed once, at start-up, and sent gzip-encoded to clients that accept it (about a quarter of the size for the
+    scripts and styles). Only these static files are compressed: the API and its event streams are never touched."""
     assets = collect_assets(web_dir)
     shell = (web_dir / "index.html").read_bytes()
 
-    def page() -> Response:
-        return Response(shell, media_type="text/html; charset=utf-8", headers=SECURITY_HEADERS)
+    def handler_for(body: bytes, media: str):
+        packed = _gzipped(body)
+        use_gzip = len(packed) < len(body)
 
-    def asset(body: bytes, media: str):
-        def handler() -> Response:
-            return Response(body, media_type=media, headers=SECURITY_HEADERS)
+        def handler(request: Request) -> Response:
+            headers = {**SECURITY_HEADERS, "Vary": "Accept-Encoding"}
+            if use_gzip and "gzip" in request.headers.get("accept-encoding", ""):
+                return Response(packed, media_type=media, headers={**headers, "Content-Encoding": "gzip"})
+            return Response(body, media_type=media, headers=headers)
         return handler
 
+    page = handler_for(shell, "text/html; charset=utf-8")
     for route in PAGE_ROUTES:
         app.add_api_route(route, page, methods=["GET"], include_in_schema=False)
     for route, (body, media) in assets.items():
-        app.add_api_route(route, asset(body, media), methods=["GET"], include_in_schema=False)
+        app.add_api_route(route, handler_for(body, media), methods=["GET"], include_in_schema=False)
     return assets

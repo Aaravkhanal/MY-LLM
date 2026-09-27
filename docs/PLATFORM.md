@@ -1,69 +1,93 @@
 # The platform: accounts, keys and the web app
 
-One process serves the model, the OpenAI-compatible API ([API.md](API.md)) and a small web app. With `--db` it also runs
-accounts: people sign up, chat in the browser, create their own API keys and see their usage.
+One process serves the model, the OpenAI-compatible API ([API.md](API.md)) and the web app. With `--db` it also runs
+accounts: people sign up, use the playground, create their own API keys and see their usage. How the current interface came
+about (audit, decisions, plan) is in [UI_REDESIGN.md](UI_REDESIGN.md).
 
 ```bash
 python scripts/manage_keys.py user add you@example.com --password       # the owner's login
 AARAV_SIGNUP_CODE='choose-an-invite-code' \
-python scripts/serve.py --db secrets/accounts.db --checkpoint models/tiny-tinystories-v1-sft-int8.pt
+python scripts/serve.py --db secrets/accounts.db --checkpoint <checkpoint> --public-demo
 # open http://127.0.0.1:8000
 ```
 
 | Mode | Started with | What the web app does |
 |---|---|---|
-| Accounts | `--db` (signup closed, `--signup-code` for invites, or `--open-signup`) | sign in / create account; chat, keys, usage, docs |
-| Key file | default | asks for one API key (kept in the tab only); chat and docs |
-| No auth | `--no-auth` (localhost only) | chat and docs |
+| Accounts | `--db` (signup closed, `--signup-code` for invites, or `--open-signup`) | sign in / create account; playground, dashboard, keys, usage |
+| Key file | default | asks for one API key (kept in the tab only) in the playground |
+| No auth | `--no-auth` (localhost only) | playground without sign-in |
 
-## The website
+`--public-demo` adds a rate-limited demo on the home page for visitors without an account (below).
 
-The front page is public (no sign-in) and is itself interactive:
+## The site
+
+| Page | What it is |
+|---|---|
+| `/` | Landing: hero, the model's real numbers, a live demo, evaluation summary, how it was built, API tabs, limitations |
+| `/playground` | Full-page tool: settings sidebar (model, temperature, top-p, max tokens, advanced), streamed conversation, copy, regenerate, clear, live status, real token counts |
+| `/models`, `/models/aarav-lm` | Model list and model card |
+| `/models/aarav-lm/evaluations` | Evaluation dashboard: wording set, decoding and kind filters, chart and table, paired comparisons, dataset facts |
+| `/models/aarav-lm/architecture` | The pipeline, the running model's configuration, a computed parameter breakdown checked against the model's own count, six expandable sections |
+| `/docs/...` | Introduction, quickstart, authentication, API reference (chat completions, models, usage, errors), SDK pages, limitations |
+| `/dashboard`, `/dashboard/usage`, `/dashboard/api-keys`, `/dashboard/settings` | Requests, tokens, latency, error rate, status; keys (create, name, rotate, revoke; shown once); password |
+| `/status` | Per-service state from the server's own checks |
+| `/signin` | Sign in and create account |
+
+![landing page](img/ui-landing.png)
 
 | | |
 |---|---|
-| ![home page](img/home.png) | ![home page on a phone](img/home-mobile.png) |
+| ![playground](img/ui-playground.png) | ![evaluations](img/ui-evaluations.png) |
+| ![architecture](img/ui-architecture.png) | ![docs](img/ui-docs.png) |
+| ![dashboard](img/ui-dashboard.png) | ![API keys](img/ui-keys.png) |
+| ![status](img/ui-status.png) | ![phone](img/ui-mobile.png) |
 
-* **Results explorer.** Pick which wording (new or trained), decoding (greedy or sampled) and kind of request; every model appears with its
-  95% interval and the chance level, plus a one-sentence reading generated from the numbers (it says when intervals overlap and
-  warns when a kind has fewer than ten distinct prompts). The data is `src/aarav_lm/web/results.json`, generated from the evaluation
-  files by `scripts/build_site_data.py`; a test rebuilds it and fails if the committed file differs.
-* **How it was built:** six steps that open on click, one at a time. **Use it from code:** curl / Python / JavaScript tabs (arrow
-  keys work), each with a copy button. **What is stored** and **Honest limits** are stated in plain words.
-* A line at the top states what is running right now (parameters, context, chat-tuned), read from the server.
+Every number on these pages is read from the running server or from `results.json`, which `scripts/build_site_data.py` generates from the
+committed evaluation and run files (a test rebuilds it and fails if the committed file differs). Nothing is typed in by hand; where a
+value is unknown the page shows a dash, and where the server cannot be reached it says so instead of showing a healthy state.
 
-## What you see
+**The public demo** (`--public-demo`, off by default). One short prompt (up to 300 characters), streamed, no account. Limits: a burst of three then
+`--demo-per-minute` (default 6) per client address, output capped (120 tokens), sampling fixed. It goes through the same queue as everyone
+else, is never written to the usage table (there is no user to attribute it to), and is off unless the owner turns it on.
 
-Chat (light and dark) and the keys and usage pages, in the real app:
+**Status** (`/status.json`, public, no user data). API: the process is answering. Inference: the batch-scheduler thread is alive, the request queue is
+under its limit, and failures since start are under 20%. Authentication: a round trip to the account database. Playground: the web files are being
+served. It checks from inside the process, so it cannot see a crashed server; the page then says it cannot reach the server. It keeps no history.
 
-| | |
-|---|---|
-| ![chat](img/chat.png) | ![chat, dark](img/chat-dark.png) |
-| ![keys](img/keys.png) | ![usage](img/usage.png) |
+## Architecture of the front end
 
-The chat streams real tokens as the model produces them (nothing is faked or delayed), can be stopped, and keeps its history
-in the page only. Keys are shown once, then only their prefix is listed; each can be rotated or revoked. Usage shows counts
-per day, never prompts or replies, as a chart with hover values and a "view as table" alternative.
+No build step and no libraries: ES modules served as static files, drawn with DOM calls and `textContent`, never HTML strings. Pages are
+lazy-loaded modules behind a small History-API router; the server answers a fixed list of page paths with one HTML shell (anything else is a real
+404) and compresses the static files once at start-up (gzip; the home page is about 47 KB compressed). The component library is in
+`web/js/ui.js` (buttons, badges, code blocks with an in-house highlighter, tabs, tables, form controls, menu, dialog, toast, skeleton, accordion) and
+`web/js/charts.js` (responsive SVG charts with a table alternative).
 
 ## Design rules (enforced by tests)
 
-Minimal, and no boxes: the app uses type, whitespace and one-pixel hairlines. There are no cards, panels, shadows or rounded
-corners, and no filled backgrounds. Colour is warm neutrals with a single green; **there is no blue and no purple anywhere**.
+Dark, near-black and restrained: off-white text, one subtle green, thin borders, generous spacing, subtle motion. Sections are unboxed (type,
+whitespace, hairlines); an element gets an edge only where a control needs one (inputs, code blocks, tables, dialogs), with a single 6-pixel radius.
+No shadows, gradients or blur. **There is no blue and no purple anywhere.** A light theme is one click away and remembered.
 
-`tests/test_web_design.py` reads the real stylesheet and fails if: any colour has a hue between cyan and magenta; the neutrals
-are not warm; any text colour is below WCAG AA (4.5:1) on its background in either theme; the chart colour is not the one
-that passed the palette validator (`#2f8558` on `#fcfcfb`, `#4fa878` on `#1a1a19`: lightness band, chroma floor and 3:1 contrast
-all pass); a shadow, radius, tinted background or all-sides border appears; the JavaScript contains a colour literal.
+`tests/test_web_design.py` reads the real files and fails if: any colour has a hue between cyan and magenta; neutrals are not warm; any text
+colour is below WCAG AA on its surface (including code tokens on the code background and the label on the primary button); the chart colours are not the
+ones that passed the palette validator (dark `#4fa878` and `#c4803f` on `#121211`; light `#2f8558` and `#a8611f` on `#fcfcfb`; their colour-blind
+separation is a warning that the charts answer with marker shapes and labels); a colour appears outside `css/tokens.css` or in the JavaScript; a shadow,
+gradient, blur, stray radius or card-like class appears; an icon-only button has no accessible name; motion is long or ignores the reduced-motion setting.
 
-Other properties: light and dark follow the system setting; keyboard focus is always visible; a skip link; labelled fields;
-`aria-live` for streamed replies and errors; reduced-motion respected; usable at phone width. The page loads nothing from any
-other host (strict CSP: `default-src 'none'`, scripts and styles from the same origin only), and no server or model text is
-ever inserted as HTML (there is no `innerHTML` anywhere; a test enforces it).
+Other properties: keyboard focus is always visible; a skip link; focus moves to the page after navigation and the change is announced; arrow keys, Home and End in
+tab strips; a menu with Escape and arrow keys; native dialogs (focus trapped, Escape closes and returns focus); labelled fields; `aria-live` for streamed replies and errors. The page
+loads nothing from any other host (strict CSP: `default-src 'none'`, scripts and styles from the same origin only), and no server or model text is ever
+inserted as HTML (there is no `innerHTML` anywhere; a test enforces it).
 
-The whole flow was driven in a real browser (sign-up, streaming chat, key creation, usage chart hover and table, docs, dark
-mode, a phone-width viewport) with no console errors or CSP violations. That run found three bugs that no unit test would have:
-a chart bar that swallowed its own hover, a focus ring drawn around the entire page, and nested elements rendered as
-`[object HTMLDivElement]`.
+## How it was tested
+
+Unit and route tests (`tests/test_web_routes.py`, `test_web_design.py`, `test_site.py`, `test_demo.py`) cover the page list, the asset map, status truth,
+compression, the demo's limits, design rules, and that the client router and the server list are the same list. A real Chrome then drove every route at 390, 768 and
+1280 pixels in both themes (no console errors, no horizontal overflow, no broken internal links), and the flows: sign-up, streamed chat, regenerate, clear,
+key create/rotate/revoke, the demo and its rate limit, the degraded/outage/unreachable status states, a 503, a 429, a network failure and a raw-traceback 500 (never
+shown), loading skeletons, error states, and keyboard-only use of the menu, tabs, accordion and dialog. Every documented API example was run against a live
+server (cURL, the Python SDK and Node, plain and streamed). That run found bugs no unit test would have: a chat error banner that was erased the instant it
+appeared, table cells printing `[object HTMLSpanElement]`, arrays stringified by `replaceChildren`, and a toast covering the Send button.
 
 ## Account security
 

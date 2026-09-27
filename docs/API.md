@@ -81,7 +81,7 @@ curl -s http://127.0.0.1:8000/chat \
 
 `finish_reason` is `stop` (the model ended, or a stop sequence matched), `length` (hit `max_tokens`) or `timeout` (the
 request used up its wall-clock budget, `--request-timeout`, default 60 s; the partial text is returned and the model slot is
-freed). On the OpenAI-compatible routes a timeout is reported as `length`, the closest valid value.
+freed). On the OpenAI-compatible routes the values are only `stop` (which also covers the model's own end-of-text) and `length` (a timeout is reported as `length`, the closest valid value).
 
 ### Streaming
 
@@ -166,7 +166,7 @@ curl -s http://127.0.0.1:8000/v1/chat/completions \
 
 Responses follow OpenAI's objects (`chat.completion`, `chat.completion.chunk`, `text_completion`, `list`/`model`)
 with `usage.prompt_tokens / completion_tokens / total_tokens`. A stream is `data: {chunk}` frames, a final chunk
-carrying `finish_reason`, then `data: [DONE]`. The streamed text reassembles to exactly the non-streamed answer
+carrying `finish_reason` and the token counts (`usage`, an extension), then `data: [DONE]`. The streamed text reassembles to exactly the non-streamed answer
 (tested).
 
 | Request field | Behaviour |
@@ -206,7 +206,8 @@ With `--db` the server uses the account database instead of the JSON key file (`
   (`busy`), 500 (`generation_failed`), or 499 (`client_disconnected`, a stream the client abandoned). A failing database
   never fails a request; it is counted in `GET /stats` as `usage_write_failures`.
 * `GET /v1/usage?days=7` returns the caller's own totals: `{"object": "usage", "key_id", "requests", "prompt_tokens",
-  "completion_tokens", "total_tokens", "errors", "mean_duration_ms"}`. With the JSON key file it is a 404.
+  "completion_tokens", "total_tokens", "errors", "mean_duration_ms", "latency_p50_ms", "latency_p95_ms"}` (the percentiles cover successful
+  requests only and are `null` when there are none). With the JSON key file it is a 404.
 
 ## Account endpoints (the web app's)
 
@@ -214,6 +215,17 @@ Used by the browser app; documented in [PLATFORM.md](PLATFORM.md): `GET /app/con
 /account/signup|login|logout|password`, `GET|POST /account/keys`, `POST /account/keys/{id}/revoke|rotate`, `GET
 /account/usage`. They authenticate with a session cookie and require an `X-CSRF-Token` header on every POST; the API routes
 above authenticate with `Authorization: Bearer`, or with the same session cookie from a signed-in browser.
+
+## Public endpoints for the web app
+
+* `GET /status.json` (no key): `{"overall", "services": {"api", "inference", "authentication", "playground"}: {"state", "detail"}, "model",
+  "uptime_seconds", "queue": {"waiting", "limit", "in_flight"}, "checked_at"}`; states are `operational`, `degraded`, `outage`. Built from the server's
+  own checks (queue against its limit, scheduler thread, database round trip, web files); counts and states only, never user data.
+* `GET /app/config` (no key): the sign-in mode, limits, and the loaded model's real `architecture` (layers, width, heads, key/value heads, feed-forward size,
+  vocabulary, context, norm, activation, positions, tied embeddings, parameter counts) and whether the demo is on.
+* `POST /demo/chat` (only with `--public-demo`; no key): `{"prompt": "..."}` up to 300 characters, streamed in the chat-completion chunk format.
+  Rate limited per client address (burst 3, then `--demo-per-minute`, default 6; `429` with `Retry-After`), output capped at 120 tokens, sampling fixed,
+  never recorded per user. A busy model answers `503`.
 
 ## Not built yet
 

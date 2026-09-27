@@ -15,6 +15,12 @@ export function el(tag, props, ...kids) {
   return n;
 }
 
+/* Replace a node's children with any mix of nodes, strings and (nested) arrays; null and false are skipped. */
+export function fill(host, ...kids) {
+  host.replaceChildren();
+  return append(host, kids);
+}
+
 export function append(parent, kids) {
   for (const kid of [kids].flat(Infinity)) {
     if (kid === null || kid === undefined || kid === false) continue;
