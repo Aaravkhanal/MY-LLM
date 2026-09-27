@@ -87,9 +87,11 @@ data changes that make a story dwell on what was asked for raised topic requests
 experiments landed inside the evaluation's noise. I then tested the obvious next lever, a better base model: 147M more tokens of
 pretraining cut full-split validation loss from 1.404 to 1.288 (22 standard errors), yet the same fine-tuning recipe on it followed
 unseen wording no better (44.4% vs 46.5%, paired +2.1 [-6.8, +10.9]) and lost length control entirely, which I first read as "the base is not the
-lever". Then a second fine-tuning epoch on that base (exp_012) brought `long` requests back (21% to 79%) and gave the first sampled-decoding
-gain over the untuned model on unseen wording (+9.4 points, interval [+0.3, +18.0] on the final set; +14.2 [+6.2, +22.2] on the dev set), while
-still leaving the fine-tuned models statistically tied with each other. The earlier reading was too strong, and RESULTS.md says so. The details, including the negative results and the numbers that don't flatter the model, are in
+lever". A second fine-tuning epoch (exp_012) seemed to bring `long` requests back; then I retrained that exact recipe with two more random seeds, and the
+score on unseen wording moved by 7.6 points (45.1, 52.1, 52.8% greedy) and the length skills came and went with the seed (`long` 79, 17, 21%; `short` 25, 88, 0%).
+So the length result was luck, and the prompt-level confidence intervals I had been using measure prompt noise, not retraining noise. What holds up: every
+fine-tuned run beats the untuned base (mean 50.0% vs 39.9% greedy, 46.2% vs 34.7% sampled), while differences of a few points between recipes are unresolved.
+The earlier readings were too strong, and RESULTS.md and CORRECTNESS.md (entry 10) say so. The details, including the negative results and the numbers that don't flatter the model, are in
 [docs/RESULTS.md](docs/RESULTS.md); how the evaluation itself was made trustworthy is in [docs/CORRECTNESS.md](docs/CORRECTNESS.md);
 the full audit and plan are in [docs/AUDIT.md](docs/AUDIT.md).
 
@@ -249,9 +251,9 @@ throttles, so measurements vary ±30% and checkpointing often is the right defau
 ## Scaling path and what is not built
 
 The `small` preset is trained (above), and its pretraining has been extended once: 237M tokens in all (exp_010), about 0.9 GB of text and
-roughly 40% of the 2.2 GB TinyStories file (at 3.96 bytes per token, from the measured bits per byte). That was the "cheapest next gain" for language modelling (validation loss 1.404 to 1.288), and it helps request following only once fine-tuning
-runs about two epochs (exp_011 vs exp_012). What is untested: instruction data
-that teaches length explicitly and stays varied, and a larger model. On 8 GB, roughly
+roughly 40% of the 2.2 GB TinyStories file (at 3.96 bytes per token, from the measured bits per byte). That was the "cheapest next gain" for language modelling (validation loss 1.404 to 1.288);
+its effect on request following is not separable from training-seed noise with the runs so far. What is untested: several seeds of each recipe (the comparison a recipe choice needs),
+instruction data that teaches length explicitly and stays varied, and a larger model. On 8 GB, roughly
 30-50M parameters is the practical ceiling for pretraining; anything larger needs rented GPU time.
 
 Serving many users at once: `--batch-size N` decodes concurrent requests together (exact; tested against solo generation). Not built: email verification and password reset, preference tuning (DPO), continuous

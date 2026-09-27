@@ -8,7 +8,8 @@ It is a research and portfolio artefact, **not a general assistant**.
 
 | | What | Where it comes from |
 |---|---|---|
-| **exp_012** (default in the demo site) | the longer-pretrained base (exp_010) + about two epochs of supervised fine-tuning on rule-checkable story requests | `experiments/exp_012_sft_small_instruct_v6_long_2ep/` |
+| **exp_013** (default in the demo site) | the longer-pretrained base (exp_010) + about two epochs of supervised fine-tuning on rule-checkable story requests, training seed 1338 | `experiments/exp_013_sft_small_instruct_v6_long_2ep_seed1338/` |
+| exp_012, exp_014 | the same recipe with seeds 1337 and 1339; scores differ from exp_013 by up to 7.6 points on unseen wording | `experiments/exp_012_*`, `exp_014_*` |
 | exp_009 | the original `small` base (exp_004) + one epoch of the same fine-tuning; better on `short` requests in the training wording | `experiments/exp_009_sft_small_instruct_v6/` |
 | exp_011 | the exp_012 recipe with one epoch (loses length control) | `experiments/exp_011_sft_small_instruct_v6_long/` |
 | exp_004 / exp_010 | the pretrained bases (no fine-tuning) | `experiments/exp_004_*`, `exp_010_*` |
@@ -64,21 +65,19 @@ Language modelling, scored on **every** window of the held-out splits, with a bo
 Following requests, scored by rules on held-out stories, with chance level (a story that ignores the request passes 10.5% of the
 time), intervals over distinct prompts, and a **final evaluation set written and committed before any model was scored**:
 
-| pass rate | untuned base | exp_009 | exp_011 | **exp_012** |
-|---|---|---|---|---|
-| never-seen wording (final set), greedy | 39.9% | 46.5% | 44.4% | **45.1%** |
-| never-seen wording, sampled | 34.7% | 41.7% | 41.7% | **44.1%** |
-| training-style wording, greedy | 41.7% | 64.2% | 55.9% | **61.1%** |
-| training-style wording, sampled | 45.1% | 56.9% | 53.5% | **62.8%** |
+| pass rate (greedy) | untuned base | exp_009 | exp_011 | exp_012 (seed 1337) | **exp_013 (seed 1338)** | exp_014 (seed 1339) |
+|---|---|---|---|---|---|---|
+| never-seen wording (final set) | 39.9% | 46.5% | 44.4% | 45.1% | **52.1%** | 52.8% |
+| training-style wording | 41.7% | 64.2% | 55.9% | 61.1% | **74.3%** | 65.3% |
+| development set | 40.6% | 50.3% | 44.1% | 49.0% | **57.3%** | 55.2% |
 
-The fine-tuned models are **statistically tied with each other** on never-seen wording (differences of 1 to 3 points against an
-evaluation noise of about ±10). Against the untuned base, exp_012 shows a gain under sampled decoding, which is how the chat samples: +9.4
-points [+0.3, +18.0] on the final set (borderline) and +14.2 [+6.2, +22.2] on the development set; under greedy decoding the gain over the
-untuned base is not established (+5.2 [−8.0, +18.6]). On training-style wording the gain is large (paired +15 points for the first recipe,
-[RESULTS.md](RESULTS.md)). By kind, requests for a topic, an emotion or a named character are followed reasonably (topic 79 to 88%);
-`long` requests work for exp_012 (79% greedy in-template, 21% for exp_009) but **`short` requests and requests for two topics do not**
-(short 25% in-template for exp_012 vs 75% for exp_009; two topics 21 to 58%). The final set has scored several candidates, so choosing exp_012
-was a judgement made after seeing it.
+Sampled decoding (how the chat samples), never-seen wording: untuned 34.7%; exp_009 41.7%; exp_011 41.7%; the three seeds 44.1%, **50.3%**, 44.1%.
+
+**How much to trust these numbers.** The last three columns are one recipe trained three times, nothing changed but the random seed: the score on unseen wording varies by
+7.6 points (standard deviation 4.2), and which length skill appears varies too (`long` 79 / 17 / 21%, `short` 25 / 88 / 0%). Every other version was trained once, so differences of a few points between
+versions cannot be told apart from luck; the confidence intervals in the evaluation dashboard cover the prompts asked, not this retraining spread. What holds in every run: the fine-tuned models beat the untuned base
+(three-seed mean 50.0% vs 39.9% greedy, 46.2% vs 34.7% sampled). exp_013 was chosen for the demo site by the mean of the development and trained-wording sets, before looking further; its best-of-three score on the final
+set is partly luck and will regress toward the mean. Topic, emotion and named-character requests are followed reasonably in every run (topic 88 to 92%); **length requests and requests for two topics are unreliable**.
 
 ## Intended use
 
@@ -106,4 +105,4 @@ been chosen and should be decided before they are distributed.
 ## Reproducing
 
 `configs/small_tinystories.yaml` (exp_004), `configs/small_long_tinystories.yaml` (exp_010), `configs/sft_small_instruct_v6.yaml` (exp_009),
-`configs/sft_small_instruct_v6_long.yaml` (exp_011), `configs/sft_small_instruct_v6_long_2ep.yaml` (exp_012); commands in the README and [EVALUATION.md](EVALUATION.md).
+`configs/sft_small_instruct_v6_long.yaml` (exp_011), `configs/sft_small_instruct_v6_long_2ep.yaml` (exp_012; `_seed1338` and `_seed1339` for the other seeds); commands in the README and [EVALUATION.md](EVALUATION.md).

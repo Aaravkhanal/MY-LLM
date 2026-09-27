@@ -302,7 +302,7 @@ What it leaves open was tested next (exp_012, below): a second fine-tuning epoch
 stays varied, a larger model, a different task mix. The final set has now been used to score three candidates after the pre-registered
 ones (exp_011, exp_012, and the recorded exp_009 recipe); it is reported, not tuned on. Nothing was changed after seeing the exp_011 numbers.
 
-### exp_012: a second epoch on the better base recovers "long", not "short"
+### exp_012: a second epoch on the better base (first run; see the seed section below, which withdraws part of this reading)
 
 exp_011 saw the fine-tuning data for 0.96 of an epoch. **exp_012** (`configs/sft_small_instruct_v6_long_2ep.yaml`) is exactly exp_011 with
 3,600 steps (about 1.9 epochs); data, seed, learning rate and warm-up are unchanged, the cosine schedule simply stretches over twice
@@ -328,16 +328,43 @@ the steps. Its fine-tuning validation loss is 1.2388 (exp_011: 1.2284), so the s
 * Content requests: named character plus a feeling on the final set, greedy, 29% (exp_009) to 58% (p = 0.008), though sampled it is 46% to 42%
   (not different). In-template sampled, exp_012 vs exp_011: +9.4 points [+2.7, +15.7] (p = 0.006).
 
-**Conclusion.** Training longer on the better base repaired the length skill that one epoch missed, so exp_011's failure was under-training
-on a skill that is harder to learn, not a defect of the base model; my earlier "the base model is not the lever" was too strong, and the corrected
-statement is "a better base is not enough by itself, but it does help once fine-tuning runs long enough". exp_012 has the best sampled pass rate on
-all three sets, a sampled gain over the untuned model that is borderline on the final set and clear on the dev set, the better language model
-(validation loss 1.288) and working `long` requests. Choosing it as the default is a judgement made with the final set already seen; the gaps
-between fine-tuned models remain inside the noise.
+**Conclusion as first written (single run, seed 1337) and its correction.** I read this run as "training longer repaired the length skill that one epoch missed".
+The two extra seeds below show that reading was wrong: the same recipe trained again learns `long` in one run and `short` in another, so the length
+skill that appeared here was luck of the seed, not an effect of the second epoch. What survives is smaller: the fine-tuned models are ahead of the untuned base in every run, and the
+differences between fine-tuning recipes are within the seed-to-seed spread.
 
-**Which model is served.** exp_012 is now the default for the demo site (best sampled aggregate on every set; better base; `long` works), with
-exp_009 kept for `short` requests in the training wording. All are listed in the site's results explorer. Records: `experiments/exp_010_*/`,
-`experiments/exp_011_*/`, `experiments/exp_012_*/` (configs, metrics, logs and evaluation JSON, not checkpoints).
+### Seed variance: the same recipe, three seeds (exp_012, exp_013, exp_014)
+
+Everything above compared models that were each trained **once**. To measure how much a rerun differs, the exp_012 recipe was trained twice more with different
+training seeds (1338, 1339); data, split, learning rate and steps are identical (`configs/sft_small_instruct_v6_long_2ep_seed*.yaml`). Nothing about the runs differs except
+the order of the training batches. Fine-tuning validation loss is the same to three decimals (1.2388, 1.2382, 1.2383), so the loss cannot tell them apart.
+
+| pass rate (%) | seed 1337 | seed 1338 | seed 1339 | mean | std. dev. | range |
+|---|---|---|---|---|---|---|
+| new wording, greedy | 45.1 | 52.1 | 52.8 | 50.0 | 4.2 | 7.6 |
+| new wording, sampled | 44.1 | 50.3 | 44.1 | 46.2 | 3.6 | 6.2 |
+| trained wording, greedy | 61.1 | 74.3 | 65.3 | 66.9 | 6.7 | 13.2 |
+| trained wording, sampled | 62.8 | 59.7 | 59.7 | 60.8 | 1.8 | 3.1 |
+| development, greedy | 49.0 | 57.3 | 55.2 | 53.8 | 4.3 | 8.3 |
+| development, sampled | 49.3 | 49.3 | 51.7 | 50.1 | 1.4 | 2.4 |
+
+**Length skills flip with the seed** (trained wording, greedy): `long` 79 / 17 / 21%, `short` 25 / 88 / 0%, `short_topic` 42 / 54 / 50%. One run learns to write long stories, another short ones, another
+neither. Content requests are stable across seeds (`topic` 92 / 88 / 92%, `name_emotion` 75 / 79 / 83%).
+
+**What this changes.**
+
+* **The evidence for "better than the untuned base" holds and is stronger:** all three seeds beat the untuned base on new wording (greedy 45.1, 52.1, 52.8 against 39.9; sampled 44.1, 50.3, 44.1 against 34.7).
+  The three-seed mean is 50.0 greedy and 46.2 sampled, about 10 and 11.5 points above the base.
+* **Differences of a few points between recipes cannot be resolved with one run each.** The seed alone moves the score by 4 points (one standard deviation) and up to 8 (range) on new wording, so the earlier comparisons among
+  exp_006 to exp_012 were comparing single draws from wide distributions. The paired test over prompts does not see this: it asks how much the outcome would change if different prompts were asked, not if the model were retrained.
+  It calls two seeds of the *same* recipe different (exp_012 vs exp_013, sampled, new wording: −6.2 [−11.9, −0.7], p = 0.035) and, by the same logic, its "established" differences between recipes (for example exp_009 over exp_007,
+  exp_007 over exp_006) were less solid than stated. The direction of the large effects (memorising wording vs varied wording; content requests learned after the data fix; better than untuned) is not in doubt; the small ones are.
+* **Whether the exp_012 recipe beats exp_009's cannot be said.** exp_009 was trained once (46.5 greedy, 41.7 sampled on new wording), inside the three-seed range of 44 to 53. It would take several seeds of exp_009 to compare recipes.
+
+**Which model is served.** Choosing among identically-trained seeds by their scores is choosing the luckiest draw, so the rule was fixed before looking further: serve the seed with the best mean over the
+development and trained-wording sets (four numbers: dev greedy and sampled, trained-wording greedy and sampled), and treat the final set as an independent check. Means: seed 1337 55.6, **seed 1338 (exp_013) 60.2**, seed 1339 58.0.
+exp_013 is now served. Its new-wording result (52.1 greedy, 50.3 sampled) is the best of the three, so the check agrees, but it is a single draw and will regress toward the mean on new data. Its length profile
+(`short` 88%, `long` 17%) is as accidental as the others.
 
 Reproduce: `python scripts/make_eval_controls.py --eval evals/instruct_v3.jsonl --stories <TinyStories file>`,
 then `python scripts/eval_instruct.py --checkpoint <run>/checkpoints/best.pt --instruct evals/instruct_v3.jsonl

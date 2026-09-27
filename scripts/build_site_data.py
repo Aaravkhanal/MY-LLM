@@ -22,9 +22,12 @@ MODELS = [
     ("exp008", "Fine-tuned, exp_008", "exp_008_sft_small_instruct_v5"),
     ("exp009", "Fine-tuned, exp_009", "exp_009_sft_small_instruct_v6"),
     ("exp011", "Fine-tuned, exp_011 (longer-pretrained base)", "exp_011_sft_small_instruct_v6_long"),
-    ("exp012", "Fine-tuned, exp_012 (longer base, 2 epochs)", "exp_012_sft_small_instruct_v6_long_2ep"),
+    ("exp012", "Fine-tuned, exp_012 recipe, seed 1337 (longer base, 2 epochs)", "exp_012_sft_small_instruct_v6_long_2ep"),
+    ("exp013", "Fine-tuned, exp_012 recipe, seed 1338", "exp_013_sft_small_instruct_v6_long_2ep_seed1338"),
+    ("exp014", "Fine-tuned, exp_012 recipe, seed 1339", "exp_014_sft_small_instruct_v6_long_2ep_seed1339"),
 ]
-DEFAULT_MODEL = "exp012"                                            # the one the demo site serves
+DEFAULT_MODEL = "exp013"          # served by the demo site: chosen by the mean of the development and trained-wording sets (not the final set), see RESULTS.md
+SEED_MODELS = ["exp012", "exp013", "exp014"]                        # the same recipe trained with three seeds
 ROLES = {                                                           # one plain sentence each: what the version is (no measurements)
     "base": "The pretrained base with no fine-tuning: continues text, does not follow requests on purpose.",
     "exp006": "First real recipe (v3 data). Learned request wording it had seen; lost on new wording.",
@@ -32,7 +35,9 @@ ROLES = {                                                           # one plain 
     "exp008": "exp_007 with length requests sampled three times as often. Did not help.",
     "exp009": "Adds prominence rules for two-topic requests (v6 data). Best on the training wording for short requests.",
     "exp011": "exp_009's recipe on a base pretrained 147M tokens longer, one epoch.",
-    "exp012": "exp_011 for about two epochs. The default model of the demo site.",
+    "exp012": "exp_011 for about two epochs, training seed 1337.",
+    "exp013": "The exp_012 recipe with training seed 1338 (nothing else changed). The default model of the demo site.",
+    "exp014": "The exp_012 recipe with training seed 1339 (nothing else changed).",
 }
 SETS = [
     ("final", "Wording it has never seen (final set, written before any model was scored)", "instruct_v4_final"),
@@ -76,8 +81,26 @@ def training() -> dict:
         full[exp] = {sp: {k: f[sp][k] for k in ("loss", "stderr", "perplexity", "top1", "bits_per_byte", "windows")} for sp in ("val", "test")}
     return {"stages": [stage("exp_004_small_tinystories", "pretrain"), stage("exp_010_small_long_tinystories", "pretrain, continued from exp_004"),
                        stage("exp_009_sft_small_instruct_v6", "fine-tune"), stage("exp_011_sft_small_instruct_v6_long", "fine-tune"),
-                       stage("exp_012_sft_small_instruct_v6_long_2ep", "fine-tune")],
+                       stage("exp_012_sft_small_instruct_v6_long_2ep", "fine-tune"),
+                       stage("exp_013_sft_small_instruct_v6_long_2ep_seed1338", "fine-tune (seed 1338)"),
+                       stage("exp_014_sft_small_instruct_v6_long_2ep_seed1339", "fine-tune (seed 1339)")],
             "full_split_loss": full}
+
+
+def seed_spread(sets_raw: dict) -> dict:
+    """Mean, standard deviation and range of the pass rate over the training seeds of one recipe, per set and decoding, and the per-kind rates
+    (which show that the length skills come and go with the seed)."""
+    import statistics as st
+    out = {"models": SEED_MODELS, "sets": {}, "kinds": {}}
+    for sid, raw in sets_raw.items():
+        out["sets"][sid] = {}
+        for mode in ("greedy", "sampled"):
+            v = [100 * raw[m]["instruction"][mode]["pass_rate"]["rate"] for m in SEED_MODELS]
+            out["sets"][sid][mode] = {"values": [round(x, 1) for x in v], "mean": round(st.mean(v), 1), "sd": round(st.stdev(v), 1), "range": round(max(v) - min(v), 1)}
+    tmpl = sets_raw["template"]
+    for k in KIND_LABELS:
+        out["kinds"][k] = {mode: [round(100 * tmpl[m]["instruction"][mode]["by_task"][k]["rate"], 1) for m in SEED_MODELS] for mode in ("greedy", "sampled")}
+    return out
 
 
 def build() -> dict:
@@ -87,6 +110,7 @@ def build() -> dict:
            "decoding": {m: {k: v for k, v in kw.items() if v is not None} for m, kw in MODES.items()}, "max_new_tokens": 400,
            "training": training()}
     exps = {mid: exp for mid, _, exp in MODELS}
+    sets_raw = {}
     for sid, slabel, fname in SETS:
         raw = {mid: _read(exp, f"eval/best__{fname}.json") for mid, exp in exps.items()}
         first = raw["base"]
@@ -102,6 +126,8 @@ def build() -> dict:
                 if mid != DEFAULT_MODEL:
                     block["vs_default"][mid] = {mode: _paired(raw[mid], raw[DEFAULT_MODEL], mode)["ALL"] for mode in ("greedy", "sampled")}
         out["sets"].append(block)
+        sets_raw[sid] = raw
+    out["seeds"] = seed_spread(sets_raw)
     return out
 
 

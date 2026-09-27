@@ -27,7 +27,7 @@ def test_the_site_data_is_exactly_what_the_evaluation_files_say():
 
 def test_the_site_data_is_complete_and_sane():
     d = json.loads((WEB / "results.json").read_text())
-    assert [m["id"] for m in d["models"]][0] == "base" and len(d["models"]) == 7 and len(d["kinds"]) == 12
+    assert [m["id"] for m in d["models"]][0] == "base" and len(d["models"]) == 9 and len(d["kinds"]) == 12
     assert [s["id"] for s in d["sets"]] == ["final", "template", "dev"]
     for s in d["sets"]:
         for m in d["models"]:
@@ -70,7 +70,7 @@ def test_the_site_data_carries_paired_comparisons_that_match_what_the_results_do
     """The claims in docs/RESULTS.md about exp_012 are numbers in this file: if the evaluation or the document changes, one of them must too."""
     d = json.loads((WEB / "results.json").read_text())
     by = {s["id"]: s for s in d["sets"]}
-    assert d["default_model"] == "exp012" and {m["id"] for m in d["models"]} >= {"base", "exp009", "exp012"}
+    assert d["default_model"] == "exp013" and {m["id"] for m in d["models"]} >= {"base", "exp009", "exp012", "exp013", "exp014"}
     final = by["final"]["vs_base"]["exp012"]["sampled"]["ALL"]
     assert round(100 * final["diff"], 1) == 9.4 and round(100 * final["lo"], 1) == 0.3 and round(100 * final["hi"], 1) == 18.0
     dev = by["dev"]["vs_base"]["exp012"]["sampled"]["ALL"]
@@ -93,3 +93,17 @@ def test_the_site_data_carries_training_facts_read_from_the_run_folders():
     full = d["training"]["full_split_loss"]
     assert full["exp_010_small_long_tinystories"]["val"]["loss"] < full["exp_004_small_tinystories"]["val"]["loss"]
     assert full["exp_004_small_tinystories"]["val"]["windows"] == full["exp_010_small_long_tinystories"]["val"]["windows"] == 2927
+
+
+def test_the_seed_spread_is_computed_from_the_three_runs_and_matches_the_write_up():
+    d = json.loads((WEB / "results.json").read_text())
+    sd = d["seeds"]
+    assert sd["models"] == ["exp012", "exp013", "exp014"]
+    fin = sd["sets"]["final"]["greedy"]
+    assert fin["values"] == [45.1, 52.1, 52.8] and fin["mean"] == 50.0 and fin["sd"] == 4.2 and fin["range"] == 7.6      # docs/RESULTS.md quotes these
+    assert sd["sets"]["final"]["sampled"]["values"] == [44.1, 50.3, 44.1]
+    assert sd["kinds"]["long"]["greedy"] == [79.2, 16.7, 20.8] and sd["kinds"]["short"]["greedy"] == [25.0, 87.5, 0.0]    # the length skills flip with the seed
+    for sid in ("final", "template", "dev"):
+        for mode in ("greedy", "sampled"):
+            x = sd["sets"][sid][mode]
+            assert len(x["values"]) == 3 and min(x["values"]) <= x["mean"] <= max(x["values"]) and x["sd"] >= 0 and abs(x["range"] - (max(x["values"]) - min(x["values"]))) < 0.11

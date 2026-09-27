@@ -15,7 +15,9 @@ MODELS = [("untuned 14M base", "exp_004_small_tinystories"), ("fine-tuned, exp_0
           ("fine-tuned, exp_007", "exp_007_sft_small_instruct_v4"), ("fine-tuned, exp_008", "exp_008_sft_small_instruct_v5"),
           ("fine-tuned, exp_009", "exp_009_sft_small_instruct_v6"),
           ("fine-tuned, exp_011", "exp_011_sft_small_instruct_v6_long"),
-          ("fine-tuned, exp_012", "exp_012_sft_small_instruct_v6_long_2ep")]
+          ("exp_012, seed 1337", "exp_012_sft_small_instruct_v6_long_2ep"),
+          ("exp_012, seed 1338", "exp_013_sft_small_instruct_v6_long_2ep_seed1338"),
+          ("exp_012, seed 1339", "exp_014_sft_small_instruct_v6_long_2ep_seed1339")]
 BG, INK, MUTED, RULE = "#fcfcfb", "#1b1b19", "#66645c", "#e6e4dd"
 GREEN, OCHRE = "#2f8558", "#a8611f"
 

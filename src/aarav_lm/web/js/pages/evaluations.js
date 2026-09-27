@@ -82,7 +82,7 @@ function dashboard(r, query) {
     el("section", { class: "eval-intro" }, el("h2", { text: "Evaluations" }),
       el("p", { class: "lede", text: "How well each version follows story requests, scored by rule on held-out prompts and always shown next to chance." })),
     el("div", { class: "eval-controls" }, el("div", null, el("span", { class: "label-s", text: "Wording" }), setBar), el("div", null, el("span", { class: "label-s", text: "Decoding" }), modeBar), kindSel),
-    surface, howToRead(), versions(r),
+    surface, seedSection(r), howToRead(), versions(r),
   ];
 }
 
@@ -118,4 +118,26 @@ function howToRead() {
 function versions(r) {
   return el("section", { class: "prose" }, el("h2", { class: "sub-h", text: "Versions" }),
     DataTable({ caption: "The versions compared above", columns: [{ key: "label", label: "Version", rowHeader: true, render: (m) => m.label + (m.id === r.default_model ? " \u00b7 default" : "") }, { key: "about", label: "What it is" }], rows: r.models }));
+}
+
+
+/* The same recipe trained with three seeds: the spread that a single row's interval does not include. */
+function seedSection(r) {
+  const sd = r.seeds, names = r.models.filter((m) => sd.models.includes(m.id));
+  const setName = { final: "New wording", template: "Trained wording", dev: "Development" };
+  const rows = [];
+  for (const sid of ["final", "template", "dev"]) for (const mode of ["greedy", "sampled"]) {
+    const x = sd.sets[sid][mode];
+    rows.push({ set: `${setName[sid]}, ${mode}`, a: x.values[0].toFixed(1) + "%", b: x.values[1].toFixed(1) + "%", c: x.values[2].toFixed(1) + "%", mean: x.mean.toFixed(1) + "%", sd: x.sd.toFixed(1), range: x.range.toFixed(1) });
+  }
+  const fin = sd.sets.final.greedy;
+  const kinds = ["long", "short", "long_topic", "short_topic"].map((k) => ({ k: r.kinds.find((x) => x.id === k).label, a: sd.kinds[k].greedy[0].toFixed(1) + "%", b: sd.kinds[k].greedy[1].toFixed(1) + "%", c: sd.kinds[k].greedy[2].toFixed(1) + "%" }));
+  const seedCols = names.map((m, i) => ({ key: "abc"[i], label: `Seed ${m.id === "exp012" ? 1337 : m.id === "exp013" ? 1338 : 1339}`, num: true }));
+  return el("section", { class: "prose" }, el("h2", { class: "sub-h", text: "The same recipe, three training seeds" }),
+    el("p", { text: `The last three versions are one recipe, trained three times with different random seeds and nothing else changed. On new wording, greedy, they pass ${fin.values.map((v) => v.toFixed(1) + "%").join(", ")}: a spread of ${fin.range} points (standard deviation ${fin.sd}). Their fine-tuning validation loss is the same to three decimals, so the loss cannot tell them apart.` }),
+    DataTable({ caption: "Pass rate by training seed, with mean and standard deviation across seeds", columns: [{ key: "set", label: "Set and decoding", rowHeader: true }, ...seedCols,
+      { key: "mean", label: "Mean", num: true }, { key: "sd", label: "Std. dev.", num: true }, { key: "range", label: "Range", num: true }], rows }),
+    el("p", { text: "Length requests come and go with the seed. On trained wording, greedy, the same recipe learned one length skill or the other, or neither:" }),
+    DataTable({ caption: "Length-related kinds by training seed (trained wording, greedy)", columns: [{ key: "k", label: "Kind", rowHeader: true }, ...seedCols], rows: kinds }),
+    el("p", { class: "muted small", text: "What this means: the 95% interval on a single row measures only how many prompts were asked, not how much a retrained model would differ. A gap between two versions smaller than this seed-to-seed spread, or a skill that appears in one training run, cannot be told apart from luck. Every version here except these three was trained once." }));
 }

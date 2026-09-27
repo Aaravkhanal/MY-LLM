@@ -6,6 +6,7 @@ only if a test proves it, and says **measured** only if the number came from a r
 
 | # | Problem | Status |
 |---|---|---|
+| 10 | Every comparison between fine-tuning recipes came from one training run; the prompt-level test cannot see retraining variance | **measured** (3 seeds); earlier small differences downgraded |
 | 9 | The OpenAI routes returned `finish_reason: "eot"`, which no OpenAI client knows | **fixed** (test) |
 | 8 | Under load an unbatched stream got HTTP 200 and then an error event, instead of a clean 503 | **fixed** (test failed 5/5 before, passes after), found by a load test |
 | 7 | The new training diagnostics crashed a run (exp_007, step ~625) | **fixed** (tests), found by a real run |
