@@ -41,6 +41,11 @@ def main() -> None:
     ap.add_argument("--db", help="account database (scripts/manage_keys.py): per-key limits, usage records, revocation. "
                                  "Overrides --keys-file.")
     ap.add_argument("--max-tokens-cap", type=int, default=512)
+    ap.add_argument("--public-demo", action="store_true",
+                    help="let visitors without an account try the model on the home page: one short prompt at a time, rate limited per address, "
+                         "never recorded per user (off by default)")
+    ap.add_argument("--demo-per-minute", type=float, default=6.0, help="public demo: requests per minute per client address (burst 3)")
+    ap.add_argument("--web-dir", help="serve the web app from this directory instead of the packaged one (development)")
     ap.add_argument("--batch-size", type=int, default=1,
                     help="serve up to N requests per decode step (batched, exact for RoPE models); 1 = one at a time")
     ap.add_argument("--batch-wait-ms", type=float, default=15.0,
@@ -75,7 +80,8 @@ def main() -> None:
         default_key_rpm=args.key_rpm, default_key_tpm=args.key_tpm, max_keys_per_user=args.max_keys,
         cookie_secure=args.cookie_secure, trust_proxy=args.trust_proxy,
         rate_limit_per_min=args.rate_limit_per_min, cors_origins=tuple(args.cors_origin),
-        model_name=model_name_for(ck),
+        model_name=model_name_for(ck), web_dir=Path(args.web_dir).resolve() if args.web_dir else None,
+        public_demo=args.public_demo, demo_per_minute=args.demo_per_minute,
     )
     info = engine.info()
     print(f"serving {model_name_for(ck)}/{Path(ck).name}: {info['params']/1e6:.1f}M params, "

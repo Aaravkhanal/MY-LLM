@@ -1,0 +1,87 @@
+/* aarav-lm design tokens. Every colour, size and duration in the interface comes from here; nothing else in the stylesheets or the
+   scripts contains a colour. Dark is the default; the light theme is chosen with the toggle and remembered in the browser.
+   Rules the tests enforce (tests/test_web_design.py): no blue and no purple anywhere; neutrals are warm; text meets WCAG AA on the page
+   background; chart colours are the ones that passed the palette validator (dark: #4fa878 + #c4803f on #121211; light: #2f8558 + #a8611f
+   on #fcfcfb). Status is never colour alone: each state has its own shape and a word. */
+
+:root,
+:root[data-theme="dark"] {
+  --bg: #121211;
+  --bg-code: #181817;
+  --bg-hover: #1b1b19;
+  --ink: #ecebe5;
+  --muted: #a19f95;
+  --rule: #2c2b28;
+  --rule-strong: #45443f;
+  --accent: #7fc49b;
+  --accent-ink: #0f1a13;
+  --mark: #4fa878;
+  --mark-2: #c4803f;
+  --danger: #e58f80;
+  --warn: #dcae5c;
+  --tok-keyword: #7fc49b;
+  --tok-string: #d4b483;
+  --tok-number: #dc9a5a;
+  --tok-comment: #8d8b82;
+  --tok-function: #ecebe5;
+  --tok-punct: #a19f95;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #fcfcfb;
+  --bg-code: #f4f3ef;
+  --bg-hover: #f4f3ef;
+  --ink: #1b1b19;
+  --muted: #66645c;
+  --rule: #e6e4dd;
+  --rule-strong: #cfcdc4;
+  --accent: #256b46;
+  --accent-ink: #ffffff;
+  --mark: #2f8558;
+  --mark-2: #a8611f;
+  --danger: #a23b2c;
+  --warn: #8a5a12;
+  --tok-keyword: #256b46;
+  --tok-string: #8a5a12;
+  --tok-number: #94540f;
+  --tok-comment: #6b6960;
+  --tok-function: #1b1b19;
+  --tok-punct: #66645c;
+  color-scheme: light;
+}
+
+:root {
+  /* type */
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: 1.875rem;
+  --fs-display: clamp(2.25rem, 1.5rem + 3.2vw, 3.75rem);
+  --lh-tight: 1.15;
+  --lh-body: 1.65;
+  /* spacing scale (4px steps at the small end) */
+  --s1: 0.25rem;
+  --s2: 0.5rem;
+  --s3: 0.75rem;
+  --s4: 1rem;
+  --s5: 1.5rem;
+  --s6: 2rem;
+  --s7: 3rem;
+  --s8: 4.5rem;
+  --s9: 6rem;
+  /* shape and motion */
+  --radius: 6px;
+  --hairline: 1px;
+  --dur: 140ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  /* layout */
+  --page: 72rem;
+  --prose: 42rem;
+  --gutter: clamp(1rem, 4vw, 2rem);
+  --header-h: 3.5rem;
+}

@@ -38,6 +38,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from aarav_lm.api.auth import Caller
 from aarav_lm.inference.chat_format import ChatFormatError, Message
 from aarav_lm.inference.prompting import build_prompt
 
@@ -110,7 +111,7 @@ def _text_of(content: Union[str, List[dict]]) -> str:
 def _finish_reason(meta: dict) -> str:
     """OpenAI's finish_reason is "stop" or "length"; a request that ran out of wall-clock time returned a truncated
     completion, which is what "length" means to a client."""
-    return "length" if meta["finish_reason"] == "timeout" else meta["finish_reason"]
+    return {"length": "length", "timeout": "length"}.get(meta["finish_reason"], "stop")       # eot, stop sequence, cancelled: all "stop"
 
 
 def _usage(meta: dict) -> dict:
@@ -123,9 +124,11 @@ class ChatFormat:
     def __init__(self, model: str):
         self.model, self.id, self.created = model, "chatcmpl-" + secrets.token_hex(12), int(time.time())
 
-    def _frame(self, delta: dict, finish: Optional[str]) -> str:
+    def _frame(self, delta: dict, finish: Optional[str], usage: Optional[dict] = None) -> str:
         body = {"id": self.id, "object": "chat.completion.chunk", "created": self.created, "model": self.model,
                 "choices": [{"index": 0, "delta": delta, "finish_reason": finish}]}
+        if usage is not None:                                                    # on the closing frame only: real token counts for the client
+            body["usage"] = usage
         return f"data: {json.dumps(body)}\n\n"
 
     def final(self, text: str, meta: dict) -> dict:
@@ -141,7 +144,7 @@ class ChatFormat:
         return self._frame({"content": delta}, None)
 
     def done(self, meta: dict) -> str:
-        return self._frame({}, _finish_reason(meta)) + "data: [DONE]\n\n"
+        return self._frame({}, _finish_reason(meta), _usage(meta)) + "data: [DONE]\n\n"
 
     def error(self, detail: Any, status: int) -> str:
         return f"data: {json.dumps(_error_body(status, detail))}\n\ndata: [DONE]\n\n"
@@ -152,9 +155,11 @@ class CompletionFormat(ChatFormat):
         super().__init__(model)
         self.id = "cmpl-" + secrets.token_hex(12)
 
-    def _frame(self, delta: dict, finish: Optional[str]) -> str:              # streaming chunks of a text completion
+    def _frame(self, delta: dict, finish: Optional[str], usage: Optional[dict] = None) -> str:   # streaming chunks of a text completion
         body = {"id": self.id, "object": "text_completion", "created": self.created, "model": self.model,
                 "choices": [{"index": 0, "text": delta.get("content", ""), "finish_reason": finish}]}
+        if usage is not None:
+            body["usage"] = usage
         return f"data: {json.dumps(body)}\n\n"
 
     def final(self, text: str, meta: dict) -> dict:
@@ -165,11 +170,15 @@ class CompletionFormat(ChatFormat):
         return ""
 
 
+class DemoRequest(BaseModel):
+    prompt: str = Field(..., min_length=1, max_length=2000)         # the demo's own, lower limit is checked in the handler
+
+
 # ── wiring ───────────────────────────────────────────────────────────────────
 
 def add_openai_routes(
     app: FastAPI, *, identify: Callable, make_config: Callable, run: Callable, engine, chat_mode: str,
-    model_name: str, sampling_cls: type,
+    model_name: str, sampling_cls: type, demo: Optional[dict] = None,
 ) -> None:
     created = int(time.time())
     known = {model_name, MODEL_ALIAS}
@@ -255,3 +264,28 @@ def add_openai_routes(
             raise HTTPException(400, str(e)) from e
         cfg = replace(cfg, stop_ids=tuple({*cfg.stop_ids, *prompt.stop_ids}))
         return run(prompt.ids, cfg, body.stream, {}, ChatFormat(model_name), caller=caller, endpoint="/v1/chat/completions")
+
+    if demo is not None:
+        # The public demo: no account, no key. A visitor sends one short prompt and gets one short story back, streamed. It is
+        # rate limited per client address (`demo["limiter"]`), capped in length, and never written to the usage table (there is no
+        # user to attribute it to). It goes through the same queue and lock as every other request, so it cannot starve signed-in users
+        # beyond the queue limit; when the model is busy it answers 503 like everything else.
+        @app.post("/demo/chat")
+        def demo_chat(body: DemoRequest, request: Request):
+            ip = demo["client_ip"](request)
+            ok, retry = demo["limiter"].allow("demo:" + ip)
+            if not ok:
+                raise HTTPException(429, "The free demo allows a few tries a minute. Wait a little, or sign in for more.",
+                                    headers={"Retry-After": str(int(retry) + 1)})
+            text = body.prompt.strip()
+            if not text:
+                raise HTTPException(422, "prompt is empty")
+            if len(text) > demo["max_chars"]:
+                raise HTTPException(422, f"the demo takes prompts of up to {demo['max_chars']} characters")
+            cfg = make_config(sampling_cls(max_tokens=demo["max_tokens"], temperature=0.7, top_p=0.95, top_k=50, repetition_penalty=1.1, stream=True))
+            try:
+                prompt = build_prompt(engine, [Message("user", text)], cfg.max_new_tokens, chat_mode)
+            except ChatFormatError as e:
+                raise HTTPException(400, str(e)) from e
+            cfg = replace(cfg, stop_ids=tuple({*cfg.stop_ids, *prompt.stop_ids}))
+            return run(prompt.ids, cfg, True, {}, ChatFormat(model_name), caller=Caller("demo:" + ip), endpoint="/demo/chat")

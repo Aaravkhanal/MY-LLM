@@ -204,6 +204,10 @@ def create_app(
     model_name: str = "aarav-lm",
     mode: str = "auto",
     serve_web: bool = True,
+    web_dir: Optional[Path] = None,
+    public_demo: bool = False,
+    demo_per_minute: float = 6.0,
+    demo_max_tokens: int = 120,
     signup_code: Optional[str] = None,
     open_signup: bool = False,
     web_rpm: float = 20.0,
@@ -526,7 +530,7 @@ def create_app(
 
     web_assets: dict = {}
     if serve_web:
-        web_assets = add_web_routes(app, WEB_DIR)
+        web_assets = add_web_routes(app, web_dir or WEB_DIR)
 
     @app.get("/status.json")
     def status() -> Response:
@@ -620,7 +624,8 @@ def create_app(
         info = engine.info()
         return {"parameters": info["params"], "context_length": info["context_length"], "vocab_size": info["vocab_size"],
                 "instruction_tuned": chat_mode == "chat", "batching": batch_size if scheduler is not None else 1,
-                "architecture": architecture_info(engine)}
+                "architecture": architecture_info(engine),
+                "demo": {"enabled": public_demo, "max_tokens": min(demo_max_tokens, max_tokens_cap), "per_minute": demo_per_minute, "max_chars": 300}}
 
     auth_mode = "none" if not require_auth else ("account" if accounts is not None else "key")
     if accounts is not None:
@@ -632,6 +637,8 @@ def create_app(
         @app.get("/app/config")
         async def app_config():
             return {"auth": auth_mode, "signup": "closed", "model": model_name, "limits": {}, "model_info": public_model_info()}
+    demo = ({"limiter": RateLimiter(demo_per_minute, 3), "max_tokens": min(demo_max_tokens, max_tokens_cap), "max_chars": 300,
+             "client_ip": lambda r: client_ip(r, trust_proxy)} if public_demo else None)
     add_openai_routes(app, identify=identify, make_config=make_config, run=run, engine=engine, chat_mode=chat_mode,
-                      model_name=model_name, sampling_cls=Sampling)
+                      model_name=model_name, sampling_cls=Sampling, demo=demo)
     return app

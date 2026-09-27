@@ -538,6 +538,7 @@ function tabs(items, render, initial) {
 
 /* The results explorer: pick what to look at and see every model with its 95% interval and the chance level. */
 function explorer(data) {
+  data = { ...data, sets: data.sets.filter((s) => s.id === "final" || s.id === "template") };          // the development set is shown on the model pages only
   const st = { set: data.sets[0].id, kind: "all", mode: "greedy" };
   const chartHost = el("div", { class: "chart" });
   const reading = el("p", { class: "reading", "aria-live": "polite" });
