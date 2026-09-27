@@ -25,9 +25,12 @@ MODELS = [
     ("exp012", "Fine-tuned, exp_012 recipe, seed 1337 (longer base, 2 epochs)", "exp_012_sft_small_instruct_v6_long_2ep"),
     ("exp013", "Fine-tuned, exp_012 recipe, seed 1338", "exp_013_sft_small_instruct_v6_long_2ep_seed1338"),
     ("exp014", "Fine-tuned, exp_012 recipe, seed 1339", "exp_014_sft_small_instruct_v6_long_2ep_seed1339"),
+    ("exp015", "Fine-tuned, exp_009 recipe, seed 1338", "exp_015_sft_small_instruct_v6_seed1338"),
+    ("exp016", "Fine-tuned, exp_009 recipe, seed 1339", "exp_016_sft_small_instruct_v6_seed1339"),
 ]
 DEFAULT_MODEL = "exp013"          # served by the demo site: chosen by the mean of the development and trained-wording sets (not the final set), see RESULTS.md
-SEED_MODELS = ["exp012", "exp013", "exp014"]                        # the same recipe trained with three seeds
+SEED_MODELS = ["exp012", "exp013", "exp014"]                        # exp_012's recipe (2 epochs) with three seeds
+SEED_MODELS_9 = ["exp009", "exp015", "exp016"]                      # exp_009's recipe (1 epoch) with three seeds
 ROLES = {                                                           # one plain sentence each: what the version is (no measurements)
     "base": "The pretrained base with no fine-tuning: continues text, does not follow requests on purpose.",
     "exp006": "First real recipe (v3 data). Learned request wording it had seen; lost on new wording.",
@@ -38,6 +41,8 @@ ROLES = {                                                           # one plain 
     "exp012": "exp_011 for about two epochs, training seed 1337.",
     "exp013": "The exp_012 recipe with training seed 1338 (nothing else changed). The default model of the demo site.",
     "exp014": "The exp_012 recipe with training seed 1339 (nothing else changed).",
+    "exp015": "exp_009's recipe (one epoch) with training seed 1338 (nothing else changed).",
+    "exp016": "exp_009's recipe (one epoch) with training seed 1339 (nothing else changed).",
 }
 SETS = [
     ("final", "Wording it has never seen (final set, written before any model was scored)", "instruct_v4_final"),
@@ -83,24 +88,32 @@ def training() -> dict:
                        stage("exp_009_sft_small_instruct_v6", "fine-tune"), stage("exp_011_sft_small_instruct_v6_long", "fine-tune"),
                        stage("exp_012_sft_small_instruct_v6_long_2ep", "fine-tune"),
                        stage("exp_013_sft_small_instruct_v6_long_2ep_seed1338", "fine-tune (seed 1338)"),
-                       stage("exp_014_sft_small_instruct_v6_long_2ep_seed1339", "fine-tune (seed 1339)")],
+                       stage("exp_014_sft_small_instruct_v6_long_2ep_seed1339", "fine-tune (seed 1339)"),
+                       stage("exp_009_sft_small_instruct_v6", "fine-tune (seed 1337, 1 epoch)"),
+                       stage("exp_015_sft_small_instruct_v6_seed1338", "fine-tune (seed 1338, 1 epoch)"),
+                       stage("exp_016_sft_small_instruct_v6_seed1339", "fine-tune (seed 1339, 1 epoch)")],
             "full_split_loss": full}
 
 
-def seed_spread(sets_raw: dict) -> dict:
-    """Mean, standard deviation and range of the pass rate over the training seeds of one recipe, per set and decoding, and the per-kind rates
-    (which show that the length skills come and go with the seed)."""
+def _one_seed_spread(sets_raw: dict, models: list) -> dict:
     import statistics as st
-    out = {"models": SEED_MODELS, "sets": {}, "kinds": {}}
+    out = {"models": models, "sets": {}, "kinds": {}}
     for sid, raw in sets_raw.items():
         out["sets"][sid] = {}
         for mode in ("greedy", "sampled"):
-            v = [100 * raw[m]["instruction"][mode]["pass_rate"]["rate"] for m in SEED_MODELS]
+            v = [100 * raw[m]["instruction"][mode]["pass_rate"]["rate"] for m in models]
             out["sets"][sid][mode] = {"values": [round(x, 1) for x in v], "mean": round(st.mean(v), 1), "sd": round(st.stdev(v), 1), "range": round(max(v) - min(v), 1)}
     tmpl = sets_raw["template"]
     for k in KIND_LABELS:
-        out["kinds"][k] = {mode: [round(100 * tmpl[m]["instruction"][mode]["by_task"][k]["rate"], 1) for m in SEED_MODELS] for mode in ("greedy", "sampled")}
+        out["kinds"][k] = {mode: [round(100 * tmpl[m]["instruction"][mode]["by_task"][k]["rate"], 1) for m in models] for mode in ("greedy", "sampled")}
     return out
+
+
+def seed_spread(sets_raw: dict) -> dict:
+    """Mean, standard deviation and range of the pass rate over the training seeds of each recipe, per set and decoding, and the
+    per-kind rates (which show the exp_012 recipe's length skills come and go with the seed, while exp_009's recipe's do not)."""
+    return {"epoch2": _one_seed_spread(sets_raw, SEED_MODELS), "epoch1": _one_seed_spread(sets_raw, SEED_MODELS_9),
+            "models": SEED_MODELS, "sets": _one_seed_spread(sets_raw, SEED_MODELS)["sets"], "kinds": _one_seed_spread(sets_raw, SEED_MODELS)["kinds"]}
 
 
 def build() -> dict:

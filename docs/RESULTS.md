@@ -359,7 +359,28 @@ neither. Content requests are stable across seeds (`topic` 92 / 88 / 92%, `name_
   exp_006 to exp_012 were comparing single draws from wide distributions. The paired test over prompts does not see this: it asks how much the outcome would change if different prompts were asked, not if the model were retrained.
   It calls two seeds of the *same* recipe different (exp_012 vs exp_013, sampled, new wording: −6.2 [−11.9, −0.7], p = 0.035) and, by the same logic, its "established" differences between recipes (for example exp_009 over exp_007,
   exp_007 over exp_006) were less solid than stated. The direction of the large effects (memorising wording vs varied wording; content requests learned after the data fix; better than untuned) is not in doubt; the small ones are.
-* **Whether the exp_012 recipe beats exp_009's cannot be said.** exp_009 was trained once (46.5 greedy, 41.7 sampled on new wording), inside the three-seed range of 44 to 53. It would take several seeds of exp_009 to compare recipes.
+
+### exp_009's recipe, three seeds (exp_009, exp_015, exp_016)
+
+exp_009 was also trained once, so its recipe was retrained twice more with seeds 1338 and 1339 (`configs/sft_small_instruct_v6_seed*.yaml`, everything else identical), to compare the two recipes fairly.
+
+| pass rate (%) | seed 1337 (exp_009) | seed 1338 | seed 1339 | mean | std. dev. | range |
+|---|---|---|---|---|---|---|
+| new wording, greedy | 46.5 | 50.3 | 46.9 | 47.9 | 2.1 | 3.8 |
+| new wording, sampled | 41.7 | 47.6 | 38.2 | 42.5 | 4.7 | 9.4 |
+| trained wording, greedy | 64.2 | 65.6 | 64.9 | 64.9 | 0.7 | 1.4 |
+| trained wording, sampled | 56.9 | 55.2 | 55.2 | 55.8 | 1.0 | 1.7 |
+| development, greedy | 50.3 | 49.3 | 47.6 | 49.1 | 1.4 | 2.7 |
+| development, sampled | 44.8 | 43.1 | 43.1 | 43.6 | 1.0 | 1.7 |
+
+**exp_009's recipe has a much smaller seed spread on trained wording** (std. dev. 0.7 versus exp_012's recipe's 6.7) and a smaller one on new wording too (2.1 versus 4.2). Its length behaviour is also stable across seeds, and stable at a
+different failure mode: `long` (in-template, greedy) is 20.8 / 8.3 / 20.8% in all three seeds — never learned — while `short` is 75.0 / 100.0 / 100.0% — reliably learned. exp_012's recipe (two epochs) does the opposite: it never
+learns both at once, swinging between `long` up to 79% with `short` near 0%, or `short` up to 88% with `long` near 20%, depending only on the seed.
+
+**Comparing the two recipes properly.** Three-seed means on new wording: exp_012's recipe 50.0% greedy / 46.2% sampled; exp_009's recipe 47.9% / 42.5% greedy/sampled. The difference (2.1 / 3.7 points) is small next to either recipe's
+own spread (exp_012's sd 4.2 / 3.6), so **this evaluation still cannot say one recipe beats the other on new wording.** What it can say: **two epochs did not make length control more reliable — it made it more seed-dependent.**
+One epoch (exp_009's recipe) gives up on `long` in every run but never breaks `short`; two epochs (exp_012's recipe) can hit either skill well in a given run, but which one is chance, and it is bought at the other skill's expense in
+that same run. A user who wants consistent behaviour is better served by the one-epoch recipe; a user gambling on the best possible single run might prefer two epochs, understanding the risk.
 
 **Which model is served.** Choosing among identically-trained seeds by their scores is choosing the luckiest draw, so the rule was fixed before looking further: serve the seed with the best mean over the
 development and trained-wording sets (four numbers: dev greedy and sampled, trained-wording greedy and sampled), and treat the final set as an independent check. Means: seed 1337 55.6, **seed 1338 (exp_013) 60.2**, seed 1339 58.0.

@@ -17,6 +17,23 @@ only if a test proves it, and says **measured** only if the number came from a r
 | 2 | SFT gradient accumulation weighted micro-batches equally instead of by scored tokens | **fixed** (test), effect on real runs not yet measured |
 | 1 | Validation loss depends on how many conversations are scored (1.2895 / 1.3276 / 1.3190 for one checkpoint; noise sd 0.031 at 160) | **fixed** (tests): the full split is scored by default, with a standard error |
 
+## 10. One run per recipe, and a test that only sees prompt noise
+
+**Problem.** Each fine-tuning recipe was trained once. Comparisons used a paired bootstrap over distinct prompts, which measures how much a *fixed* model's pass rate would change
+with a different set of prompts. It says nothing about how much a *retrained* model would change. The two are different sources of noise and only the first was measured.
+
+**How found.** exp_012 (a second epoch on a longer-pretrained base) seemed to have recovered length control (`long` 21% to 79%). Retraining the identical recipe with two more seeds (exp_013, exp_014) gave
+`long` 17% and 21%, and `short` 88% and 0%; new-wording greedy scores of 45.1, 52.1 and 52.8 (standard deviation 4.2, range 7.6). The paired test judged two seeds of the same recipe different (p = 0.035 for one
+comparison), which is exactly the failure mode: it cannot be evidence of a real difference if retraining alone produces it.
+
+**Fix and status.** **Measured, not fixed:** the training variance of two recipes is now known (three seeds each, exp_009's one-epoch recipe and exp_012's two-epoch recipe). Claims that rested on one run each are
+downgraded in RESULTS.md: the exp_012 "recovered length control" reading is withdrawn; recipe-versus-recipe differences under about 8 points are unresolved. What stands: fine-tuning beats the untuned base in
+every run; memorisation versus varied wording and the content-request gains are large effects. **A genuine, seed-independent finding did emerge from the comparison:** exp_009's recipe never learns `long`
+requests in any of its three seeds (at most 20.8% in-template) but reliably keeps `short` working (75 to 100%); exp_012's recipe never has both at once, swinging between `long` up to 79% (with `short` collapsing
+toward 0% in that same run) and the reverse. Two epochs did not make length control more reliable, it made it more seed-dependent — a difference in *kind* between the recipes, not just a difference in mean score,
+and one the seed spread does not explain away. What is still unmeasured: the seed spread of the other recipes (exp_006 to exp_008, exp_011), and a tool that resamples training seeds automatically rather than
+one config per seed by hand.
+
 ## 9. `finish_reason: "eot"` on the OpenAI routes
 
 The engine's own reasons include `eot` (the model wrote its end-of-text token). The OpenAI-compatible routes passed it through, so a client that

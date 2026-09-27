@@ -121,23 +121,49 @@ function versions(r) {
 }
 
 
-/* The same recipe trained with three seeds: the spread that a single row's interval does not include. */
+/* Both recipes trained with three seeds each: the spread a single row's interval does not include, and whether the
+   two recipes actually differ once that spread is accounted for. */
 function seedSection(r) {
-  const sd = r.seeds, names = r.models.filter((m) => sd.models.includes(m.id));
   const setName = { final: "New wording", template: "Trained wording", dev: "Development" };
-  const rows = [];
-  for (const sid of ["final", "template", "dev"]) for (const mode of ["greedy", "sampled"]) {
-    const x = sd.sets[sid][mode];
-    rows.push({ set: `${setName[sid]}, ${mode}`, a: x.values[0].toFixed(1) + "%", b: x.values[1].toFixed(1) + "%", c: x.values[2].toFixed(1) + "%", mean: x.mean.toFixed(1) + "%", sd: x.sd.toFixed(1), range: x.range.toFixed(1) });
+  const ids9 = r.seeds.epoch1.models, ids12 = r.seeds.epoch2.models;
+  const seedOf = { exp009: 1337, exp015: 1338, exp016: 1339, exp012: 1337, exp013: 1338, exp014: 1339 };
+
+  function table(models, sd, caption) {
+    const cols = models.map((id, i) => ({ key: "abc"[i], label: `Seed ${seedOf[id]}`, num: true }));
+    const rows = [];
+    for (const sid of ["final", "template", "dev"]) for (const mode of ["greedy", "sampled"]) {
+      const x = sd.sets[sid][mode];
+      const row = { set: `${setName[sid]}, ${mode}`, mean: x.mean.toFixed(1) + "%", sd: x.sd.toFixed(1), range: x.range.toFixed(1) };
+      x.values.forEach((v, i) => { row["abc"[i]] = v.toFixed(1) + "%"; });
+      rows.push(row);
+    }
+    return DataTable({ caption, columns: [{ key: "set", label: "Set and decoding", rowHeader: true }, ...cols,
+      { key: "mean", label: "Mean", num: true }, { key: "sd", label: "Std. dev.", num: true }, { key: "range", label: "Range", num: true }], rows });
   }
-  const fin = sd.sets.final.greedy;
-  const kinds = ["long", "short", "long_topic", "short_topic"].map((k) => ({ k: r.kinds.find((x) => x.id === k).label, a: sd.kinds[k].greedy[0].toFixed(1) + "%", b: sd.kinds[k].greedy[1].toFixed(1) + "%", c: sd.kinds[k].greedy[2].toFixed(1) + "%" }));
-  const seedCols = names.map((m, i) => ({ key: "abc"[i], label: `Seed ${m.id === "exp012" ? 1337 : m.id === "exp013" ? 1338 : 1339}`, num: true }));
-  return el("section", { class: "prose" }, el("h2", { class: "sub-h", text: "The same recipe, three training seeds" }),
-    el("p", { text: `The last three versions are one recipe, trained three times with different random seeds and nothing else changed. On new wording, greedy, they pass ${fin.values.map((v) => v.toFixed(1) + "%").join(", ")}: a spread of ${fin.range} points (standard deviation ${fin.sd}). Their fine-tuning validation loss is the same to three decimals, so the loss cannot tell them apart.` }),
-    DataTable({ caption: "Pass rate by training seed, with mean and standard deviation across seeds", columns: [{ key: "set", label: "Set and decoding", rowHeader: true }, ...seedCols,
-      { key: "mean", label: "Mean", num: true }, { key: "sd", label: "Std. dev.", num: true }, { key: "range", label: "Range", num: true }], rows }),
-    el("p", { text: "Length requests come and go with the seed. On trained wording, greedy, the same recipe learned one length skill or the other, or neither:" }),
-    DataTable({ caption: "Length-related kinds by training seed (trained wording, greedy)", columns: [{ key: "k", label: "Kind", rowHeader: true }, ...seedCols], rows: kinds }),
-    el("p", { class: "muted small", text: "What this means: the 95% interval on a single row measures only how many prompts were asked, not how much a retrained model would differ. A gap between two versions smaller than this seed-to-seed spread, or a skill that appears in one training run, cannot be told apart from luck. Every version here except these three was trained once." }));
+  function lengthTable(models, sd, caption) {
+    const cols = models.map((id, i) => ({ key: "abc"[i], label: `Seed ${seedOf[id]}`, num: true }));
+    const rows = ["long", "short", "long_topic", "short_topic"].map((k) => {
+      const row = { k: r.kinds.find((x) => x.id === k).label };
+      sd.kinds[k].greedy.forEach((v, i) => { row["abc"[i]] = v.toFixed(1) + "%"; });
+      return row;
+    });
+    return DataTable({ caption, columns: [{ key: "k", label: "Kind", rowHeader: true }, ...cols], rows });
+  }
+
+  const fin12 = r.seeds.epoch2.sets.final.greedy, fin9 = r.seeds.epoch1.sets.final.greedy;
+  const diffMean = (fin12.mean - fin9.mean).toFixed(1);
+
+  return el("section", { class: "prose" }, el("h2", { class: "sub-h", text: "Both recipes, three training seeds each" }),
+    el("p", { text: `Each recipe (exp_009's one epoch, exp_012's two epochs) was trained three times with different random seeds and nothing else changed, to measure how much a rerun differs before comparing the recipes to each other.` }),
+    el("h3", { class: "sub-h2", text: "exp_012's recipe (two epochs)" }),
+    el("p", { text: `On new wording, greedy, the three seeds pass ${r.seeds.epoch2.sets.final.greedy.values.map((v) => v.toFixed(1) + "%").join(", ")}: a spread of ${fin12.range} points (standard deviation ${fin12.sd}). Fine-tuning validation loss is the same to three decimals across seeds, so the loss cannot tell them apart.` }),
+    table(ids12, r.seeds.epoch2, "Pass rate by training seed, exp_012's recipe"),
+    el("h3", { class: "sub-h2", text: "exp_009's recipe (one epoch)" }),
+    el("p", { text: `The same measurement for exp_009's recipe: new wording, greedy, passes ${r.seeds.epoch1.sets.final.greedy.values.map((v) => v.toFixed(1) + "%").join(", ")}, a smaller spread of ${fin9.range} points (standard deviation ${fin9.sd}).` }),
+    table(ids9, r.seeds.epoch1, "Pass rate by training seed, exp_009's recipe"),
+    el("h3", { class: "sub-h2", text: "Comparing the two recipes" }),
+    el("p", { text: `Three-seed means on new wording, greedy: exp_012's recipe ${fin12.mean.toFixed(1)}%, exp_009's recipe ${fin9.mean.toFixed(1)}% (difference ${diffMean} points) — close relative to either recipe's own seed spread, so this evaluation cannot say one recipe beats the other. What is not close: the two recipes fail differently. exp_009's recipe never learns "long" well in any seed (at most 20.8% in-template) but reliably keeps "short" working (75 to 100%); exp_012's recipe sometimes learns "long" well (up to 79%) at the cost of "short" collapsing toward 0% in the same run, and the reverse in another. Two epochs did not make length control more reliable, it made it more seed-dependent.` }),
+    lengthTable(ids9, r.seeds.epoch1, "Length-related kinds by training seed, exp_009's recipe (trained wording, greedy)"),
+    lengthTable(ids12, r.seeds.epoch2, "Length-related kinds by training seed, exp_012's recipe (trained wording, greedy)"),
+    el("p", { class: "muted small", text: "What this means generally: the 95% interval on a single row measures only how many prompts were asked, not how much a retrained model would differ. A gap between two versions smaller than the seed-to-seed spread, or a skill that appears in one training run, cannot be told apart from luck. Every version here except these six was trained once." }));
 }

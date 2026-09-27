@@ -27,7 +27,7 @@ def test_the_site_data_is_exactly_what_the_evaluation_files_say():
 
 def test_the_site_data_is_complete_and_sane():
     d = json.loads((WEB / "results.json").read_text())
-    assert [m["id"] for m in d["models"]][0] == "base" and len(d["models"]) == 9 and len(d["kinds"]) == 12
+    assert [m["id"] for m in d["models"]][0] == "base" and len(d["models"]) == 11 and len(d["kinds"]) == 12
     assert [s["id"] for s in d["sets"]] == ["final", "template", "dev"]
     for s in d["sets"]:
         for m in d["models"]:
@@ -98,12 +98,27 @@ def test_the_site_data_carries_training_facts_read_from_the_run_folders():
 def test_the_seed_spread_is_computed_from_the_three_runs_and_matches_the_write_up():
     d = json.loads((WEB / "results.json").read_text())
     sd = d["seeds"]
-    assert sd["models"] == ["exp012", "exp013", "exp014"]
-    fin = sd["sets"]["final"]["greedy"]
+    assert sd["epoch2"]["models"] == ["exp012", "exp013", "exp014"] and sd["models"] == sd["epoch2"]["models"]
+    fin = sd["epoch2"]["sets"]["final"]["greedy"]
     assert fin["values"] == [45.1, 52.1, 52.8] and fin["mean"] == 50.0 and fin["sd"] == 4.2 and fin["range"] == 7.6      # docs/RESULTS.md quotes these
-    assert sd["sets"]["final"]["sampled"]["values"] == [44.1, 50.3, 44.1]
-    assert sd["kinds"]["long"]["greedy"] == [79.2, 16.7, 20.8] and sd["kinds"]["short"]["greedy"] == [25.0, 87.5, 0.0]    # the length skills flip with the seed
-    for sid in ("final", "template", "dev"):
-        for mode in ("greedy", "sampled"):
-            x = sd["sets"][sid][mode]
-            assert len(x["values"]) == 3 and min(x["values"]) <= x["mean"] <= max(x["values"]) and x["sd"] >= 0 and abs(x["range"] - (max(x["values"]) - min(x["values"]))) < 0.11
+    assert sd["epoch2"]["sets"]["final"]["sampled"]["values"] == [44.1, 50.3, 44.1]
+    assert sd["epoch2"]["kinds"]["long"]["greedy"] == [79.2, 16.7, 20.8] and sd["epoch2"]["kinds"]["short"]["greedy"] == [25.0, 87.5, 0.0]    # the length skills flip with the seed
+    for group in ("epoch1", "epoch2"):
+        for sid in ("final", "template", "dev"):
+            for mode in ("greedy", "sampled"):
+                x = sd[group]["sets"][sid][mode]
+                assert len(x["values"]) == 3 and min(x["values"]) <= x["mean"] <= max(x["values"]) and x["sd"] >= 0 and abs(x["range"] - (max(x["values"]) - min(x["values"]))) < 0.11
+
+
+def test_the_exp009_recipe_seed_spread_shows_a_stable_but_different_length_failure():
+    """exp_009's recipe (one epoch), three seeds: never learns `long`, always keeps `short` — the opposite instability from exp_012's recipe."""
+    d = json.loads((WEB / "results.json").read_text())
+    e1 = d["seeds"]["epoch1"]
+    assert e1["models"] == ["exp009", "exp015", "exp016"]
+    fin = e1["sets"]["final"]["greedy"]
+    assert fin["values"] == [46.5, 50.3, 46.9] and fin["mean"] == 47.9 and fin["sd"] == 2.1                              # docs/RESULTS.md quotes these
+    assert e1["sets"]["template"]["greedy"]["sd"] == 0.7                                                                 # far tighter than exp_012's recipe (6.7)
+    assert e1["kinds"]["long"]["greedy"] == [20.8, 8.3, 20.8] and e1["kinds"]["short"]["greedy"] == [75.0, 100.0, 100.0]
+    e2 = d["seeds"]["epoch2"]
+    # the two recipes' three-seed means are close relative to either recipe's own spread: no winner is established
+    assert abs(e1["sets"]["final"]["greedy"]["mean"] - e2["sets"]["final"]["greedy"]["mean"]) < e2["sets"]["final"]["greedy"]["sd"] * 2

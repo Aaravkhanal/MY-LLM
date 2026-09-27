@@ -117,7 +117,7 @@ function fillEvidence(host, r) {
     IntervalChart({ rows, chance, ariaLabel: `Pass rate on unseen wording: ${rows.map((x) => `${x.label} ${x.cells.greedy.rate}% greedy, ${x.cells.sampled.rate}% sampled`).join("; ")}.`,
       series: [{ key: "greedy", label: "Greedy decoding", shape: "circle" }, { key: "sampled", label: "Sampled (temperature 0.7)", shape: "diamond", tone: 2 }] }),
     el("p", { text: `Sampled, the default model passes ${pct(set.results[def.id].sampled.all.rate / 100, 0)} of requests against ${pct(set.results.base.sampled.all.rate / 100, 0)} for the untuned base: ${diff.text}. ${diff.verdict}` }),
-    el("p", { class: "muted small", text: `Retraining the same recipe with three different seeds gave ${r.seeds.sets.final.greedy.values.map((v) => v.toFixed(0) + "%").join(", ")} greedy on this set, so gaps of a few points between versions are within training noise.` }),
+    el("p", { class: "muted small", text: `Retraining the same recipe with three different seeds gave ${r.seeds.epoch2.sets.final.greedy.values.map((v) => v.toFixed(0) + "%").join(", ")} greedy on this set, so gaps of a few points between versions are within training noise.` }),
     el("p", { class: "small" }, el("a", { href: "/models/aarav-lm/evaluations", text: "Open the evaluation dashboard" }), icon("arrow", 14)));
 }
 

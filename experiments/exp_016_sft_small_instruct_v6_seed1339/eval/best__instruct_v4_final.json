@@ -1,0 +1,6504 @@
+{
+  "model": {
+    "params": 14162304,
+    "context_length": 512,
+    "vocab_size": 4096,
+    "device": "cpu",
+    "tokenizer_fingerprint": "a5b02e834f0a7d9e4cd5984933ecedf305903be712968afa79cf82118c66d74b",
+    "step": 1800,
+    "val_loss": 1.3282894188909198,
+    "val_perplexity": 3.774581134856858,
+    "stage": "sft",
+    "experiment": "exp_016_sft_small_instruct_v6_seed1339",
+    "checkpoint": "experiments/exp_016_sft_small_instruct_v6_seed1339/checkpoints/best.pt"
+  },
+  "instruction": {
+    "greedy": {
+      "pass_rate": {
+        "pass": 135,
+        "n": 288,
+        "rate": 0.46875,
+        "ci95": [
+          0.4119,
+          0.5264
+        ],
+        "n_distinct": 197,
+        "ci95_clustered": [
+          0.3698,
+          0.5678
+        ],
+        "chance": 0.1051,
+        "lift": 0.3637
+      },
+      "by_task": {
+        "dialogue": {
+          "pass": 14,
+          "n": 24,
+          "rate": 0.5833333333333334,
+          "ci95": [
+            0.3883,
+            0.7553
+          ],
+          "n_distinct": 4,
+          "ci95_clustered": [
+            0.1176,
+            1.0
+          ],
+          "chance": 0.6685,
+          "lift": -0.0852
+        },
+        "emotion": {
+          "pass": 23,
+          "n": 24,
+          "rate": 0.9583333333333334,
+          "ci95": [
+            0.7976,
+            0.9926
+          ],
+          "n_distinct": 12,
+          "ci95_clustered": [
+            0.8421,
+            1.0
+          ],
+          "chance": 0.1929,
+          "lift": 0.7654
+        },
+        "long": {
+          "pass": 4,
+          "n": 24,
+          "rate": 0.16666666666666666,
+          "ci95": [
+            0.0668,
+            0.3585
+          ],
+          "n_distinct": 6,
+          "ci95_clustered": [
+            0.0,
+            0.5714
+          ],
+          "chance": 0.1159,
+          "lift": 0.0508
+        },
+        "long_topic": {
+          "pass": 3,
+          "n": 24,
+          "rate": 0.125,
+          "ci95": [
+            0.0434,
+            0.31
+          ],
+          "n_distinct": 22,
+          "ci95_clustered": [
+            0.0,
+            0.3077
+          ],
+          "chance": 0.0072,
+          "lift": 0.1178
+        },
+        "name": {
+          "pass": 18,
+          "n": 24,
+          "rate": 0.75,
+          "ci95": [
+            0.551,
+            0.88
+          ],
+          "n_distinct": 22,
+          "ci95_clustered": [
+            0.5455,
+            0.9167
+          ],
+          "chance": 0.0624,
+          "lift": 0.6876
+        },
+        "name_emotion": {
+          "pass": 8,
+          "n": 24,
+          "rate": 0.3333333333333333,
+          "ci95": [
+            0.1797,
+            0.5329
+          ],
+          "n_distinct": 24,
+          "ci95_clustered": [
+            0.1667,
+            0.5417
+          ],
+          "chance": 0.012,
+          "lift": 0.3213
+        },
+        "name_topic": {
+          "pass": 18,
+          "n": 24,
+          "rate": 0.75,
+          "ci95": [
+            0.551,
+            0.88
+          ],
+          "n_distinct": 24,
+          "ci95_clustered": [
+            0.5833,
+            0.9167
+          ],
+          "chance": 0.004,
+          "lift": 0.746
+        },
+        "place": {
+          "pass": 12,
+          "n": 24,
+          "rate": 0.5,
+          "ci95": [
+            0.3143,
+            0.6857
+          ],
+          "n_distinct": 15,
+          "ci95_clustered": [
+            0.1874,
+            0.8
+          ],
+          "chance": 0.1023,
+          "lift": 0.3977
+        },
+        "short": {
+          "pass": 8,
+          "n": 24,
+          "rate": 0.3333333333333333,
+          "ci95": [
+            0.1797,
+            0.5329
+          ],
+          "n_distinct": 5,
+          "ci95_clustered": [
+            0.0,
+            0.9412
+          ],
+          "chance": 0.0144,
+          "lift": 0.3189
+        },
+        "short_topic": {
+          "pass": 7,
+          "n": 24,
+          "rate": 0.2916666666666667,
+          "ci95": [
+            0.1491,
+            0.4917
+          ],
+          "n_distinct": 17,
+          "ci95_clustered": [
+            0.0454,
+            0.5667
+          ],
+          "chance": 0.0023,
+          "lift": 0.2894
+        },
+        "topic": {
+          "pass": 16,
+          "n": 24,
+          "rate": 0.6666666666666666,
+          "ci95": [
+            0.4671,
+            0.8203
+          ],
+          "n_distinct": 22,
+          "ci95_clustered": [
+            0.4545,
+            0.852
+          ],
+          "chance": 0.0569,
+          "lift": 0.6098
+        },
+        "two_topics": {
+          "pass": 4,
+          "n": 24,
+          "rate": 0.16666666666666666,
+          "ci95": [
+            0.0668,
+            0.3585
+          ],
+          "n_distinct": 24,
+          "ci95_clustered": [
+            0.0417,
+            0.3333
+          ],
+          "chance": 0.0218,
+          "lift": 0.1449
+        }
+      },
+      "by_check": {
+        "contains_all": {
+          "pass": 135,
+          "n": 216,
+          "rate": 0.625,
+          "ci95": [
+            0.5588,
+            0.6868
+          ]
+        },
+        "has_dialogue": {
+          "pass": 14,
+          "n": 24,
+          "rate": 0.5833333333333334,
+          "ci95": [
+            0.3883,
+            0.7553
+          ]
+        },
+        "max_words": {
+          "pass": 15,
+          "n": 48,
+          "rate": 0.3125,
+          "ci95": [
+            0.1995,
+            0.4533
+          ]
+        },
+        "min_words": {
+          "pass": 7,
+          "n": 48,
+          "rate": 0.14583333333333334,
+          "ci95": [
+            0.0725,
+            0.2717
+          ]
+        }
+      },
+      "name_seen": {
+        "pass": 29,
+        "n": 36,
+        "rate": 0.8055555555555556,
+        "ci95": [
+          0.6497,
+          0.9025
+        ]
+      },
+      "name_unseen": {
+        "pass": 15,
+        "n": 36,
+        "rate": 0.4166666666666667,
+        "ci95": [
+          0.2714,
+          0.578
+        ]
+      },
+      "natural_end_rate": 0.9967948717948718,
+      "mean_words": 139.7948717948718,
+      "prompts": 312,
+      "scored": 288,
+      "examples": [
+        {
+          "prompt": "Spin a yarn starring Tim.",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little boy named Tim. Tim loved to play with his toys. One day, he found a big, red ball. He was very happy and wanted to play with it.\nTim's mom saw him playing with the ball. She said, \"Tim, you need to behave and play with the ball. It is not safe.\" Tim did not want to listen to his mom. He wanted to play with the ball.\nTim played with the ball all day. He threw it up in the air and caught it. But then, the ball went too far and got lost. Tim was sad and scared. He wished he had listened to his mom. Now, he had to go home and stay in bed."
+        },
+        {
+          "prompt": "Dream up an adventure for Zara.",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little girl named Zara. Zara was a very curious girl. She loved to explore and learn new things. One day, Zara was walking in the park when she saw a big, red ball. She wanted to play with it, so she ran to it.\nZara kicked the ball with her foot and it went very far. She ran after it, but she could not catch it. She felt sad and sat down on the grass. She looked at the ball and saw that it was not a ball at all. It was a big, red balloon!\nZara was so happy to see the balloon. She ran to the balloon and started to play with it. She kicked it and laughed. Then, she heard a voice. It was her mom. She said, \"Zara, you should not play with the balloon. It is not a to"
+        },
+        {
+          "prompt": "Craft a tale featuring Bob.",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little boy named Bob. Bob was a very curious boy. One day, he went to the park with his mom. He saw a big tree and wanted to climb it.\nBob's mom said, \"Be careful, Bob. The tree is very high.\" But Bob did not listen. He wanted to climb the tree. He started to climb, but he was scared. He did not know how to climb the tree.\nBob's mom saw him and said, \"Bob, you are very brave. You can do it!\" Bob was happy. He climbed the tree and had fun. From that day on, Bob was not scared of the high tree anymore."
+        },
+        {
+          "prompt": "Spin a yarn starring Otis.",
+          "kind": "name",
+          "passed": false,
+          "reply": "Once upon a time, there was a little girl named Lily. She loved to play with her toys and make new friends. One day, she found a big box in her room. She was very excited and wanted to see what was inside.\nLily opened the box and found a big, soft teddy bear. She was so happy and hugged the teddy bear tight. She played with the teddy bear all day long. But then, something unexpected happened. The teddy bear started to talk!\nThe teddy bear said, \"Hello, Lily! I am a magic teddy bear. I can make your wishes come true.\" Lily was very surprised but happy. She wished for a big, yummy cake to share with her friends. The teddy bear made her wish come true, and they all had a fun party together."
+        },
+        {
+          "prompt": "Narrate the adventures of Binky.",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little dog named Binky. Binky loved to play with his ball. One day, Binky saw a big tree with a hole in it. He thought it would be fun to play in the hole.\nBinky went into the hole and found a big, red ball. He was so happy! He played with the ball all day long. Binky's friend, a little bird named Chirpy, saw him playing. Chirpy wanted to play too.\nBinky and Chirpy played with the ball in the hole. They had so much fun. Binky was very happy to have a new friend. They played until the sun went down. Then, they went back to their homes, tired but happy."
+        },
+        {
+          "prompt": "Dream up an adventure for Ingrid.",
+          "kind": "name",
+          "passed": false,
+          "reply": "Once upon a time, there was a little girl named Lily. She loved to play with her toys and eat yummy food. One day, Lily found a big, red apple in the kitchen. She was very happy and wanted to eat it.\nLily's mom saw her looking at the apple. She said, \"Lily, don't eat that apple. It is not good for you.\" But Lily did not listen. She took a big bite of the apple. It was very sour! Lily made a funny face and said, \"Yuck! This apple is bad!\"\nLily's mom laughed and said, \"Lily, that is not a good apple. It is bad for you.\" Lily felt sad and said, \"I'm sorry, Mom. I will not eat the apple again.\" From that day on, Lily always listened to her mom and never ate the apple again."
+        }
+      ],
+      "per_prompt": [
+        {
+          "id": "i000",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Tim.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 126
+        },
+        {
+          "id": "i001",
+          "kind": "name",
+          "prompt": "Dream up an adventure for Zara.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 177
+        },
+        {
+          "id": "i002",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Bob.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 114
+        },
+        {
+          "id": "i003",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Otis.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i004",
+          "kind": "name",
+          "prompt": "Narrate the adventures of Binky.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 120
+        },
+        {
+          "id": "i005",
+          "kind": "name",
+          "prompt": "Dream up an adventure for Ingrid.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i006",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Lucy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 128
+        },
+        {
+          "id": "i007",
+          "kind": "name",
+          "prompt": "Got a story about someone called Kofi?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 153
+        },
+        {
+          "id": "i008",
+          "kind": "name",
+          "prompt": "Got a story about someone called Tim?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 150
+        },
+        {
+          "id": "i009",
+          "kind": "name",
+          "prompt": "Dream up an adventure for Mateo.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 126
+        },
+        {
+          "id": "i010",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Tom.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 92
+        },
+        {
+          "id": "i011",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Priya.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 174
+        },
+        {
+          "id": "i012",
+          "kind": "name",
+          "prompt": "Narrate the adventures of Tom.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 92
+        },
+        {
+          "id": "i013",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Bram.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 193
+        },
+        {
+          "id": "i014",
+          "kind": "name",
+          "prompt": "Narrate the adventures of Sue.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 181
+        },
+        {
+          "id": "i015",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Yuki.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i016",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Tim.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 126
+        },
+        {
+          "id": "i017",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Nadia.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 143
+        },
+        {
+          "id": "i018",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Tim.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 126
+        },
+        {
+          "id": "i019",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Felix.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 178
+        },
+        {
+          "id": "i020",
+          "kind": "name",
+          "prompt": "Got a story about someone called Zoom?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 133
+        },
+        {
+          "id": "i021",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Odette.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 155
+        },
+        {
+          "id": "i022",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Lily.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 117
+        },
+        {
+          "id": "i023",
+          "kind": "name",
+          "prompt": "Got a story about someone called Rafi?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 141
+        },
+        {
+          "id": "i024",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a train.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 124
+        },
+        {
+          "id": "i025",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a book.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 101
+        },
+        {
+          "id": "i026",
+          "kind": "topic",
+          "prompt": "Dream up an adventure involving a fish.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 118
+        },
+        {
+          "id": "i027",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a train.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 124
+        },
+        {
+          "id": "i028",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a robot.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 129
+        },
+        {
+          "id": "i029",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 131
+        },
+        {
+          "id": "i030",
+          "kind": "topic",
+          "prompt": "Got a story with a boat in it?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 107
+        },
+        {
+          "id": "i031",
+          "kind": "topic",
+          "prompt": "Got a story with a doll in it?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 115
+        },
+        {
+          "id": "i032",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a flower.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 120
+        },
+        {
+          "id": "i033",
+          "kind": "topic",
+          "prompt": "Narrate a tale centred on a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 118
+        },
+        {
+          "id": "i034",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a ball.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 136
+        },
+        {
+          "id": "i035",
+          "kind": "topic",
+          "prompt": "Dream up an adventure involving a hat.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i036",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a cake.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 109
+        },
+        {
+          "id": "i037",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 124
+        },
+        {
+          "id": "i038",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a teacher.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 127
+        },
+        {
+          "id": "i039",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a ball.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 136
+        },
+        {
+          "id": "i040",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a cake.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 139
+        },
+        {
+          "id": "i041",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 133
+        },
+        {
+          "id": "i042",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a bear.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 138
+        },
+        {
+          "id": "i043",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a butterfly.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 149
+        },
+        {
+          "id": "i044",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a cookie.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 154
+        },
+        {
+          "id": "i045",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a car.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 151
+        },
+        {
+          "id": "i046",
+          "kind": "topic",
+          "prompt": "Got a story with a box in it?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 144
+        },
+        {
+          "id": "i047",
+          "kind": "topic",
+          "prompt": "Got a story with a star in it?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 157
+        },
+        {
+          "id": "i048",
+          "kind": "name_topic",
+          "prompt": "Got a story about Tim finding a train?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 145
+        },
+        {
+          "id": "i049",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Zara and a book.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 147
+        },
+        {
+          "id": "i050",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Bob meets a fish.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 139
+        },
+        {
+          "id": "i051",
+          "kind": "name_topic",
+          "prompt": "Got a story about Otis finding a train?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 225
+        },
+        {
+          "id": "i052",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Binky meets a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 226
+        },
+        {
+          "id": "i053",
+          "kind": "name_topic",
+          "prompt": "Got a story about Ingrid finding a boat?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 139
+        },
+        {
+          "id": "i054",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Lily and a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 123
+        },
+        {
+          "id": "i055",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Kofi meets a ball.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 237
+        },
+        {
+          "id": "i056",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Sue and a hat.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 141
+        },
+        {
+          "id": "i057",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Mateo and a cake.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 174
+        },
+        {
+          "id": "i058",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Polly and a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 138
+        },
+        {
+          "id": "i059",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Priya and a teacher.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 195
+        },
+        {
+          "id": "i060",
+          "kind": "name_topic",
+          "prompt": "Got a story about Max finding a ball?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 97
+        },
+        {
+          "id": "i061",
+          "kind": "name_topic",
+          "prompt": "Got a story about Bram finding a cake?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 172
+        },
+        {
+          "id": "i062",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Tim and a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 121
+        },
+        {
+          "id": "i063",
+          "kind": "name_topic",
+          "prompt": "Got a story about Yuki finding a bear?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 124
+        },
+        {
+          "id": "i064",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Zoom and a car.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 90
+        },
+        {
+          "id": "i065",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Nadia meets a box.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 181
+        },
+        {
+          "id": "i066",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Lily and a star.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 149
+        },
+        {
+          "id": "i067",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Felix meets a bear.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 174
+        },
+        {
+          "id": "i068",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Spot and a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 114
+        },
+        {
+          "id": "i069",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Odette and a rabbit.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 181
+        },
+        {
+          "id": "i070",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Timmy meets a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 162
+        },
+        {
+          "id": "i071",
+          "kind": "name_topic",
+          "prompt": "Got a story about Rafi finding a hat?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 158
+        },
+        {
+          "id": "i072",
+          "kind": "two_topics",
+          "prompt": "Got a story involving a train and a dog?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 124
+        },
+        {
+          "id": "i073",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a train and a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 121
+        },
+        {
+          "id": "i074",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a toy and a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 153
+        },
+        {
+          "id": "i075",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a ball and a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 109
+        },
+        {
+          "id": "i076",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a hat and a dog in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i077",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a tree and a bird in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 167
+        },
+        {
+          "id": "i078",
+          "kind": "two_topics",
+          "prompt": "Got a story involving a ball and a dog?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 136
+        },
+        {
+          "id": "i079",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a bird and a tree in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 167
+        },
+        {
+          "id": "i080",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a bear and a tree in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 183
+        },
+        {
+          "id": "i081",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a butterfly and a garden in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 168
+        },
+        {
+          "id": "i082",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a box and a flower in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 150
+        },
+        {
+          "id": "i083",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a star and a tree in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 132
+        },
+        {
+          "id": "i084",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a cake and a toy in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 132
+        },
+        {
+          "id": "i085",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a bird and a ball in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 149
+        },
+        {
+          "id": "i086",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a rabbit and a tree in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 139
+        },
+        {
+          "id": "i087",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a bird and a flower in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 167
+        },
+        {
+          "id": "i088",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a tree and a apple in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 145
+        },
+        {
+          "id": "i089",
+          "kind": "two_topics",
+          "prompt": "Got a story involving a hat and a cat?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 104
+        },
+        {
+          "id": "i090",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a bird and a frog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 149
+        },
+        {
+          "id": "i091",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a cat and a ball in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i092",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a tree and a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 155
+        },
+        {
+          "id": "i093",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a cat and a dog in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i094",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a cat and a rainbow.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 142
+        },
+        {
+          "id": "i095",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a ball and a dog in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 109
+        },
+        {
+          "id": "i096",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the pond?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 114
+        },
+        {
+          "id": "i097",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the store.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i098",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the library?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 104
+        },
+        {
+          "id": "i099",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the forest?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 125
+        },
+        {
+          "id": "i100",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the village?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 119
+        },
+        {
+          "id": "i101",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 154
+        },
+        {
+          "id": "i102",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 154
+        },
+        {
+          "id": "i103",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the kitchen.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 132
+        },
+        {
+          "id": "i104",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the park?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 108
+        },
+        {
+          "id": "i105",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the town?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 132
+        },
+        {
+          "id": "i106",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 154
+        },
+        {
+          "id": "i107",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the forest.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 113
+        },
+        {
+          "id": "i108",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the garden.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 169
+        },
+        {
+          "id": "i109",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the kitchen.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 166
+        },
+        {
+          "id": "i110",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the kitchen?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 131
+        },
+        {
+          "id": "i111",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i112",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 154
+        },
+        {
+          "id": "i113",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the kitchen.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 132
+        },
+        {
+          "id": "i114",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the park?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 108
+        },
+        {
+          "id": "i115",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i116",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the beach.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 144
+        },
+        {
+          "id": "i117",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i118",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i119",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i120",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 135
+        },
+        {
+          "id": "i121",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 126
+        },
+        {
+          "id": "i122",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is excited.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 133
+        },
+        {
+          "id": "i123",
+          "kind": "emotion",
+          "prompt": "Got a story about a sad child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 166
+        },
+        {
+          "id": "i124",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels excited.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 150
+        },
+        {
+          "id": "i125",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 122
+        },
+        {
+          "id": "i126",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 128
+        },
+        {
+          "id": "i127",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 128
+        },
+        {
+          "id": "i128",
+          "kind": "emotion",
+          "prompt": "Got a story about a scared child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 159
+        },
+        {
+          "id": "i129",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels angry.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 149
+        },
+        {
+          "id": "i130",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is proud.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 138
+        },
+        {
+          "id": "i131",
+          "kind": "emotion",
+          "prompt": "Got a story about a scared child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 159
+        },
+        {
+          "id": "i132",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 128
+        },
+        {
+          "id": "i133",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels curious.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 126
+        },
+        {
+          "id": "i134",
+          "kind": "emotion",
+          "prompt": "Got a story about a sad child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 166
+        },
+        {
+          "id": "i135",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 135
+        },
+        {
+          "id": "i136",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 135
+        },
+        {
+          "id": "i137",
+          "kind": "emotion",
+          "prompt": "Got a story about a sad child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 166
+        },
+        {
+          "id": "i138",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is excited.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 133
+        },
+        {
+          "id": "i139",
+          "kind": "emotion",
+          "prompt": "Got a story about a sad child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 166
+        },
+        {
+          "id": "i140",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 126
+        },
+        {
+          "id": "i141",
+          "kind": "emotion",
+          "prompt": "Got a story about a sad child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 166
+        },
+        {
+          "id": "i142",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels excited.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 150
+        },
+        {
+          "id": "i143",
+          "kind": "emotion",
+          "prompt": "Got a story about a excited child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 138
+        },
+        {
+          "id": "i144",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Tim feeling sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 148
+        },
+        {
+          "id": "i145",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Zara feeling scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 184
+        },
+        {
+          "id": "i146",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Lily feeling excited.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 137
+        },
+        {
+          "id": "i147",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Otis is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 249
+        },
+        {
+          "id": "i148",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Karl is excited.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 193
+        },
+        {
+          "id": "i149",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Ingrid feeling scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 139
+        },
+        {
+          "id": "i150",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Tim is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 130
+        },
+        {
+          "id": "i151",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Kofi feeling scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 133
+        },
+        {
+          "id": "i152",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Tom is angry.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 92
+        },
+        {
+          "id": "i153",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Mateo is proud.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 175
+        },
+        {
+          "id": "i154",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Max is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 128
+        },
+        {
+          "id": "i155",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Priya feeling scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 114
+        },
+        {
+          "id": "i156",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Zoom feeling sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i157",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Bram feeling sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 206
+        },
+        {
+          "id": "i158",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Remy is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 156
+        },
+        {
+          "id": "i159",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Yuki feeling excited.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i160",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Max is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 131
+        },
+        {
+          "id": "i161",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Nadia is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 172
+        },
+        {
+          "id": "i162",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about John feeling sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 325
+        },
+        {
+          "id": "i163",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Felix is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 185
+        },
+        {
+          "id": "i164",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Kitty is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 160
+        },
+        {
+          "id": "i165",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Odette is excited.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 165
+        },
+        {
+          "id": "i166",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Tim is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 98
+        },
+        {
+          "id": "i167",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Rafi is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 191
+        },
+        {
+          "id": "i168",
+          "kind": "short",
+          "prompt": "Got a really short story?",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i169",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i170",
+          "kind": "short",
+          "prompt": "Got a really short story?",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i171",
+          "kind": "short",
+          "prompt": "Spin a brief yarn.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 126
+        },
+        {
+          "id": "i172",
+          "kind": "short",
+          "prompt": "Spin a brief yarn.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 126
+        },
+        {
+          "id": "i173",
+          "kind": "short",
+          "prompt": "Spin a brief yarn.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 126
+        },
+        {
+          "id": "i174",
+          "kind": "short",
+          "prompt": "Craft a tiny tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 119
+        },
+        {
+          "id": "i175",
+          "kind": "short",
+          "prompt": "Got a really short story?",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i176",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i177",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i178",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i179",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i180",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i181",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i182",
+          "kind": "short",
+          "prompt": "Dream up a quick little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i183",
+          "kind": "short",
+          "prompt": "Dream up a quick little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i184",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i185",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i186",
+          "kind": "short",
+          "prompt": "Dream up a quick little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i187",
+          "kind": "short",
+          "prompt": "Spin a brief yarn.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 126
+        },
+        {
+          "id": "i188",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i189",
+          "kind": "short",
+          "prompt": "Got a really short story?",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i190",
+          "kind": "short",
+          "prompt": "Spin a brief yarn.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 126
+        },
+        {
+          "id": "i191",
+          "kind": "short",
+          "prompt": "Dream up a quick little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i192",
+          "kind": "long",
+          "prompt": "Craft an epic long tale.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 154
+        },
+        {
+          "id": "i193",
+          "kind": "long",
+          "prompt": "Got a nice long story?",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 176
+        },
+        {
+          "id": "i194",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i195",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i196",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i197",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i198",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i199",
+          "kind": "long",
+          "prompt": "Craft an epic long tale.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 154
+        },
+        {
+          "id": "i200",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i201",
+          "kind": "long",
+          "prompt": "Dream up a big, long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 161
+        },
+        {
+          "id": "i202",
+          "kind": "long",
+          "prompt": "Got a nice long story?",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 176
+        },
+        {
+          "id": "i203",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i204",
+          "kind": "long",
+          "prompt": "Craft an epic long tale.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 154
+        },
+        {
+          "id": "i205",
+          "kind": "long",
+          "prompt": "Got a nice long story?",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 176
+        },
+        {
+          "id": "i206",
+          "kind": "long",
+          "prompt": "Craft an epic long tale.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 154
+        },
+        {
+          "id": "i207",
+          "kind": "long",
+          "prompt": "Narrate a drawn-out tale.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 138
+        },
+        {
+          "id": "i208",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i209",
+          "kind": "long",
+          "prompt": "Whip up a long adventure story.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 225
+        },
+        {
+          "id": "i210",
+          "kind": "long",
+          "prompt": "Whip up a long adventure story.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 225
+        },
+        {
+          "id": "i211",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i212",
+          "kind": "long",
+          "prompt": "Craft an epic long tale.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 154
+        },
+        {
+          "id": "i213",
+          "kind": "long",
+          "prompt": "Dream up a big, long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 161
+        },
+        {
+          "id": "i214",
+          "kind": "long",
+          "prompt": "Whip up a long adventure story.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 225
+        },
+        {
+          "id": "i215",
+          "kind": "long",
+          "prompt": "Whip up a long adventure story.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 225
+        },
+        {
+          "id": "i216",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i217",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a duck?",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 80
+        },
+        {
+          "id": "i218",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a fish.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 149
+        },
+        {
+          "id": "i219",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a fish.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 91
+        },
+        {
+          "id": "i220",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a cat?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 115
+        },
+        {
+          "id": "i221",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a bear?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 120
+        },
+        {
+          "id": "i222",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a dog?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 99
+        },
+        {
+          "id": "i223",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a cake?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 97
+        },
+        {
+          "id": "i224",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a cat.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 138
+        },
+        {
+          "id": "i225",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i226",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 142
+        },
+        {
+          "id": "i227",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a cookie.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 145
+        },
+        {
+          "id": "i228",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a dog?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 99
+        },
+        {
+          "id": "i229",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i230",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a cat.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 138
+        },
+        {
+          "id": "i231",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a cat.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i232",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a toy.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 138
+        },
+        {
+          "id": "i233",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a tree?",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 78
+        },
+        {
+          "id": "i234",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 142
+        },
+        {
+          "id": "i235",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i236",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a cat.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i237",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a dog.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 90
+        },
+        {
+          "id": "i238",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a bird?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 95
+        },
+        {
+          "id": "i239",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a mouse.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 114
+        },
+        {
+          "id": "i240",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a fish?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 184
+        },
+        {
+          "id": "i241",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a doll?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 122
+        },
+        {
+          "id": "i242",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a flower?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 153
+        },
+        {
+          "id": "i243",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a bear?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 150
+        },
+        {
+          "id": "i244",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a cake.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 149
+        },
+        {
+          "id": "i245",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a bird?",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 194
+        },
+        {
+          "id": "i246",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a rabbit.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i247",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a bird?",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 194
+        },
+        {
+          "id": "i248",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a cake.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 125
+        },
+        {
+          "id": "i249",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a car.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 138
+        },
+        {
+          "id": "i250",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a bear.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 153
+        },
+        {
+          "id": "i251",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a boat.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i252",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a box.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 179
+        },
+        {
+          "id": "i253",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a book.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 114
+        },
+        {
+          "id": "i254",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a cookie.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i255",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a tree?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 139
+        },
+        {
+          "id": "i256",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a star?",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 232
+        },
+        {
+          "id": "i257",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a bear.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 153
+        },
+        {
+          "id": "i258",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a frog.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 171
+        },
+        {
+          "id": "i259",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a book.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 109
+        },
+        {
+          "id": "i260",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i261",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i262",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a frog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 149
+        },
+        {
+          "id": "i263",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a cave.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 149
+        },
+        {
+          "id": "i264",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i265",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i266",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 150
+        },
+        {
+          "id": "i267",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 150
+        },
+        {
+          "id": "i268",
+          "kind": "dialogue",
+          "prompt": "Craft a tale packed with dialogue.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 139
+        },
+        {
+          "id": "i269",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i270",
+          "kind": "dialogue",
+          "prompt": "Spin a yarn where the characters chat constantly.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 149
+        },
+        {
+          "id": "i271",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i272",
+          "kind": "dialogue",
+          "prompt": "Craft a tale packed with dialogue.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 139
+        },
+        {
+          "id": "i273",
+          "kind": "dialogue",
+          "prompt": "Craft a tale packed with dialogue.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 139
+        },
+        {
+          "id": "i274",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 150
+        },
+        {
+          "id": "i275",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 150
+        },
+        {
+          "id": "i276",
+          "kind": "dialogue",
+          "prompt": "Spin a yarn where the characters chat constantly.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 149
+        },
+        {
+          "id": "i277",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i278",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i279",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 150
+        },
+        {
+          "id": "i280",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i281",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i282",
+          "kind": "dialogue",
+          "prompt": "Spin a yarn where the characters chat constantly.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 149
+        },
+        {
+          "id": "i283",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i284",
+          "kind": "dialogue",
+          "prompt": "Spin a yarn where the characters chat constantly.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 149
+        },
+        {
+          "id": "i285",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i286",
+          "kind": "dialogue",
+          "prompt": "Craft a tale packed with dialogue.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 139
+        },
+        {
+          "id": "i287",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 150
+        }
+      ]
+    },
+    "sampled": {
+      "pass_rate": {
+        "pass": 110,
+        "n": 288,
+        "rate": 0.3819444444444444,
+        "ci95": [
+          0.3277,
+          0.4393
+        ],
+        "n_distinct": 197,
+        "ci95_clustered": [
+          0.3099,
+          0.4498
+        ],
+        "chance": 0.1051,
+        "lift": 0.2769
+      },
+      "by_task": {
+        "dialogue": {
+          "pass": 18,
+          "n": 24,
+          "rate": 0.75,
+          "ci95": [
+            0.551,
+            0.88
+          ],
+          "n_distinct": 4,
+          "ci95_clustered": [
+            0.6,
+            0.8889
+          ],
+          "chance": 0.6685,
+          "lift": 0.0815
+        },
+        "emotion": {
+          "pass": 15,
+          "n": 24,
+          "rate": 0.625,
+          "ci95": [
+            0.4271,
+            0.7884
+          ],
+          "n_distinct": 12,
+          "ci95_clustered": [
+            0.4072,
+            0.8065
+          ],
+          "chance": 0.1929,
+          "lift": 0.4321
+        },
+        "long": {
+          "pass": 6,
+          "n": 24,
+          "rate": 0.25,
+          "ci95": [
+            0.12,
+            0.449
+          ],
+          "n_distinct": 6,
+          "ci95_clustered": [
+            0.1111,
+            0.4091
+          ],
+          "chance": 0.1159,
+          "lift": 0.1341
+        },
+        "long_topic": {
+          "pass": 2,
+          "n": 24,
+          "rate": 0.08333333333333333,
+          "ci95": [
+            0.0232,
+            0.2585
+          ],
+          "n_distinct": 22,
+          "ci95_clustered": [
+            0.0,
+            0.2174
+          ],
+          "chance": 0.0072,
+          "lift": 0.0761
+        },
+        "name": {
+          "pass": 15,
+          "n": 24,
+          "rate": 0.625,
+          "ci95": [
+            0.4271,
+            0.7884
+          ],
+          "n_distinct": 22,
+          "ci95_clustered": [
+            0.4091,
+            0.8077
+          ],
+          "chance": 0.0624,
+          "lift": 0.5626
+        },
+        "name_emotion": {
+          "pass": 10,
+          "n": 24,
+          "rate": 0.4166666666666667,
+          "ci95": [
+            0.2447,
+            0.6117
+          ],
+          "n_distinct": 24,
+          "ci95_clustered": [
+            0.2083,
+            0.625
+          ],
+          "chance": 0.012,
+          "lift": 0.4047
+        },
+        "name_topic": {
+          "pass": 13,
+          "n": 24,
+          "rate": 0.5416666666666666,
+          "ci95": [
+            0.3507,
+            0.7211
+          ],
+          "n_distinct": 24,
+          "ci95_clustered": [
+            0.3333,
+            0.7094
+          ],
+          "chance": 0.004,
+          "lift": 0.5377
+        },
+        "place": {
+          "pass": 12,
+          "n": 24,
+          "rate": 0.5,
+          "ci95": [
+            0.3143,
+            0.6857
+          ],
+          "n_distinct": 15,
+          "ci95_clustered": [
+            0.3636,
+            0.6667
+          ],
+          "chance": 0.1023,
+          "lift": 0.3977
+        },
+        "short": {
+          "pass": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "ci95": [
+            0.0074,
+            0.2024
+          ],
+          "n_distinct": 5,
+          "ci95_clustered": [
+            0.0,
+            0.1667
+          ],
+          "chance": 0.0144,
+          "lift": 0.0273
+        },
+        "short_topic": {
+          "pass": 4,
+          "n": 24,
+          "rate": 0.16666666666666666,
+          "ci95": [
+            0.0668,
+            0.3585
+          ],
+          "n_distinct": 17,
+          "ci95_clustered": [
+            0.0435,
+            0.3333
+          ],
+          "chance": 0.0023,
+          "lift": 0.1644
+        },
+        "topic": {
+          "pass": 13,
+          "n": 24,
+          "rate": 0.5416666666666666,
+          "ci95": [
+            0.3507,
+            0.7211
+          ],
+          "n_distinct": 22,
+          "ci95_clustered": [
+            0.3333,
+            0.7308
+          ],
+          "chance": 0.0569,
+          "lift": 0.4848
+        },
+        "two_topics": {
+          "pass": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "ci95": [
+            0.0074,
+            0.2024
+          ],
+          "n_distinct": 24,
+          "ci95_clustered": [
+            0.0,
+            0.125
+          ],
+          "chance": 0.0218,
+          "lift": 0.0199
+        }
+      },
+      "by_check": {
+        "contains_all": {
+          "pass": 113,
+          "n": 216,
+          "rate": 0.5231481481481481,
+          "ci95": [
+            0.4567,
+            0.5888
+          ]
+        },
+        "has_dialogue": {
+          "pass": 18,
+          "n": 24,
+          "rate": 0.75,
+          "ci95": [
+            0.551,
+            0.88
+          ]
+        },
+        "max_words": {
+          "pass": 5,
+          "n": 48,
+          "rate": 0.10416666666666667,
+          "ci95": [
+            0.0453,
+            0.2217
+          ]
+        },
+        "min_words": {
+          "pass": 10,
+          "n": 48,
+          "rate": 0.20833333333333334,
+          "ci95": [
+            0.1173,
+            0.3426
+          ]
+        }
+      },
+      "name_seen": {
+        "pass": 26,
+        "n": 36,
+        "rate": 0.7222222222222222,
+        "ci95": [
+          0.5601,
+          0.8415
+        ]
+      },
+      "name_unseen": {
+        "pass": 12,
+        "n": 36,
+        "rate": 0.3333333333333333,
+        "ci95": [
+          0.2021,
+          0.4967
+        ]
+      },
+      "natural_end_rate": 0.9967948717948718,
+      "mean_words": 139.46794871794873,
+      "prompts": 312,
+      "scored": 288,
+      "examples": [
+        {
+          "prompt": "Spin a yarn starring Tim.",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little boy named Tim. Tim loved to play outside in the sun. One day, he found a small, helpless bird in the garden. The bird could not fly.\nTim wanted to help the bird. He asked his mom, \"Can you release the bird from my window?\" His mom said, \"Yes, Tim. You can release the bird in the garden.\"\nTim took the bird to his room. He gently picked up the bird and took care of it. Soon, the bird could fly again. The bird was very happy. Tim felt good because he could help his new friend."
+        },
+        {
+          "prompt": "Dream up an adventure for Zara.",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, in a big forest, there was a little rabbit named Zara. Zara loved to play with her friends, the birds and the bugs. One day, Zara and her friends decided to play a game. They wanted to see who could hop the fastest in the forest.\nAs they were playing, Zara jumped very high, and her friends flew as fast as they could. They all laughed and had fun. They knew that they were very competitive.\nAs the sun went down, Zara and her friends went back to their homes. They were happy that they had a great day playing together. They promised to play again soon. Zara and her friends knew they would always be there to play together."
+        },
+        {
+          "prompt": "Craft a tale featuring Bob.",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little girl named Bob. She had a toy called Clara. Clara was a fragile toy, so she was very special to Bob.\nOne day, Bob and Clara were playing in the park. Suddenly, a big dog came running towards them. Bob was scared, but Clara was brave. She thought her friends would be scared.\nBut then, Clara saw a big tree and decided to climb it. She held Clara's hand and climbed up the tree. When she got to the top, she saw that the big dog was not scary. The dog was just a little dog with a wagging tail.\nBob and Clara became friends. They played together in the park every day. And the dog always came to play with them. The end."
+        },
+        {
+          "prompt": "Spin a yarn starring Otis.",
+          "kind": "name",
+          "passed": false,
+          "reply": "Once upon a time there was a little girl named Emma. She was only three years old and loved playing with her toys. One day, Emma had a big idea. She wanted to make a surprise for her mom.\nEmma went to the store and bought some colorful paper and scissors. She went home to make a beautiful surprise for her mom.\nWhen Emma was finished, she ran to the kitchen and put the paper on the table. She was so excited that she started to clap her hands!\nHer mom smiled and said: \"That's so nice Emma! Would you like to help me mix the paper together?\" Emma nodded and they mixed the paper together.\nEmma was so proud of her work and she knew she had done a great job. She was so proud of her work and she cou"
+        },
+        {
+          "prompt": "Narrate the adventures of Binky.",
+          "kind": "name",
+          "passed": true,
+          "reply": "Once upon a time, there was a little cat named Binky. Binky loved to play outside in the sun. One day, while playing, Binky found a big stick. He thought it would be fun to play with the stick.\nBinky took the stick and ran around the yard. He saw a big hole in the ground. Binky thought the hole was a fun place to play. He jumped in the hole and found a big, yummy cake.\nBinky was so happy with his cake! He took the cake home and shared it with his friends. They all ate the cake and played together. Binky and his friends had a great day in the sun."
+        },
+        {
+          "prompt": "Dream up an adventure for Ingrid.",
+          "kind": "name",
+          "passed": false,
+          "reply": "Once upon a time, there was a big wardrobe in a room. The wardrobe was full of pretty clothes. The clothes were full of colorful clothes and colorful clothes.\nOne day, a little girl named Lucy found the wardrobe. She was very surprised. \"What is this?\" she asked her mom. Her mom said, \"That's a wardrobe. It can make things we need to play with.\"\nLucy was very happy. She went inside the wardrobe and found her toys and clothes. She played all day and had lots of fun. The wardrobe was her favorite place to play."
+        }
+      ],
+      "per_prompt": [
+        {
+          "id": "i000",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Tim.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 105
+        },
+        {
+          "id": "i001",
+          "kind": "name",
+          "prompt": "Dream up an adventure for Zara.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 124
+        },
+        {
+          "id": "i002",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Bob.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 132
+        },
+        {
+          "id": "i003",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Otis.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 147
+        },
+        {
+          "id": "i004",
+          "kind": "name",
+          "prompt": "Narrate the adventures of Binky.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 114
+        },
+        {
+          "id": "i005",
+          "kind": "name",
+          "prompt": "Dream up an adventure for Ingrid.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 97
+        },
+        {
+          "id": "i006",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Lucy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 116
+        },
+        {
+          "id": "i007",
+          "kind": "name",
+          "prompt": "Got a story about someone called Kofi?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 176
+        },
+        {
+          "id": "i008",
+          "kind": "name",
+          "prompt": "Got a story about someone called Tim?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 130
+        },
+        {
+          "id": "i009",
+          "kind": "name",
+          "prompt": "Dream up an adventure for Mateo.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 157
+        },
+        {
+          "id": "i010",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Tom.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 149
+        },
+        {
+          "id": "i011",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Priya.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 200
+        },
+        {
+          "id": "i012",
+          "kind": "name",
+          "prompt": "Narrate the adventures of Tom.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 204
+        },
+        {
+          "id": "i013",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Bram.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 158
+        },
+        {
+          "id": "i014",
+          "kind": "name",
+          "prompt": "Narrate the adventures of Sue.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 147
+        },
+        {
+          "id": "i015",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Yuki.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i016",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Tim.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 158
+        },
+        {
+          "id": "i017",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Nadia.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 112
+        },
+        {
+          "id": "i018",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Tim.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 162
+        },
+        {
+          "id": "i019",
+          "kind": "name",
+          "prompt": "Spin a yarn starring Felix.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 123
+        },
+        {
+          "id": "i020",
+          "kind": "name",
+          "prompt": "Got a story about someone called Zoom?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 103
+        },
+        {
+          "id": "i021",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Odette.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 105
+        },
+        {
+          "id": "i022",
+          "kind": "name",
+          "prompt": "Craft a tale featuring Lily.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 116
+        },
+        {
+          "id": "i023",
+          "kind": "name",
+          "prompt": "Got a story about someone called Rafi?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 177
+        },
+        {
+          "id": "i024",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a train.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 121
+        },
+        {
+          "id": "i025",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a book.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 136
+        },
+        {
+          "id": "i026",
+          "kind": "topic",
+          "prompt": "Dream up an adventure involving a fish.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 179
+        },
+        {
+          "id": "i027",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a train.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 147
+        },
+        {
+          "id": "i028",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a robot.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 155
+        },
+        {
+          "id": "i029",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a toy.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 160
+        },
+        {
+          "id": "i030",
+          "kind": "topic",
+          "prompt": "Got a story with a boat in it?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 133
+        },
+        {
+          "id": "i031",
+          "kind": "topic",
+          "prompt": "Got a story with a doll in it?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 116
+        },
+        {
+          "id": "i032",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a flower.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 151
+        },
+        {
+          "id": "i033",
+          "kind": "topic",
+          "prompt": "Narrate a tale centred on a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 126
+        },
+        {
+          "id": "i034",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a ball.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 106
+        },
+        {
+          "id": "i035",
+          "kind": "topic",
+          "prompt": "Dream up an adventure involving a hat.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 132
+        },
+        {
+          "id": "i036",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a cake.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 129
+        },
+        {
+          "id": "i037",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 107
+        },
+        {
+          "id": "i038",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a teacher.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 146
+        },
+        {
+          "id": "i039",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a ball.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 145
+        },
+        {
+          "id": "i040",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a cake.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 130
+        },
+        {
+          "id": "i041",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 158
+        },
+        {
+          "id": "i042",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a bear.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 93
+        },
+        {
+          "id": "i043",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a butterfly.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 122
+        },
+        {
+          "id": "i044",
+          "kind": "topic",
+          "prompt": "Craft a tale featuring a cookie.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 139
+        },
+        {
+          "id": "i045",
+          "kind": "topic",
+          "prompt": "Spin a yarn about a car.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 110
+        },
+        {
+          "id": "i046",
+          "kind": "topic",
+          "prompt": "Got a story with a box in it?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 134
+        },
+        {
+          "id": "i047",
+          "kind": "topic",
+          "prompt": "Got a story with a star in it?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 102
+        },
+        {
+          "id": "i048",
+          "kind": "name_topic",
+          "prompt": "Got a story about Tim finding a train?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 132
+        },
+        {
+          "id": "i049",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Zara and a book.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 127
+        },
+        {
+          "id": "i050",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Bob meets a fish.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 111
+        },
+        {
+          "id": "i051",
+          "kind": "name_topic",
+          "prompt": "Got a story about Otis finding a train?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 151
+        },
+        {
+          "id": "i052",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Binky meets a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 139
+        },
+        {
+          "id": "i053",
+          "kind": "name_topic",
+          "prompt": "Got a story about Ingrid finding a boat?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 142
+        },
+        {
+          "id": "i054",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Lily and a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 110
+        },
+        {
+          "id": "i055",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Kofi meets a ball.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 219
+        },
+        {
+          "id": "i056",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Sue and a hat.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 136
+        },
+        {
+          "id": "i057",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Mateo and a cake.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 145
+        },
+        {
+          "id": "i058",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Polly and a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 138
+        },
+        {
+          "id": "i059",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Priya and a teacher.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 82
+        },
+        {
+          "id": "i060",
+          "kind": "name_topic",
+          "prompt": "Got a story about Max finding a ball?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 116
+        },
+        {
+          "id": "i061",
+          "kind": "name_topic",
+          "prompt": "Got a story about Bram finding a cake?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 169
+        },
+        {
+          "id": "i062",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Tim and a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 147
+        },
+        {
+          "id": "i063",
+          "kind": "name_topic",
+          "prompt": "Got a story about Yuki finding a bear?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 123
+        },
+        {
+          "id": "i064",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Zoom and a car.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 116
+        },
+        {
+          "id": "i065",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Nadia meets a box.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 226
+        },
+        {
+          "id": "i066",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Lily and a star.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 103
+        },
+        {
+          "id": "i067",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Felix meets a bear.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 172
+        },
+        {
+          "id": "i068",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Spot and a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 151
+        },
+        {
+          "id": "i069",
+          "kind": "name_topic",
+          "prompt": "Spin a yarn about Odette and a rabbit.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 149
+        },
+        {
+          "id": "i070",
+          "kind": "name_topic",
+          "prompt": "Craft a tale where Timmy meets a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 135
+        },
+        {
+          "id": "i071",
+          "kind": "name_topic",
+          "prompt": "Got a story about Rafi finding a hat?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 199
+        },
+        {
+          "id": "i072",
+          "kind": "two_topics",
+          "prompt": "Got a story involving a train and a dog?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 157
+        },
+        {
+          "id": "i073",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a train and a toy.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i074",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a toy and a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 110
+        },
+        {
+          "id": "i075",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a ball and a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 159
+        },
+        {
+          "id": "i076",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a hat and a dog in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 109
+        },
+        {
+          "id": "i077",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a tree and a bird in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 169
+        },
+        {
+          "id": "i078",
+          "kind": "two_topics",
+          "prompt": "Got a story involving a ball and a dog?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 84
+        },
+        {
+          "id": "i079",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a bird and a tree in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 113
+        },
+        {
+          "id": "i080",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a bear and a tree in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 166
+        },
+        {
+          "id": "i081",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a butterfly and a garden in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 192
+        },
+        {
+          "id": "i082",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a box and a flower in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i083",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a star and a tree in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 184
+        },
+        {
+          "id": "i084",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a cake and a toy in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 144
+        },
+        {
+          "id": "i085",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a bird and a ball in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 134
+        },
+        {
+          "id": "i086",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a rabbit and a tree in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 158
+        },
+        {
+          "id": "i087",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a bird and a flower in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 100
+        },
+        {
+          "id": "i088",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a tree and a apple in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 132
+        },
+        {
+          "id": "i089",
+          "kind": "two_topics",
+          "prompt": "Got a story involving a hat and a cat?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 127
+        },
+        {
+          "id": "i090",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a bird and a frog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 174
+        },
+        {
+          "id": "i091",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a cat and a ball in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 145
+        },
+        {
+          "id": "i092",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a tree and a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 109
+        },
+        {
+          "id": "i093",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a cat and a dog in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 126
+        },
+        {
+          "id": "i094",
+          "kind": "two_topics",
+          "prompt": "Craft a tale featuring both a cat and a rainbow.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 169
+        },
+        {
+          "id": "i095",
+          "kind": "two_topics",
+          "prompt": "Spin a yarn that has a ball and a dog in it.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 120
+        },
+        {
+          "id": "i096",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the pond?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 101
+        },
+        {
+          "id": "i097",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the store.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 182
+        },
+        {
+          "id": "i098",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the library?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 128
+        },
+        {
+          "id": "i099",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the forest?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 115
+        },
+        {
+          "id": "i100",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the village?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 212
+        },
+        {
+          "id": "i101",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 156
+        },
+        {
+          "id": "i102",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i103",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the kitchen.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 130
+        },
+        {
+          "id": "i104",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the park?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 190
+        },
+        {
+          "id": "i105",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the town?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 130
+        },
+        {
+          "id": "i106",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 173
+        },
+        {
+          "id": "i107",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the forest.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 114
+        },
+        {
+          "id": "i108",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the garden.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 119
+        },
+        {
+          "id": "i109",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the kitchen.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 135
+        },
+        {
+          "id": "i110",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the kitchen?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 139
+        },
+        {
+          "id": "i111",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 147
+        },
+        {
+          "id": "i112",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 136
+        },
+        {
+          "id": "i113",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the kitchen.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 139
+        },
+        {
+          "id": "i114",
+          "kind": "place",
+          "prompt": "Got a story that takes us to the park?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 103
+        },
+        {
+          "id": "i115",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 120
+        },
+        {
+          "id": "i116",
+          "kind": "place",
+          "prompt": "Craft a tale that happens at the beach.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 155
+        },
+        {
+          "id": "i117",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 161
+        },
+        {
+          "id": "i118",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 157
+        },
+        {
+          "id": "i119",
+          "kind": "place",
+          "prompt": "Spin a yarn set at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 145
+        },
+        {
+          "id": "i120",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 178
+        },
+        {
+          "id": "i121",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i122",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is excited.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 116
+        },
+        {
+          "id": "i123",
+          "kind": "emotion",
+          "prompt": "Got a story about a sad child?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 123
+        },
+        {
+          "id": "i124",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels excited.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 123
+        },
+        {
+          "id": "i125",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 105
+        },
+        {
+          "id": "i126",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 132
+        },
+        {
+          "id": "i127",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 109
+        },
+        {
+          "id": "i128",
+          "kind": "emotion",
+          "prompt": "Got a story about a scared child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 137
+        },
+        {
+          "id": "i129",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels angry.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 131
+        },
+        {
+          "id": "i130",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is proud.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 127
+        },
+        {
+          "id": "i131",
+          "kind": "emotion",
+          "prompt": "Got a story about a scared child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 109
+        },
+        {
+          "id": "i132",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 116
+        },
+        {
+          "id": "i133",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels curious.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 150
+        },
+        {
+          "id": "i134",
+          "kind": "emotion",
+          "prompt": "Got a story about a sad child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 133
+        },
+        {
+          "id": "i135",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 128
+        },
+        {
+          "id": "i136",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 115
+        },
+        {
+          "id": "i137",
+          "kind": "emotion",
+          "prompt": "Got a story about a sad child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 155
+        },
+        {
+          "id": "i138",
+          "kind": "emotion",
+          "prompt": "Craft a tale about someone who is excited.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 159
+        },
+        {
+          "id": "i139",
+          "kind": "emotion",
+          "prompt": "Got a story about a sad child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 110
+        },
+        {
+          "id": "i140",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 119
+        },
+        {
+          "id": "i141",
+          "kind": "emotion",
+          "prompt": "Got a story about a sad child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 112
+        },
+        {
+          "id": "i142",
+          "kind": "emotion",
+          "prompt": "Spin a yarn where the hero feels excited.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 164
+        },
+        {
+          "id": "i143",
+          "kind": "emotion",
+          "prompt": "Got a story about a excited child?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 186
+        },
+        {
+          "id": "i144",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Tim feeling sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 111
+        },
+        {
+          "id": "i145",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Zara feeling scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 163
+        },
+        {
+          "id": "i146",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Lily feeling excited.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 184
+        },
+        {
+          "id": "i147",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Otis is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 121
+        },
+        {
+          "id": "i148",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Karl is excited.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 119
+        },
+        {
+          "id": "i149",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Ingrid feeling scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 121
+        },
+        {
+          "id": "i150",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Tim is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 106
+        },
+        {
+          "id": "i151",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Kofi feeling scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 105
+        },
+        {
+          "id": "i152",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Tom is angry.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 146
+        },
+        {
+          "id": "i153",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Mateo is proud.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 118
+        },
+        {
+          "id": "i154",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Max is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 158
+        },
+        {
+          "id": "i155",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Priya feeling scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 151
+        },
+        {
+          "id": "i156",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Zoom feeling sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 144
+        },
+        {
+          "id": "i157",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Bram feeling sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i158",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Remy is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 173
+        },
+        {
+          "id": "i159",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about Yuki feeling excited.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 132
+        },
+        {
+          "id": "i160",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Max is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 135
+        },
+        {
+          "id": "i161",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Nadia is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 224
+        },
+        {
+          "id": "i162",
+          "kind": "name_emotion",
+          "prompt": "Spin a yarn about John feeling sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 153
+        },
+        {
+          "id": "i163",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Felix is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 121
+        },
+        {
+          "id": "i164",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Kitty is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 109
+        },
+        {
+          "id": "i165",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Odette is excited.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 169
+        },
+        {
+          "id": "i166",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Tim is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 146
+        },
+        {
+          "id": "i167",
+          "kind": "name_emotion",
+          "prompt": "Craft a tale in which Rafi is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 119
+        },
+        {
+          "id": "i168",
+          "kind": "short",
+          "prompt": "Got a really short story?",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i169",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 109
+        },
+        {
+          "id": "i170",
+          "kind": "short",
+          "prompt": "Got a really short story?",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 123
+        },
+        {
+          "id": "i171",
+          "kind": "short",
+          "prompt": "Spin a brief yarn.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i172",
+          "kind": "short",
+          "prompt": "Spin a brief yarn.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i173",
+          "kind": "short",
+          "prompt": "Spin a brief yarn.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 216
+        },
+        {
+          "id": "i174",
+          "kind": "short",
+          "prompt": "Craft a tiny tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 145
+        },
+        {
+          "id": "i175",
+          "kind": "short",
+          "prompt": "Got a really short story?",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 102
+        },
+        {
+          "id": "i176",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 121
+        },
+        {
+          "id": "i177",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 148
+        },
+        {
+          "id": "i178",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 110
+        },
+        {
+          "id": "i179",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 139
+        },
+        {
+          "id": "i180",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 129
+        },
+        {
+          "id": "i181",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 121
+        },
+        {
+          "id": "i182",
+          "kind": "short",
+          "prompt": "Dream up a quick little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 105
+        },
+        {
+          "id": "i183",
+          "kind": "short",
+          "prompt": "Dream up a quick little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 79
+        },
+        {
+          "id": "i184",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i185",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 138
+        },
+        {
+          "id": "i186",
+          "kind": "short",
+          "prompt": "Dream up a quick little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 103
+        },
+        {
+          "id": "i187",
+          "kind": "short",
+          "prompt": "Spin a brief yarn.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 162
+        },
+        {
+          "id": "i188",
+          "kind": "short",
+          "prompt": "Narrate a compact tale.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 175
+        },
+        {
+          "id": "i189",
+          "kind": "short",
+          "prompt": "Got a really short story?",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 109
+        },
+        {
+          "id": "i190",
+          "kind": "short",
+          "prompt": "Spin a brief yarn.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 173
+        },
+        {
+          "id": "i191",
+          "kind": "short",
+          "prompt": "Dream up a quick little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 109
+        },
+        {
+          "id": "i192",
+          "kind": "long",
+          "prompt": "Craft an epic long tale.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 203
+        },
+        {
+          "id": "i193",
+          "kind": "long",
+          "prompt": "Got a nice long story?",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 174
+        },
+        {
+          "id": "i194",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 132
+        },
+        {
+          "id": "i195",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 197
+        },
+        {
+          "id": "i196",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 178
+        },
+        {
+          "id": "i197",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 174
+        },
+        {
+          "id": "i198",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 167
+        },
+        {
+          "id": "i199",
+          "kind": "long",
+          "prompt": "Craft an epic long tale.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 197
+        },
+        {
+          "id": "i200",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 131
+        },
+        {
+          "id": "i201",
+          "kind": "long",
+          "prompt": "Dream up a big, long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 148
+        },
+        {
+          "id": "i202",
+          "kind": "long",
+          "prompt": "Got a nice long story?",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 228
+        },
+        {
+          "id": "i203",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 123
+        },
+        {
+          "id": "i204",
+          "kind": "long",
+          "prompt": "Craft an epic long tale.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 148
+        },
+        {
+          "id": "i205",
+          "kind": "long",
+          "prompt": "Got a nice long story?",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 159
+        },
+        {
+          "id": "i206",
+          "kind": "long",
+          "prompt": "Craft an epic long tale.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 138
+        },
+        {
+          "id": "i207",
+          "kind": "long",
+          "prompt": "Narrate a drawn-out tale.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 112
+        },
+        {
+          "id": "i208",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 134
+        },
+        {
+          "id": "i209",
+          "kind": "long",
+          "prompt": "Whip up a long adventure story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 171
+        },
+        {
+          "id": "i210",
+          "kind": "long",
+          "prompt": "Whip up a long adventure story.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 224
+        },
+        {
+          "id": "i211",
+          "kind": "long",
+          "prompt": "Spin a lengthy yarn.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 126
+        },
+        {
+          "id": "i212",
+          "kind": "long",
+          "prompt": "Craft an epic long tale.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 130
+        },
+        {
+          "id": "i213",
+          "kind": "long",
+          "prompt": "Dream up a big, long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 136
+        },
+        {
+          "id": "i214",
+          "kind": "long",
+          "prompt": "Whip up a long adventure story.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 196
+        },
+        {
+          "id": "i215",
+          "kind": "long",
+          "prompt": "Whip up a long adventure story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i216",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 104
+        },
+        {
+          "id": "i217",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a duck?",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 88
+        },
+        {
+          "id": "i218",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a fish.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 163
+        },
+        {
+          "id": "i219",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a fish.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 111
+        },
+        {
+          "id": "i220",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a cat?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 97
+        },
+        {
+          "id": "i221",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a bear?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 92
+        },
+        {
+          "id": "i222",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a dog?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 100
+        },
+        {
+          "id": "i223",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a cake?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 102
+        },
+        {
+          "id": "i224",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a cat.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 105
+        },
+        {
+          "id": "i225",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 84
+        },
+        {
+          "id": "i226",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 128
+        },
+        {
+          "id": "i227",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a cookie.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 124
+        },
+        {
+          "id": "i228",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a dog?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 107
+        },
+        {
+          "id": "i229",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 93
+        },
+        {
+          "id": "i230",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a cat.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i231",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a cat.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 134
+        },
+        {
+          "id": "i232",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a toy.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 198
+        },
+        {
+          "id": "i233",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a tree?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 102
+        },
+        {
+          "id": "i234",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 118
+        },
+        {
+          "id": "i235",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 118
+        },
+        {
+          "id": "i236",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a cat.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i237",
+          "kind": "short_topic",
+          "prompt": "Craft a tiny tale about a dog.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i238",
+          "kind": "short_topic",
+          "prompt": "Got a really short story about a bird?",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 74
+        },
+        {
+          "id": "i239",
+          "kind": "short_topic",
+          "prompt": "Spin a brief yarn with a mouse.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 115
+        },
+        {
+          "id": "i240",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a fish?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 171
+        },
+        {
+          "id": "i241",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a doll?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 182
+        },
+        {
+          "id": "i242",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a flower?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 148
+        },
+        {
+          "id": "i243",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a bear?",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": true
+          },
+          "words": 299
+        },
+        {
+          "id": "i244",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a cake.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 162
+        },
+        {
+          "id": "i245",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a bird?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 164
+        },
+        {
+          "id": "i246",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a rabbit.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 102
+        },
+        {
+          "id": "i247",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a bird?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i248",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a cake.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 260
+        },
+        {
+          "id": "i249",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a car.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 121
+        },
+        {
+          "id": "i250",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a bear.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 136
+        },
+        {
+          "id": "i251",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a boat.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 123
+        },
+        {
+          "id": "i252",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a box.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 203
+        },
+        {
+          "id": "i253",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a book.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 97
+        },
+        {
+          "id": "i254",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a cookie.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": true
+          },
+          "words": 221
+        },
+        {
+          "id": "i255",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a tree?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i256",
+          "kind": "long_topic",
+          "prompt": "Got a nice long story about a star?",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 164
+        },
+        {
+          "id": "i257",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a bear.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 146
+        },
+        {
+          "id": "i258",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a frog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 144
+        },
+        {
+          "id": "i259",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a book.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 136
+        },
+        {
+          "id": "i260",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 109
+        },
+        {
+          "id": "i261",
+          "kind": "long_topic",
+          "prompt": "Craft an epic long tale about a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 146
+        },
+        {
+          "id": "i262",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a frog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 98
+        },
+        {
+          "id": "i263",
+          "kind": "long_topic",
+          "prompt": "Spin a lengthy yarn with a cave.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 140
+        },
+        {
+          "id": "i264",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 127
+        },
+        {
+          "id": "i265",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 190
+        },
+        {
+          "id": "i266",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 154
+        },
+        {
+          "id": "i267",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 129
+        },
+        {
+          "id": "i268",
+          "kind": "dialogue",
+          "prompt": "Craft a tale packed with dialogue.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 124
+        },
+        {
+          "id": "i269",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 180
+        },
+        {
+          "id": "i270",
+          "kind": "dialogue",
+          "prompt": "Spin a yarn where the characters chat constantly.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 192
+        },
+        {
+          "id": "i271",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 131
+        },
+        {
+          "id": "i272",
+          "kind": "dialogue",
+          "prompt": "Craft a tale packed with dialogue.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 139
+        },
+        {
+          "id": "i273",
+          "kind": "dialogue",
+          "prompt": "Craft a tale packed with dialogue.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 127
+        },
+        {
+          "id": "i274",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 191
+        },
+        {
+          "id": "i275",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 135
+        },
+        {
+          "id": "i276",
+          "kind": "dialogue",
+          "prompt": "Spin a yarn where the characters chat constantly.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 157
+        },
+        {
+          "id": "i277",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 115
+        },
+        {
+          "id": "i278",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 148
+        },
+        {
+          "id": "i279",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 206
+        },
+        {
+          "id": "i280",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 149
+        },
+        {
+          "id": "i281",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 164
+        },
+        {
+          "id": "i282",
+          "kind": "dialogue",
+          "prompt": "Spin a yarn where the characters chat constantly.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 128
+        },
+        {
+          "id": "i283",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 159
+        },
+        {
+          "id": "i284",
+          "kind": "dialogue",
+          "prompt": "Spin a yarn where the characters chat constantly.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 98
+        },
+        {
+          "id": "i285",
+          "kind": "dialogue",
+          "prompt": "Got a story with lots of back-and-forth talk?",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 113
+        },
+        {
+          "id": "i286",
+          "kind": "dialogue",
+          "prompt": "Craft a tale packed with dialogue.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 118
+        },
+        {
+          "id": "i287",
+          "kind": "dialogue",
+          "prompt": "Narrate a story full of speech.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 156
+        }
+      ]
+    }
+  },
+  "eval_sets": {
+    "instruct": {
+      "path": "/Users/aaravkhanal/Desktop/myllm/aarav-lm/evals/instruct_v4_final.jsonl",
+      "sha256": "2644a592e0bf9bb78aafd02e7b130c0eeed0a4b0de09c2894a499ab7554001fa",
+      "n": 312
+    }
+  }
+}
