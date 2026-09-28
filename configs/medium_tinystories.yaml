@@ -1,0 +1,61 @@
+# exp_018 (next free experiment number): the first `medium` (25.70M-parameter) model, trained from scratch —
+# not continued pretraining, since medium's shape differs from small's and there is no compatible checkpoint to
+# init_from. Same depth as `small` (8 layers), widened 384->512, GQA loosened 6/2->8/4 (see config.py's cfg_medium
+# docstring). +81.5% parameters over `small`'s 14.16M.
+#
+# Token budget: 180.2M tokens (11,000 steps x 16,384 tokens/step), inside the user's requested 150-200M range,
+# scaled up from small_tinystories.yaml's 90M tokens (5,500 steps) by exactly 2x steps at the same per-step
+# token count, so exp_004 (small, 90M) and this run (medium, 180M) both make one clean, nameable comparison:
+# same corpus, same recipe shape, model size and token budget both roughly doubled together.
+#
+# Reuses the already-built, already-tokenized long-pretraining corpus (data/processed/tinystories_v2_1200mb,
+# 299.2M train tokens from the same tokenizer/fingerprint as every other aarav-lm run) rather than building new
+# data: prepare_data.py validates the existing manifest+shards against this config's fingerprint and skips
+# re-tokenizing. 180.2M of its 299.2M train tokens are used (~0.6 epochs, still no repeats needed).
+#
+# Peak LR lowered from small_tinystories.yaml's 8e-4 to 6e-4: an informal width-scaling heuristic (wider networks
+# often want a somewhat lower peak LR for stability), not a rigorously derived value for this project's scale —
+# flagged here rather than asserted as tuned. Warmup lengthened 200->300 steps for the longer run. Everything
+# else (weight decay, grad clip, min_lr_ratio, batch shape) matches small_tinystories.yaml exactly, so LR and
+# warmup are the only two hyperparameters that differ by choice rather than by necessity (model_preset, sources,
+# out_dir, max_steps differ by necessity: different model, different token budget).
+name: medium_tinystories
+description: 25.70M Llama-style model (medium preset), byte-level BPE (4096, reused), 180.2M tokens of TinyStories.
+model_preset: medium
+
+tokenizer:
+  kind: bpe
+  vocab_size: 4096
+  artifact_dir: artifacts/tokenizer_tinystories_v2
+  train_sample_mb: 100
+
+data:
+  sources: [data/raw/tinystories_v2_400mb.txt, data/raw/tinystories_v2_part2.txt]
+  format: txt
+  doc_separator: "<|endoftext|>"
+  out_dir: data/processed/tinystories_v2_1200mb
+  val_fraction: 0.005
+  test_fraction: 0.005
+  min_chars: 100
+  max_chars: 20000
+  dedup: true
+  seed: 1337
+
+train:
+  seed: 1337
+  device: auto
+  precision: fp32
+  max_steps: 11000
+  batch_size: 1
+  grad_accum: 32
+  eval_batch_size: 4
+  lr: 0.0006
+  min_lr_ratio: 0.1
+  warmup_steps: 300
+  weight_decay: 0.1
+  grad_clip: 1.0
+  eval_interval: 1000
+  eval_iters: 100
+  log_interval: 25
+  ckpt_interval: 500
+  keep_last: 2

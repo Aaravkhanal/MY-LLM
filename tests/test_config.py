@@ -1,6 +1,7 @@
 import pytest
 
 from aarav_lm.config import ExperimentConfig, ModelConfig, get_preset
+from aarav_lm.model.core import AaravLM
 
 
 def test_model_config_dict_round_trip():
@@ -16,6 +17,21 @@ def test_model_config_rejects_unknown_fields():
 def test_unknown_preset_is_an_error():
     with pytest.raises(KeyError):
         get_preset("nope")
+
+
+def test_medium_preset_is_the_documented_scale_up_from_small():
+    """Locks the exact parameter count so a future config.py edit that accidentally changes
+    `medium`'s shape (rather than deliberately re-deriving a new target) fails loudly."""
+    small = get_preset("small")
+    medium = get_preset("medium")
+    assert medium.n_layer == small.n_layer, "medium keeps small's depth as a fixed point of comparison"
+    assert medium.n_embd > small.n_embd
+    n_small = AaravLM(small).num_params()
+    n_medium = AaravLM(medium).num_params()
+    assert n_small == 14_162_304
+    assert n_medium == 25_698_816
+    # +81.5%, in the neighbourhood of a "roughly double the model" scale-up.
+    assert 1.7 < n_medium / n_small < 1.95
 
 
 def test_experiment_yaml_round_trip(tmp_path):

@@ -155,9 +155,20 @@ def cfg_small(vocab_size: int = 4096, block_size: int = 512) -> ModelConfig:
     )
 
 
+def cfg_medium(vocab_size: int = 4096, block_size: int = 512) -> ModelConfig:
+    """~25.7 M params — the scale-up target from `small`. Same depth (8 layers) as `small`,
+    widened (384 -> 512) with a looser GQA ratio (6/2 -> 8/4), so exactly two axes change
+    (width, KV-head count) and depth stays a fixed point of comparison against `small`."""
+    return ModelConfig(
+        arch="modern", vocab_size=vocab_size, block_size=block_size,
+        n_layer=8, n_head=8, n_kv_head=4, n_embd=512,
+    )
+
+
 PRESETS: Dict[str, Callable[..., ModelConfig]] = {
     "tiny": cfg_tiny,
     "small": cfg_small,
+    "medium": cfg_medium,
     "5m": cfg_5m,
     "10m": cfg_10m,
     "20m": cfg_20m,
