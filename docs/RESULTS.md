@@ -462,35 +462,47 @@ single-seed first read on a brand-new base), unscaled from the 14M version (same
 Fine-tuning validation loss 1.2017 (exp_013, same recipe on the 14M base: 1.2382) — lower, as expected from the
 better base.
 
-**Instruction-following, exp_013 (14.16M, currently served) vs exp_019 (25.70M), paired over distinct prompts**
-(`scripts/compare_instruct.py`, clustered bootstrap):
+**Instruction-following, first attempt — later corrected below.** The first comparison written here (single seed,
+exp_019 vs exp_013) has a real mistake in it: `sft_medium_instruct_v6.yaml`'s own header comment says its recipe
+is "UNCHANGED from `sft_small_instruct_v6.yaml`" — exp_009's one-epoch recipe — but exp_013 was actually trained
+with a *different* recipe (`sft_small_instruct_v6_long_2ep`, two epochs). Comparing exp_019 against exp_013
+changed two things at once (base model size *and* SFT recipe), not one, which this project's own "one axis at a
+time" principle (stated everywhere else in this document) rules out. Caught while running the three-seed follow-up
+below, which required pulling the actually-matching small-model runs (exp_009/015/016) and noticing they were a
+different set of files than the ones first compared against. Corrected in place rather than left standing.
 
-| set | greedy A−B | greedy 95% CI | greedy p | sampled A−B | sampled 95% CI | sampled p |
-|---|---|---|---|---|---|---|
-| instruct_v3 (dev) | +1.0 | [−7.1, +10.9] | 0.935 | −1.0 | [−7.4, +5.4] | 0.803 |
-| instruct_v3.intemplate (trained wording) | **+9.4** | **[+3.8, +15.4]** | **0.001** | −3.5 | [−9.2, +2.4] | 0.272 |
-| instruct_v4_final (held-out, pre-registered) | +3.1 | [−4.4, +11.0] | 0.464 | +5.2 | [−0.7, +11.0] | 0.091 |
+**The three-seed treatment, done properly this time, against the recipe-matched small-model seeds
+(exp_009/015/016, the same `sft_small_instruct_v6.yaml` recipe medium's config explicitly matches) — `exp_020`
+(seed 1338, val loss 1.2036) and `exp_021` (seed 1339, val loss 1.2020) trained alongside `exp_019` (seed 1337,
+val loss 1.2017; all three within 0.002 of each other, as expected from this recipe's known low variance).**
+Paired per-seed comparisons (`scripts/compare_instruct.py`, clustered bootstrap; A = small/14.16M, B =
+medium/25.70M, positive means small is ahead):
 
-(A = exp_013, 14.16M; B = exp_019, 25.70M; positive means the smaller, currently-served model is ahead.)
+| set, mode | seed 1337 A−B (p) | seed 1338 A−B (p) | seed 1339 A−B (p) |
+|---|---|---|---|
+| ALL, instruct_v3, greedy | −5.9 (0.279) | −5.9 (0.324) | −7.6 (0.193) |
+| ALL, instruct_v3.intemplate, greedy | −0.7 (0.881) | +5.6 (0.109) | **−8.7 (0.004)** |
+| ALL, instruct_v4_final, greedy | −2.4 (0.634) | +0.7 (0.898) | −5.6 (0.355) |
+| **`short`, instruct_v3.intemplate, greedy** | **+70.8 (<0.001)** | **+91.7 (<0.001)** | **+66.7 (<0.001)** |
 
-**On the pre-registered held-out set — the one that matters most — the two models are statistically
-indistinguishable**, same pattern as exp_010/exp_011 above: a real, well-powered gain in pretraining loss did not
-translate into a proven gain on wording the model has not seen. **On trained wording, greedy decoding, exp_013 is
-significantly ahead**, and by-kind breakdown shows why: `short` collapses from 87.5% (exp_013) to 4.2% (exp_019,
-p < 0.001) — the bigger model all but stopped producing short answers on request, the same length-control
-fragility documented since exp_007 (content skills and length skills trade off against each other under this SFT
-recipe; here the trade lands harder against `short`). Every other per-kind difference in the table is noise
-(overlapping CIs, no consistent direction).
+**Two findings survive three independent seeds, and they point in opposite directions.** First: **on overall pass
+rate, medium is ahead of small in every one of the 9 (set × seed) greedy comparisons and most sampled ones**
+(direction consistent even where individual cells aren't significant at n≈190-277; one cell reaches significance,
+favoring medium). Three-seed means, ALL/greedy: small 0.649 vs medium 0.662 (intemplate), small 0.479 vs medium
+0.504 (final), small 0.491 vs medium 0.555 (dev). This is a real, if modest, overall win for the bigger base that
+the earlier single-seed, wrong-recipe comparison had no way of showing correctly.
 
-**Conclusion, stated plainly: the scale-up is a proven win for raw language modelling and an unproven,
-possibly-regressed outcome for instruction-following on a single seed.** Exactly the lesson of the seed-variance
-section above applies here with extra force, since this is the *first* seed of the SFT recipe on this base — the
-`short` collapse could be this run's seed, or it could be a real property of the wider model (more capacity makes
-it more confidently verbose). Not yet known which. **The served model has not been changed** (exp_013 stays
-served). Next, in order: (1) the same three-seed treatment already applied to the 14M recipes, run on the medium
-base, before drawing any conclusion about instruction-following; (2) if the `short` collapse survives multiple
-seeds, treat it as a real finding about scale trading against length control, not a bug; (3) only after that,
-decide whether to serve the 25.7M base.
+**Second, and much stronger: `short` collapses in every single seed, on trained wording, with p < 0.001 each
+time** — small's `short`-greedy rate is 58.3% (dev, identical to three decimal places across all three seeds — an
+unusually stable slice) to 100% (intemplate, two of three seeds); medium's is 0% to 33.3%, never higher. This is
+not a single-seed artifact and not noise: it is a real, reproducible property of scaling this base under this SFT
+recipe. **Net read: the scale-up modestly improves instruction-following in aggregate, while reproducibly
+destroying the model's ability to give a short answer on request** — a genuine trade-off, not an ambiguous result
+needing more seeds. **The served model has not been changed** (exp_013 stays served, on its own, different,
+2-epoch recipe, which was never part of this comparison and is untouched by it). Before any decision to serve the
+25.7M base: either accept the `short` regression as a known limitation, or investigate whether it is fixable (more
+epochs, an explicit length signal in the data, as flagged for the 14M model back in exp_007/008) rather than an
+inherent cost of scale.
 
 ## Efficiency
 

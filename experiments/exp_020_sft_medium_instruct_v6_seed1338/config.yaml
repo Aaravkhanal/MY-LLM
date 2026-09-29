@@ -1,0 +1,50 @@
+name: sft_medium_instruct_v6_seed1338
+description: Second seed of the medium (25.70M) base's SFT recipe, for a 3-seed spread
+  comparable to exp_013/014.
+stage: sft
+init_from: experiments/exp_018_medium_tinystories/checkpoints/best.pt
+model_preset: medium
+model_overrides: {}
+tokenizer:
+  kind: bpe
+  vocab_size: 4096
+  artifact_dir: artifacts/tokenizer_tinystories_v2
+  train_files: []
+  train_sample_mb: 0.0
+data:
+  sources:
+  - data/raw/instruct_v6.jsonl
+  format: auto
+  text_field: text
+  doc_separator: <|endoftext|>
+  out_dir: data/processed/instruct_v6_sft
+  val_fraction: 0.01
+  test_fraction: 0.01
+  min_chars: 20
+  max_chars: 100000
+  dedup: true
+  seed: 1337
+train:
+  seed: 1338
+  device: auto
+  precision: fp32
+  max_steps: 1800
+  batch_size: 2
+  grad_accum: 16
+  lr: 0.0002
+  min_lr_ratio: 0.1
+  warmup_steps: 60
+  weight_decay: 0.01
+  beta1: 0.9
+  beta2: 0.95
+  grad_clip: 1.0
+  eval_interval: 200
+  eval_iters: 40
+  eval_batch_size: 4
+  log_interval: 25
+  ckpt_interval: 200
+  early_stop_patience: 0
+  keep_last: 2
+  lora_rank: 0
+  lora_alpha: 16.0
+  lora_dropout: 0.0
