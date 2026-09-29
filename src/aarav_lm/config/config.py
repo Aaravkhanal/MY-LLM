@@ -165,10 +165,23 @@ def cfg_medium(vocab_size: int = 4096, block_size: int = 512) -> ModelConfig:
     )
 
 
+def cfg_large(vocab_size: int = 4096, block_size: int = 512) -> ModelConfig:
+    """~48.1 M params — the scale-up target from `medium`. Unlike `small` -> `medium` (which held
+    depth fixed and only widened), this step also deepens (8 -> 10 layers) alongside widening
+    (512 -> 640) and a matching GQA ratio (8/4 -> 10/5): scaling depth and width together, the
+    generally better-motivated way to grow a transformer past this point, rather than repeating the
+    same single-axis trick twice. Ratio to `medium`: 1.87x; to `small`: 3.40x."""
+    return ModelConfig(
+        arch="modern", vocab_size=vocab_size, block_size=block_size,
+        n_layer=10, n_head=10, n_kv_head=5, n_embd=640,
+    )
+
+
 PRESETS: Dict[str, Callable[..., ModelConfig]] = {
     "tiny": cfg_tiny,
     "small": cfg_small,
     "medium": cfg_medium,
+    "large": cfg_large,
     "5m": cfg_5m,
     "10m": cfg_10m,
     "20m": cfg_20m,

@@ -34,6 +34,21 @@ def test_medium_preset_is_the_documented_scale_up_from_small():
     assert 1.7 < n_medium / n_small < 1.95
 
 
+def test_large_preset_is_the_documented_scale_up_from_medium():
+    """Locks the exact parameter count so a future config.py edit that accidentally changes
+    `large`'s shape (rather than deliberately re-deriving a new target) fails loudly. Unlike
+    small->medium (width only), medium->large also deepens -- both n_layer and n_embd increase."""
+    medium = get_preset("medium")
+    large = get_preset("large")
+    assert large.n_layer > medium.n_layer, "large deepens, unlike medium's width-only scale-up from small"
+    assert large.n_embd > medium.n_embd
+    n_medium = AaravLM(medium).num_params()
+    n_large = AaravLM(large).num_params()
+    assert n_medium == 25_698_816
+    assert n_large == 48_100_480
+    assert 1.7 < n_large / n_medium < 2.0
+
+
 def test_experiment_yaml_round_trip(tmp_path):
     exp = ExperimentConfig(name="t", model_preset="tiny")
     path = tmp_path / "exp.yaml"

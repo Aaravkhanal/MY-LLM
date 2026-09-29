@@ -1,0 +1,62 @@
+# exp_022 (next free experiment number): the first `large` (48.10M-parameter) model, trained from scratch on the
+# full TinyStoriesV2-GPT4 corpus, both a parameter scale-up (from medium's 25.70M, +87.2%) and a genuine token
+# scale-up -- not more epochs of the same 1.22GB slice medium/small used, but a third, previously-unused slice
+# (tinystories_v2_part3.txt, the remaining ~961MB of the 2.23GB source file) added alongside it, so this is the
+# first run in the project to use the *entire* TinyStoriesV2-GPT4-train.txt file. Built non-destructively: the old
+# tinystories_v2_1200mb corpus (used by every prior experiment) is untouched; this tokenizes into a new out_dir.
+#
+# `large`'s shape (config.py's cfg_large docstring): unlike small->medium (width-only), this step deepens (8->10
+# layers) alongside widening (512->640) and a matching GQA ratio (8/4->10/5) -- the generally better-motivated way
+# to scale a transformer past this point, exercising a different axis than the previous scale-up.
+#
+# Token budget: 15,000 steps x 16,384 tokens/step = 245.76M tokens. The new full corpus is expected to tokenize to
+# roughly 545M train tokens (proportional to tinystories_v2_1200mb's 299.2M from 1.22GB, scaled to ~2.23GB), so
+# this is about 0.45 epochs -- deliberately similar in *epoch fraction* to medium's own 0.6 epochs of its corpus,
+# rather than picked to hit a fixed wall-clock, since a bigger, deeper model was expected to be slower per token
+# and actual throughput was unknown before this config was written.
+#
+# Peak LR lowered again from medium's 6e-4 to 5e-4, continuing the same informal width/depth-scaling heuristic
+# noted in medium_tinystories.yaml (not rigorously tuned for this scale). Warmup lengthened proportionally
+# (300 -> 400 steps, matching the ~1.36x step-count increase). Batch shape (batch_size=1, grad_accum=32,
+# block_size=512) kept identical to medium_tinystories.yaml -- memory headroom on an 8GB M3 Air, not compute,
+# is the binding constraint at this scale, and this shape is already known to fit.
+name: large_tinystories
+description: 48.10M Llama-style model (large preset), byte-level BPE (4096, reused), 245.76M tokens of the full TinyStoriesV2-GPT4 corpus.
+model_preset: large
+
+tokenizer:
+  kind: bpe
+  vocab_size: 4096
+  artifact_dir: artifacts/tokenizer_tinystories_v2
+  train_sample_mb: 100
+
+data:
+  sources: [data/raw/tinystories_v2_400mb.txt, data/raw/tinystories_v2_part2.txt, data/raw/tinystories_v2_part3.txt]
+  format: txt
+  doc_separator: "<|endoftext|>"
+  out_dir: data/processed/tinystories_v2_2200mb
+  val_fraction: 0.005
+  test_fraction: 0.005
+  min_chars: 100
+  max_chars: 20000
+  dedup: true
+  seed: 1337
+
+train:
+  seed: 1337
+  device: auto
+  precision: fp32
+  max_steps: 15000
+  batch_size: 1
+  grad_accum: 32
+  eval_batch_size: 4
+  lr: 0.0005
+  min_lr_ratio: 0.1
+  warmup_steps: 400
+  weight_decay: 0.1
+  grad_clip: 1.0
+  eval_interval: 1000
+  eval_iters: 100
+  log_interval: 25
+  ckpt_interval: 500
+  keep_last: 2
