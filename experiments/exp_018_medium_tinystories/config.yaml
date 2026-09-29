@@ -1,0 +1,51 @@
+name: medium_tinystories
+description: 25.70M Llama-style model (medium preset), byte-level BPE (4096, reused),
+  180.2M tokens of TinyStories.
+stage: pretrain
+init_from: ''
+model_preset: medium
+model_overrides: {}
+tokenizer:
+  kind: bpe
+  vocab_size: 4096
+  artifact_dir: artifacts/tokenizer_tinystories_v2
+  train_files: []
+  train_sample_mb: 100.0
+data:
+  sources:
+  - data/raw/tinystories_v2_400mb.txt
+  - data/raw/tinystories_v2_part2.txt
+  format: txt
+  text_field: text
+  doc_separator: <|endoftext|>
+  out_dir: data/processed/tinystories_v2_1200mb
+  val_fraction: 0.005
+  test_fraction: 0.005
+  min_chars: 100
+  max_chars: 20000
+  dedup: true
+  seed: 1337
+train:
+  seed: 1337
+  device: auto
+  precision: fp32
+  max_steps: 11000
+  batch_size: 1
+  grad_accum: 32
+  lr: 0.0006
+  min_lr_ratio: 0.1
+  warmup_steps: 300
+  weight_decay: 0.1
+  beta1: 0.9
+  beta2: 0.95
+  grad_clip: 1.0
+  eval_interval: 1000
+  eval_iters: 100
+  eval_batch_size: 4
+  log_interval: 25
+  ckpt_interval: 500
+  early_stop_patience: 0
+  keep_last: 2
+  lora_rank: 0
+  lora_alpha: 16.0
+  lora_dropout: 0.0

@@ -435,6 +435,63 @@ single SFT run proves little on its own, and this would need at least the same t
 anything trustworthy about it. The served model has not been changed; this section documents the pretraining base
 only.
 
+### exp_018/exp_019: scaling to 25.7M parameters — a real loss win, no proven instruction-following win
+
+A user request to scale the model up (14M → 25M parameters, 90M → 150–200M pretraining tokens). New preset
+`cfg_medium` (`configs/config.py`): same depth as `small` (8 layers, deliberately, as a fixed point of comparison),
+widened 384 → 512 embedding dim, GQA ratio loosened 6/2 → 8/4 heads. Measured via the real model class (never
+hand-calculated): 25,698,816 parameters, 1.81× `small`'s 14,162,304.
+
+**exp_018**: from scratch (no `init_from`) on the same 1200MB TinyStories corpus used throughout this document,
+11,000 steps, 180.2M tokens seen (~0.60 epochs of the 299.2M-token corpus) — fewer tokens in absolute terms than
+`small`'s training history (exp_004 + exp_010 together saw 237.6M). Full-split loss, same corpus, same method as
+above:
+
+| model | val loss | perplexity | top-1 | bits/byte | test loss |
+|---|---|---|---|---|---|
+| exp_010 (14.16M, 237.6M tokens seen) | 1.2876 ± 0.0037 | 3.624 | 65.6% | 0.4697 | 1.2944 ± 0.0039 |
+| **exp_018 (25.70M, 180.2M tokens seen)** | **1.2630 ± 0.0036** | 3.536 | **66.0%** | 0.4607 | **1.2694 ± 0.0039** |
+
+0.0246 nats lower, about 6.5 combined standard errors — a real improvement in raw language-model quality, reached
+with *fewer* tokens than the smaller model saw, not more: at this corpus the extra parameters were worth more than
+the tokens they cost.
+
+**exp_019**: `sft_medium_instruct_v6` — exp_009's low-variance one-epoch recipe (chosen deliberately over
+exp_012's higher-variance two-epoch recipe, per the seed-variance finding above, for the most trustworthy possible
+single-seed first read on a brand-new base), unscaled from the 14M version (same data, seed 1337, learning rate).
+Fine-tuning validation loss 1.2017 (exp_013, same recipe on the 14M base: 1.2382) — lower, as expected from the
+better base.
+
+**Instruction-following, exp_013 (14.16M, currently served) vs exp_019 (25.70M), paired over distinct prompts**
+(`scripts/compare_instruct.py`, clustered bootstrap):
+
+| set | greedy A−B | greedy 95% CI | greedy p | sampled A−B | sampled 95% CI | sampled p |
+|---|---|---|---|---|---|---|
+| instruct_v3 (dev) | +1.0 | [−7.1, +10.9] | 0.935 | −1.0 | [−7.4, +5.4] | 0.803 |
+| instruct_v3.intemplate (trained wording) | **+9.4** | **[+3.8, +15.4]** | **0.001** | −3.5 | [−9.2, +2.4] | 0.272 |
+| instruct_v4_final (held-out, pre-registered) | +3.1 | [−4.4, +11.0] | 0.464 | +5.2 | [−0.7, +11.0] | 0.091 |
+
+(A = exp_013, 14.16M; B = exp_019, 25.70M; positive means the smaller, currently-served model is ahead.)
+
+**On the pre-registered held-out set — the one that matters most — the two models are statistically
+indistinguishable**, same pattern as exp_010/exp_011 above: a real, well-powered gain in pretraining loss did not
+translate into a proven gain on wording the model has not seen. **On trained wording, greedy decoding, exp_013 is
+significantly ahead**, and by-kind breakdown shows why: `short` collapses from 87.5% (exp_013) to 4.2% (exp_019,
+p < 0.001) — the bigger model all but stopped producing short answers on request, the same length-control
+fragility documented since exp_007 (content skills and length skills trade off against each other under this SFT
+recipe; here the trade lands harder against `short`). Every other per-kind difference in the table is noise
+(overlapping CIs, no consistent direction).
+
+**Conclusion, stated plainly: the scale-up is a proven win for raw language modelling and an unproven,
+possibly-regressed outcome for instruction-following on a single seed.** Exactly the lesson of the seed-variance
+section above applies here with extra force, since this is the *first* seed of the SFT recipe on this base — the
+`short` collapse could be this run's seed, or it could be a real property of the wider model (more capacity makes
+it more confidently verbose). Not yet known which. **The served model has not been changed** (exp_013 stays
+served). Next, in order: (1) the same three-seed treatment already applied to the 14M recipes, run on the medium
+base, before drawing any conclusion about instruction-following; (2) if the `short` collapse survives multiple
+seeds, treat it as a real finding about scale trading against length control, not a bug; (3) only after that,
+decide whether to serve the 25.7M base.
+
 ## Efficiency
 
 See PERFORMANCE.md. Headlines: 18k tokens/s training in 1.3 GB of GPU memory; bf16 no faster than

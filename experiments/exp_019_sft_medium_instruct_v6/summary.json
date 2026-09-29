@@ -1,0 +1,39 @@
+{
+  "name": "sft_medium_instruct_v6",
+  "status": "completed",
+  "steps": 1800,
+  "tokens_seen": 15560364,
+  "train_seconds": 4289.3,
+  "resumed_from": null,
+  "anomalies": {
+    "grad_norm_spike": 1
+  },
+  "params": 25698816,
+  "params_body": 23601664,
+  "model_mb_fp32": 98.03,
+  "best_val_loss": 1.2016590025862366,
+  "best_val_perplexity": 3.3256295767872706,
+  "last_eval": {
+    "type": "eval",
+    "step": 1800,
+    "time": 1790670521.698,
+    "val_loss": 1.2016590025862366,
+    "val_ppl": 3.3256295767872706,
+    "best_val": 1.2016590025862366,
+    "improved": true
+  },
+  "checkpoint_mb": {
+    "best.pt": 98.06,
+    "final.pt": 98.06,
+    "step_00001600.pt": 294.19,
+    "step_00001800.pt": 294.19
+  },
+  "dataset_train_tokens": 13167347,
+  "stage": "sft",
+  "peak_rss_mb": 637.6,
+  "peak_mps_driver_mb": 2414.3,
+  "config_fingerprint": "0175b4f21dc5",
+  "tokenizer_fingerprint": "a5b02e834f0a7d9e4cd5984933ecedf305903be712968afa79cf82118c66d74b",
+  "device": "mps",
+  "precision": "fp32"
+}

@@ -1,0 +1,5331 @@
+{
+  "version": 1,
+  "model": {
+    "params": 25698816,
+    "context_length": 512,
+    "vocab_size": 4096,
+    "device": "cpu",
+    "tokenizer_fingerprint": "a5b02e834f0a7d9e4cd5984933ecedf305903be712968afa79cf82118c66d74b",
+    "step": 11000,
+    "val_loss": 1.2588106751441956,
+    "val_perplexity": 3.5212311083181884,
+    "stage": "pretrain",
+    "experiment": "exp_018_medium_tinystories",
+    "checkpoint": "experiments/exp_018_medium_tinystories/checkpoints/best.pt"
+  },
+  "loss": {
+    "val": {
+      "loss": 1.2630095638876935,
+      "stderr": 0.003626245840678191,
+      "perplexity": 3.53604745029945,
+      "perplexity_stderr": 0.012822577359089102,
+      "tokens": 1498624,
+      "rows": 2927,
+      "top1": 0.6604098159378203,
+      "top5": 0.8996372672531602,
+      "windows": 2927,
+      "complete": true,
+      "bits_per_byte": 0.4607174802569173
+    },
+    "test": {
+      "loss": 1.2693573466320032,
+      "stderr": 0.003913214152728552,
+      "perplexity": 3.55856490362791,
+      "perplexity_stderr": 0.013925426544279853,
+      "tokens": 1510912,
+      "rows": 2951,
+      "top1": 0.6590178647068791,
+      "top5": 0.898821374110471,
+      "windows": 2951,
+      "complete": true,
+      "bits_per_byte": 0.4629159628670283
+    }
+  },
+  "generation": {
+    "greedy": {
+      "samples": [
+        {
+          "id": "p000",
+          "prompt": "Once upon a time, there was a little girl named Lily.",
+          "text": " She had a big, red ball. She loved to play with her ball in the park. One day, she saw a small, helpless bird on the ground. The bird could not fly. Lily wanted to help the bird.\nLily had an idea. She took her ball and threw it far away. The ball went into the woods. Lily went to find the bird. She saw the bird in a tree. The bird was scared, but Lily wanted to help. She threw her ball to the bird. The bird was happy and flew away.\nLily felt good about helping the helpless bird. She went back to play with her ball. She knew that she had done a good thing. Lily went home and told her mom about the bird. Her mom was proud of her. Lily learned that it is good to help others when they need it.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p001",
+          "prompt": "Once upon a time, there was a little girl named Tom.",
+          "text": " Tom loved to play with his toy cars. One day, he found a big, red car in his room. He was very happy and wanted to play with it right away.\nTom's mom saw him playing with the car and said, \"Tom, you need to behave and be careful with your toys.\" Tom nodded and promised to be good. He played with the car all day, making it go fast and slow.\nBut one day, Tom's toy car broke. He was very sad and didn't know what to do. His mom saw him crying and said, \"Don't worry, Tom. We can fix your car together.\" They worked together to fix the car. After they fixed it, Tom was happy again. He learned to behave and be more careful with his toys.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p002",
+          "prompt": "Once upon a time, there was a little girl named Mia.",
+          "text": " Mia loved to play with her toys. One day, she found a big box in her room. She was very excited to see what was inside.\nMia opened the box and found a big, soft teddy bear. She loved the teddy bear and played with it all day. But then, something unexpected happened. The teddy bear started to talk! It said, \"Mia, I am a magic teddy bear. I can make your toys come to life!\"\nMia was very surprised. She asked the teddy bear to make her toys come to life. The teddy bear said, \"I will make your toys come to life!\" Mia and her toys had a lot of fun. They played with the teddy bear all day long.\nAt the end of the day, Mia's mom came into the room. She saw the teddy bear and said, \"Mia, you are so lucky to have a magic teddy bear. I will give you a special gift.\" Mia was very happy. She knew that",
+          "finish_reason": "length"
+        },
+        {
+          "id": "p003",
+          "prompt": "Once upon a time, there was a little girl named Ben.",
+          "text": " She was three years old and loved to play with her toys. One day, she was playing in her room when she heard a noise coming from the closet. She was curious and wanted to see what was inside.\nShe opened the closet door and saw a big, furry, furry creature. It was a little mouse! Ben was so excited and he wanted to play with it. He asked the mouse, \"What are you doing here?\"\nThe mouse replied, \"I'm looking for something to eat. Can you help me?\"\nBen was so happy to help the mouse. He said, \"Yes, I can help you!\"\nBen and the mouse went to the kitchen and found some yummy food. They ate it together and it was so yummy!\nThe mouse thanked Ben for helping him and said, \"You're a very kind boy. I'm so glad I could help you.\"\nBen smiled and said, \"You're welcome! I'm glad I could help.\"",
+          "finish_reason": "length"
+        },
+        {
+          "id": "p004",
+          "prompt": "Once upon a time, there was a little girl named Sam.",
+          "text": " She was three years old and loved to play with her toys. One day, she was playing in her room when she heard a noise coming from the closet. She was curious and wanted to find out what was making the noise.\nShe opened the closet door and saw a big, furry, furry creature. It was a little mouse! Sam was so excited and wanted to play with it. She asked the mouse, \"What are you doing here?\"\nThe mouse replied, \"I'm looking for something to eat. Can you help me?\"\nSam was so excited and said, \"Yes! I can help you!\" He carefully opened the closet door and the mouse hopped inside. Sam was so happy to have a new friend.\nThe mouse said, \"Thank you for helping me. I'm so glad you found me!\" Sam smiled and said, \"You're welcome! I'm glad I could help!\"\nThe mouse and Sam became best friends and played together every day. They",
+          "finish_reason": "length"
+        },
+        {
+          "id": "p005",
+          "prompt": "Once upon a time, there was a little girl named Anna.",
+          "text": " She loved to play with her toys and eat yummy food. One day, Anna found a big, red apple in her kitchen. She was very happy and wanted to eat it.\nAnna took a big bite of the apple. But it was not sweet like the apple she ate. It was bitter and made her mouth hurt. She did not like the taste at all. Anna's mom saw her and said, \"Anna, you should not eat that bitter apple. It is not good for you.\"\nAnna felt sad and said, \"I'm sorry, Mom. I will not eat the bitter apple again.\" Her mom hugged her and said, \"It's okay, Anna. We all make mistakes. Next time, we will eat something good.\"\nFrom that day on, Anna learned to be careful and not eat bitter things. She still loved to play with her toys and eat good food. And she always remembered to eat good food and not eat bitter things.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p006",
+          "prompt": "Once upon a time, there was a little girl named Max.",
+          "text": " Max was very excited because he was going to the park with his mom. When they got there, Max saw a big, red ball. He wanted to play with it, but his mom said, \"No, Max. You can't play with the ball.\"\nMax was sad, but he listened to his mom. He played with the ball and had lots of fun. Then, Max saw a big, red ball. He wanted to play with it, but he remembered what his mom said. Max thought, \"I should not play with the ball. It is not safe.\"\nMax's mom saw that he was sad. She said, \"Max, you should listen to your mom. She knows what is best for you.\" Max learned his lesson and promised to listen to his mom next time. From that day on, Max always listened to his mom and played with safe toys.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p007",
+          "prompt": "Once upon a time, there was a little girl named Sue.",
+          "text": " Sue loved to play with her toys. One day, she found a big box in her room. She was very excited to see what was inside.\nSue opened the box and found a big, soft teddy bear. She loved the teddy bear and played with it all day. But then, something unexpected happened. The teddy bear started to talk! It said, \"Sue, I am a magic teddy bear. I can make your toys come to life!\"\nSue was very surprised. She asked the teddy bear to make her toys come to life. The teddy bear said, \"I will make your toys come to life!\" Sue was so happy. She played with her toys all day long. The magic teddy bear made her toys come to life. Sue and her toys had lots of fun together.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p008",
+          "prompt": "Once upon a time, there was a little girl named Jack.",
+          "text": " She was three years old and loved to play with her toys. One day, she was playing in her room when she heard a noise coming from the closet. She was curious and wanted to see what was inside.\nShe opened the closet door and saw a big, furry, furry creature. It was a little mouse! Jack was so excited and he wanted to play with it. He reached out his hand and the mouse ran away.\nJack was so happy that he started to laugh. He chased the mouse around the house and played with it. He even made a little house for the mouse.\nBut then, the mouse stopped and looked at Jack. It was scared and it ran away. Jack was sad and he started to cry. He wanted to find the mouse and make it feel better.\nHe looked around the house and he saw a big, furry cat. The cat was very friendly and it came closer to Jack. Jack was so happy and he hugged the cat. He",
+          "finish_reason": "length"
+        },
+        {
+          "id": "p009",
+          "prompt": "Once upon a time, there was a little girl named Emma.",
+          "text": " Emma loved to play with her toys and eat yummy food. One day, she found a big, red apple in her kitchen. She was very happy and wanted to eat it.\nEmma took the apple to her room and started to eat it. But, she did not know that the apple was not good. It was old and had started to rot. Emma was sad and did not know what to do.\nEmma's mom saw her sad face and asked, \"Emma, why are you sad?\" Emma told her mom about the rot apple. Her mom said, \"Don't worry, we can make a new apple together.\" So, Emma and her mom made a new apple and shared it with Emma's mom. They both enjoyed the new apple and were happy.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p010",
+          "prompt": "One day, a boy named Lily found a shiny red ball in the park.",
+          "text": " She was very happy and wanted to play with it. She asked her friend, Tom, \"Do you want to play with my shiny red ball?\"\nTom said, \"Yes, let's play!\" They played with the ball all day long. They threw it, kicked it, and rolled it. They had so much fun.\nBut then, something unexpected happened. The ball went into the woods. Lily and Tom went to find it. They found a big, scary bear. The bear was angry and wanted to take the ball. Lily and Tom were scared, but they had an idea.\nLily said, \"Let's ask the bear to give the ball back.\" They went to the bear and asked, \"Can we have the ball back, please?\" The bear thought for a moment and then said, \"Okay, but you must promise to be nice to me.\"\nLily and Tom agreed to be nice to the bear. They gave the ball back to the bear. The",
+          "finish_reason": "length"
+        },
+        {
+          "id": "p011",
+          "prompt": "One day, a boy named Tom found a shiny red ball in the park.",
+          "text": " He was very happy and wanted to play with it. He ran to the ball and started to play. Tom kicked the ball high in the sky and it went very far. He ran to get it, but he did not see a big rock on the ground.\nTom tripped on the rock and fell down. He felt a little pain in his leg. He cried and cried. His mom came to help him. She put a bandage on his leg and gave him a hug. She told him to be careful next time.\nTom learned that he should be careful when playing with things he does not know. He also learned that he should be careful when playing with his ball. He also learned that he should be careful when he plays. He also learned that he should be careful and not play too rough with things he does not know. He also learned that he should be careful and not play too rough. He hugged his mom and said he loved her. He was a good boy.",
+          "finish_reason": "length"
+        }
+      ],
+      "distinct_1": 0.09816077702004547,
+      "distinct_2": 0.4355105415460934,
+      "distinct_3": 0.6781062642133554,
+      "mean_sample_distinct_2": 0.8001068317558111,
+      "loop_fraction": 0.0,
+      "max_token_run": 1,
+      "nonword_rate": 0.0,
+      "capitalised_sentence_frac": 0.9757575757575757,
+      "clean_ending_frac": 0.825,
+      "entity_consistency": 1.0,
+      "eot_rate": 0.775,
+      "natural_end_rate": 0.775,
+      "mean_tokens": 146.975,
+      "mean_words": 120.975,
+      "mean_chars": 587.6,
+      "empty_fraction": 0.0,
+      "mean_tokens_per_sec": 218.81896886664177
+    },
+    "sampled": {
+      "samples": [
+        {
+          "id": "p000",
+          "prompt": "Once upon a time, there was a little girl named Lily.",
+          "text": " She loved to play outside in the sun. One day, she found a small, harmless bug in her yard. The bug was green and had lots of legs. Lily liked to watch the bug crawl on her toe.\nLily's mom told her to be careful, but Lily wanted to watch the bug crawl. She put the bug on a leaf and watched it crawl around the yard. The bug was very small and had many legs. Lily laughed and clapped her hands.\nAfter a while, Lily's mom said it was time to go inside. Lily wanted to stay in the yard and watch the bug crawl by. She said goodbye to the bug and went inside. Lily was happy to be outside and watch the bug crawl around the yard.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p001",
+          "prompt": "Once upon a time, there was a little girl named Tom.",
+          "text": " She loved to play with her toys and run in the yard. One day, she found a shiny crystal in the dirt. She was very happy and showed it to her mom.\n\"Look, Mom! I found a crystal!\" said Tom. His mom smiled and said, \"That's very nice, Tom. But be careful, it might break if you drop it.\"\nTom didn't listen to his mom. He played with the crystal all day. He rolled it, threw it, and even made it drop to the ground. But then, the crystal started to break in two pieces. Tom was very sad and scared.\nHe showed the broken crystal to his mom. His mom hugged him and said, \"It's okay, Tom. You tried your best, and now you're not scared anymore.\" Tom learned that he should listen to his mom, and that he should listen to his mom and be careful. And from that day on, Tom was not scared of things anymore",
+          "finish_reason": "length"
+        },
+        {
+          "id": "p002",
+          "prompt": "Once upon a time, there was a little girl named Mia.",
+          "text": " She loved to play with her toys and make new friends. One day, Mia found a pretty jewel in her room. The jewel was shiny and bright, and she wanted to keep it safe.\nMia showed the jewel to her mom and dad. They were very happy that Mia found the jewel. They told her that the jewel was very special, and they would let her keep it forever. Mia was very happy to have a new jewel that was safe and shiny.\nEvery day, Mia and her family would play with the jewel. They would roll it, hide it, and even try to keep it safe. Mia loved her shiny jewel and took it everywhere she went. She knew it was special, and they were very proud of her.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p003",
+          "prompt": "Once upon a time, there was a little girl named Ben.",
+          "text": " She loved to play with her ball. One day, she went to the park to play with her ball.\nWhile playing, Ben saw a big, smelly dog. The dog looked at Ben and started to bark. Ben was scared and ran to his mom. He told her about the smelly dog.\nHis mom said, \"Don't worry, Ben. I will help you.\" She went to the dog and asked if it was okay. The dog stopped barking and wagged its tail. Ben's mom went back to him and gave him a hug. Ben and the dog became best friends and played together every day.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p004",
+          "prompt": "Once upon a time, there was a little girl named Sam.",
+          "text": " She liked to play with her toys and run around her room. One day, Sam's mom gave her a new toy. It was a big, red ball.\nSam was very happy with her new toy. She played with it all day long. She would throw it, catch it, and roll it around. Her mom told her to be careful and not to lose the ball.\nOne day, Sam was playing with her ball in the yard. She threw it high in the air and it hit the tree. The ball got stuck in a tall tree. Sam tried to get it, but she was too small. She was sad and cried. Her mom came to help her and helped her get the ball.\nSam learned that it is important to be careful when playing with toys and to be careful. She also learned that it is important to listen to her mom and be careful with things she does not know. And Sam promised to be more careful next time.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p005",
+          "prompt": "Once upon a time, there was a little girl named Anna.",
+          "text": " She loved to play outside with her friends. One day, she went to a park to have fun. The park was big and open. Anna saw a beautiful tree with many fruits.\nAnna wanted to pick the fruits from the tree. She asked her friend, Tom, to help her. Tom said, \"Yes, I will help you, Anna.\" They picked the fruits together. They were very happy.\nThey took the fruits home to share with their families. They were excited to eat the fruits. But then, they saw a little dog. The dog looked at the fruits and wagged its tail. The dog wanted to eat the fruits too. Anna and Tom laughed and shared the fruits with the little dog. The dog became their new friend. They all played together at the park.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p006",
+          "prompt": "Once upon a time, there was a little girl named Max.",
+          "text": " Max liked to play with his toy car. One day, Max saw a big, dirty box in his room. He wanted to see what was inside. So, he used his toy car to push the box.\nMax pushed the box open with his toy car. Inside the box, he found a big, dirty teddy bear. The teddy bear was sad because he had a dirty teddy bear. Max thought that maybe the teddy bear was dirty and not as dirty as his old one.\nMax took the dirty teddy bear to his room. He cleaned the dirty teddy bear and put it in a big, dirty box. Max was happy to see the clean teddy bear clean. He took the teddy bear out and played with it all day. Max knew that the dirty box was the best gift he ever had.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p007",
+          "prompt": "Once upon a time, there was a little girl named Sue.",
+          "text": " Sue liked to play in her garden. One day, she saw something interesting in the dirt. It was a small plant. She wanted to see it grow big and tall.\nSue went to the garden and saw the plant had many colors. She was very happy. She sat down next to the plant and started to study it. She asked her mom, \"Can I study the plant, please?\"\nHer mom smiled and said, \"Yes, you can study the plant. But be careful not to break it.\" Sue sat down and looked at the plant. She saw that the plant was very small, but it was also very interesting.\nSue was very proud of her plant. She put it in a cup with water. Every day, she watched the plant grow big and tall. Sue loved to study the plant and learn about it. She was happy to study the interesting plant and have a friend like it.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p008",
+          "prompt": "Once upon a time, there was a little girl named Jack.",
+          "text": " She was only 3 years old and loved to play in the park.\nOne day, when she was playing, Jack heard a noise. It was a bird, trying to get away. Jack was scared and wanted to help the bird.\nHe ran over to the bird and tried to help it, but the bird was scared. He wanted to get away from the bird and be brave.\nThe bird didn't want to be scared. It kept trying to get away from the bird. Jack was persistent and kept asking and listening.\nFinally, the bird flew away. Jack was so happy he could help it. He waved goodbye to the bird and went back to playing in the park.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p009",
+          "prompt": "Once upon a time, there was a little girl named Emma.",
+          "text": " She was three years old and loved to explore. One day, she decided to go on a special adventure.\nShe packed her things and started her journey. She found an old, mysterious cave and decided to explore inside. She opened the door and stepped inside. She saw some dust and it was very disgusting.\nEmma wanted to go back and explore the cave but she was too scared. She tried to hide in the cave, but it was too dark and strange. She had to remain in the cave.\nSuddenly, the walls started to tremble. They were getting closer and closer. Emma knew she had to get out of the cave.\nEmma tried to get out, but the walls were very slippery. She could not move her way out. She was so scared and sad.\nThen, Emma heard a voice from outside. It was her mom and dad. They told her to come out of the cave.\nEmma was so scared that",
+          "finish_reason": "length"
+        },
+        {
+          "id": "p010",
+          "prompt": "One day, a boy named Lily found a shiny red ball in the park.",
+          "text": " He was very happy and wanted to play with it. He asked his mom, \"Can I play with the ball, please?\" His mom said, \"Yes, but be careful.\"\nLily and her mom played with the ball. They threw it back and forth, and they had a lot of fun. But then, Lily accidentally dropped the ball. It rolled away and rolled into the street. Lily and her mom ran after it. They looked left and right, but the ball was gone.\nLily was very sad and cried. Her mom said, \"Don't worry, we will find it.\" They looked and looked, but they could not find the ball. The sun went down and it was time to go home. Lily was still sad, and her mom said, \"Maybe we can find the ball.\"\nThey looked and looked, but they could not find the ball. They went home, feeling sad, and tired from their long day. The end.",
+          "finish_reason": "eot"
+        },
+        {
+          "id": "p011",
+          "prompt": "One day, a boy named Tom found a shiny red ball in the park.",
+          "text": " He was very happy and wanted to play with it. He took the ball and went to the park.\nTom saw a girl named Sue. Sue was sad because she lost her toy. Tom wanted to help Sue. He asked her, \"Why are you sad?\" Sue said, \"I lost my red ball. I cannot find it anywhere.\"\nTom and Sue looked for the red ball. They looked under the slide, behind the swings, and near the swings. Then, something unexpected happened. Tom and Sue found a big box. They opened the box and saw many balls inside. Tom and Sue were very happy. They played with the balls all day long.",
+          "finish_reason": "eot"
+        }
+      ],
+      "distinct_1": 0.12790435371080533,
+      "distinct_2": 0.5372292418772563,
+      "distinct_3": 0.8178740690589031,
+      "mean_sample_distinct_2": 0.8585478635143154,
+      "loop_fraction": 0.025,
+      "max_token_run": 1,
+      "nonword_rate": 0.0,
+      "capitalised_sentence_frac": 0.9731543624161074,
+      "clean_ending_frac": 0.9,
+      "entity_consistency": 1.0,
+      "eot_rate": 0.9,
+      "natural_end_rate": 0.9,
+      "mean_tokens": 133.475,
+      "mean_words": 110.825,
+      "mean_chars": 546.5,
+      "empty_fraction": 0.0,
+      "mean_tokens_per_sec": 181.32298461968404
+    }
+  },
+  "instruction": {
+    "greedy": {
+      "pass_rate": {
+        "pass": 52,
+        "n": 192,
+        "rate": 0.2708333333333333,
+        "ci95": [
+          0.2129,
+          0.3377
+        ],
+        "n_distinct": 111,
+        "ci95_clustered": [
+          0.1741,
+          0.4045
+        ]
+      },
+      "by_task": {
+        "dialogue": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ],
+          "n_distinct": 1,
+          "ci95_clustered": [
+            0.0,
+            0.0
+          ]
+        },
+        "emotion": {
+          "pass": 1,
+          "n": 16,
+          "rate": 0.0625,
+          "ci95": [
+            0.0111,
+            0.2833
+          ],
+          "n_distinct": 7,
+          "ci95_clustered": [
+            0.0,
+            0.2727
+          ]
+        },
+        "long": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ],
+          "n_distinct": 1,
+          "ci95_clustered": [
+            0.0,
+            0.0
+          ]
+        },
+        "long_topic": {
+          "pass": 6,
+          "n": 16,
+          "rate": 0.375,
+          "ci95": [
+            0.1848,
+            0.6136
+          ],
+          "n_distinct": 13,
+          "ci95_clustered": [
+            0.1176,
+            0.6667
+          ]
+        },
+        "name": {
+          "pass": 8,
+          "n": 16,
+          "rate": 0.5,
+          "ci95": [
+            0.28,
+            0.72
+          ],
+          "n_distinct": 13,
+          "ci95_clustered": [
+            0.1538,
+            0.7619
+          ]
+        },
+        "name_emotion": {
+          "pass": 1,
+          "n": 16,
+          "rate": 0.0625,
+          "ci95": [
+            0.0111,
+            0.2833
+          ],
+          "n_distinct": 15,
+          "ci95_clustered": [
+            0.0,
+            0.2
+          ]
+        },
+        "name_topic": {
+          "pass": 8,
+          "n": 16,
+          "rate": 0.5,
+          "ci95": [
+            0.28,
+            0.72
+          ],
+          "n_distinct": 16,
+          "ci95_clustered": [
+            0.25,
+            0.75
+          ]
+        },
+        "place": {
+          "pass": 4,
+          "n": 16,
+          "rate": 0.25,
+          "ci95": [
+            0.1018,
+            0.495
+          ],
+          "n_distinct": 8,
+          "ci95_clustered": [
+            0.0,
+            0.7273
+          ]
+        },
+        "short": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ],
+          "n_distinct": 1,
+          "ci95_clustered": [
+            0.0,
+            0.0
+          ]
+        },
+        "short_topic": {
+          "pass": 6,
+          "n": 16,
+          "rate": 0.375,
+          "ci95": [
+            0.1848,
+            0.6136
+          ],
+          "n_distinct": 8,
+          "ci95_clustered": [
+            0.0406,
+            0.7857
+          ]
+        },
+        "topic": {
+          "pass": 10,
+          "n": 16,
+          "rate": 0.625,
+          "ci95": [
+            0.3864,
+            0.8152
+          ],
+          "n_distinct": 13,
+          "ci95_clustered": [
+            0.3077,
+            0.85
+          ]
+        },
+        "two_topics": {
+          "pass": 8,
+          "n": 16,
+          "rate": 0.5,
+          "ci95": [
+            0.28,
+            0.72
+          ],
+          "n_distinct": 15,
+          "ci95_clustered": [
+            0.2,
+            0.75
+          ]
+        }
+      },
+      "by_check": {
+        "contains_all": {
+          "pass": 71,
+          "n": 144,
+          "rate": 0.4930555555555556,
+          "ci95": [
+            0.4126,
+            0.5738
+          ]
+        },
+        "has_dialogue": {
+          "pass": 0,
+          "n": 16,
+          "rate": 0.0,
+          "ci95": [
+            0.0,
+            0.1936
+          ]
+        },
+        "max_words": {
+          "pass": 6,
+          "n": 32,
+          "rate": 0.1875,
+          "ci95": [
+            0.0889,
+            0.3531
+          ]
+        },
+        "min_words": {
+          "pass": 6,
+          "n": 32,
+          "rate": 0.1875,
+          "ci95": [
+            0.0889,
+            0.3531
+          ]
+        }
+      },
+      "name_seen": {
+        "pass": 12,
+        "n": 24,
+        "rate": 0.5,
+        "ci95": [
+          0.3143,
+          0.6857
+        ]
+      },
+      "name_unseen": {
+        "pass": 5,
+        "n": 24,
+        "rate": 0.20833333333333334,
+        "ci95": [
+          0.0924,
+          0.4047
+        ]
+      },
+      "natural_end_rate": 0.7932692307692307,
+      "mean_words": 149.38942307692307,
+      "prompts": 208,
+      "scored": 192,
+      "examples": [
+        {
+          "prompt": "Could you make up a tale starring Tim?",
+          "kind": "name",
+          "passed": true,
+          "reply": "You can be the tide and I can be the tide.\"\nTim was excited. He said, \"Yes, I will make a tale!\" He started to make his tale. He drew a big sun, a house, and a tree. He was very happy with his tale.\nBut then, something unexpected happened. Tim's dog, Spot, came into the room. Spot saw the tale and thought it was a toy. He jumped on the table and knocked over the tale. The tale fell and broke. Tim was very sad.\nTim's mom came into the room and saw the broken tale. She said, \"Tim, you should not have played with Spot. Now, you must learn to be more careful.\" Tim felt bad and said, \"I'm sorry, Mom. I will be more careful next time.\"\nFrom that day on, Tim learned to be more careful when playing "
+        },
+        {
+          "prompt": "Could you make up a tale starring Zara?",
+          "kind": "name",
+          "passed": false,
+          "reply": "You can be the tide and the tide to go up and down. You can be the tide and the tide to go up and down. You can be the tide and the tide to go up and down. You can be the tide and the tide to go up and down. You can be the tide and the tide to go up and down. You can be the tide and the tide to go up and down. You can be the tide and the tide. You can be the tide and the tide. You can be the tide and the tide. You can be the tide and the tide. You can be the tide and the tide. You can be the tide and the tide. You can be the tide and the tide. You can be the tide and the tide. You can be the tide and the tide. You can be the tide and the tide. You can be the tide and the tide and the tide. Y"
+        },
+        {
+          "prompt": "Write me something about a girl or boy called Daisy.",
+          "kind": "name",
+          "passed": false,
+          "reply": "She is very small and has a pink dress. She is very small and has a pink dress. She is very pretty and has a pink dress.\nOne day, Lily and her mom go to the park. They see a big slide and a swing. Lily wants to try them all. She runs to the slide and climbs up the ladder. She sits on the top and looks down. She sees the sky and the trees and the birds. She feels happy and excited.\nBut then, Lily sees a boy on the slide. He is not nice. He is mean and rude. He pushes Lily and her mom and says, \"Go away! This is my slide!\" He pushes Lily and her mom off the slide. He laughs and says, \"Ha ha! This is my slide! You can't have it!\"\nLily feels sad and angry. She does not like the boy. She thinks h"
+        },
+        {
+          "prompt": "Could you make up a tale starring Otis?",
+          "kind": "name",
+          "passed": false,
+          "reply": "You can be the tide and the tide to go up and down. You can make the tide go up and down and make the tide go up and down. You can make the tide go up and down and make the tide go up and down. You can make the tide go up and down and make the tide go up and down. You can make the tide go up and down and make the tide go up and down. You can make the tide go up and down and make the tide go up and down. You can make the tide go up and down and make the tide go up and down. You can make the tide go up and down and make the tide go up and down. You can make the tide go up and down and make the tide go up and down. You can make the tide go up and down and make the tide go up and down. You can m"
+        },
+        {
+          "prompt": "Could you make up a tale starring Tim?",
+          "kind": "name",
+          "passed": true,
+          "reply": "You can be the tide and I can be the tide.\"\nTim was excited. He said, \"Yes, I will make a tale!\" He started to make his tale. He drew a big sun, a house, and a tree. He was very happy with his tale.\nBut then, something unexpected happened. Tim's dog, Spot, came into the room. Spot saw the tale and thought it was a toy. He jumped on the table and knocked over the tale. The tale fell and broke. Tim was very sad.\nTim's mom came into the room and saw the broken tale. She said, \"Tim, you should not have played with Spot. Now, you must learn to be more careful.\" Tim felt bad and said, \"I'm sorry, Mom. I will be more careful next time.\"\nFrom that day on, Tim learned to be more careful when playing "
+        },
+        {
+          "prompt": "Write me something about a girl or boy called Ingrid.",
+          "kind": "name",
+          "passed": false,
+          "reply": "She is very small and has a big head. She is very small and has a big head. She is very small and has a big head.\nOne day, Lily and her mom go to the park. Lily sees a big slide. She wants to go on the slide. She runs to the slide and climbs up the ladder. She sits on the top and looks down. She feels scared. She does not want to go on the slide.\nBut then, she sees a boy on the slide. He is bigger than her. He has a big smile and a big smile. He says, \"Hi, I'm Ben. Do you want to play with me?\" Lily nods and says, \"Yes, I do. What is your name?\" Ben says, \"I'm Lily. I'm new here. Do you want to play with me?\" Lily says, \"Yes, I do. What is your name?\" Ben says, \"I'm Ben. What is your name?\" "
+        }
+      ],
+      "per_prompt": [
+        {
+          "id": "i000",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Tim?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 168
+        },
+        {
+          "id": "i001",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Zara?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 304
+        },
+        {
+          "id": "i002",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Daisy.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 309
+        },
+        {
+          "id": "i003",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Otis?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 340
+        },
+        {
+          "id": "i004",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Tim?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 168
+        },
+        {
+          "id": "i005",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Ingrid.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 209
+        },
+        {
+          "id": "i006",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Ben.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 265
+        },
+        {
+          "id": "i007",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Kofi.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 323
+        },
+        {
+          "id": "i008",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Tim?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 168
+        },
+        {
+          "id": "i009",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Mateo?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 76
+        },
+        {
+          "id": "i010",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Bob?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 93
+        },
+        {
+          "id": "i011",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Priya?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 69
+        },
+        {
+          "id": "i012",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Ben.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 265
+        },
+        {
+          "id": "i013",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Bram?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 75
+        },
+        {
+          "id": "i014",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Tommy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 299
+        },
+        {
+          "id": "i015",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Yuki.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 162
+        },
+        {
+          "id": "i016",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a moon.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 345
+        },
+        {
+          "id": "i017",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a fairy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 105
+        },
+        {
+          "id": "i018",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a frog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 314
+        },
+        {
+          "id": "i019",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a bell.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 66
+        },
+        {
+          "id": "i020",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 228
+        },
+        {
+          "id": "i021",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a car.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 64
+        },
+        {
+          "id": "i022",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a ball.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 104
+        },
+        {
+          "id": "i023",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a teacher.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 361
+        },
+        {
+          "id": "i024",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a flower.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 258
+        },
+        {
+          "id": "i025",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 109
+        },
+        {
+          "id": "i026",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a book.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 88
+        },
+        {
+          "id": "i027",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 109
+        },
+        {
+          "id": "i028",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a dog.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 148
+        },
+        {
+          "id": "i029",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a fish.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 140
+        },
+        {
+          "id": "i030",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 109
+        },
+        {
+          "id": "i031",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a dog.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 148
+        },
+        {
+          "id": "i032",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Tim meets a frog.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 320
+        },
+        {
+          "id": "i033",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Zara meets a bell.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 36
+        },
+        {
+          "id": "i034",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Mia meets a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 255
+        },
+        {
+          "id": "i035",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Otis meets a ball.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 107
+        },
+        {
+          "id": "i036",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Kitty meets a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 56
+        },
+        {
+          "id": "i037",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Ingrid meets a book.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i038",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Mia meets a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 311
+        },
+        {
+          "id": "i039",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Kofi meets a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 321
+        },
+        {
+          "id": "i040",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Bob meets a toy.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 67
+        },
+        {
+          "id": "i041",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Mateo meets a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 253
+        },
+        {
+          "id": "i042",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Ben meets a apple.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 311
+        },
+        {
+          "id": "i043",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Priya meets a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 117
+        },
+        {
+          "id": "i044",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Tommy meets a car.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 289
+        },
+        {
+          "id": "i045",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Bram meets a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 155
+        },
+        {
+          "id": "i046",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Tim meets a ball.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 82
+        },
+        {
+          "id": "i047",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Yuki meets a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 124
+        },
+        {
+          "id": "i048",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a moon and a star.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 75
+        },
+        {
+          "id": "i049",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a fairy and a ball.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 93
+        },
+        {
+          "id": "i050",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a frog and a turtle.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 72
+        },
+        {
+          "id": "i051",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a bell and a mouse.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 128
+        },
+        {
+          "id": "i052",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a ball and a dog.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 37
+        },
+        {
+          "id": "i053",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a flower and a star.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 29
+        },
+        {
+          "id": "i054",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a toy and a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 62
+        },
+        {
+          "id": "i055",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a toy and a ball.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 51
+        },
+        {
+          "id": "i056",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a fish and a boat.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 24
+        },
+        {
+          "id": "i057",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a toy and a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 46
+        },
+        {
+          "id": "i058",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a dog and a cat.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 72
+        },
+        {
+          "id": "i059",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a dog and a cat.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 72
+        },
+        {
+          "id": "i060",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a apple and a bear.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 128
+        },
+        {
+          "id": "i061",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a bird and a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 53
+        },
+        {
+          "id": "i062",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a bear and a garden.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 67
+        },
+        {
+          "id": "i063",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a ball and a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 68
+        },
+        {
+          "id": "i064",
+          "kind": "place",
+          "prompt": "Give me a story happening at the forest.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 44
+        },
+        {
+          "id": "i065",
+          "kind": "place",
+          "prompt": "Give me a story happening at the pond.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 92
+        },
+        {
+          "id": "i066",
+          "kind": "place",
+          "prompt": "Give me a story happening at the town.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 319
+        },
+        {
+          "id": "i067",
+          "kind": "place",
+          "prompt": "Give me a story happening at the school.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 324
+        },
+        {
+          "id": "i068",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 368
+        },
+        {
+          "id": "i069",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 368
+        },
+        {
+          "id": "i070",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 368
+        },
+        {
+          "id": "i071",
+          "kind": "place",
+          "prompt": "Give me a story happening at the forest.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 44
+        },
+        {
+          "id": "i072",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 368
+        },
+        {
+          "id": "i073",
+          "kind": "place",
+          "prompt": "Give me a story happening at the garden.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 319
+        },
+        {
+          "id": "i074",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 368
+        },
+        {
+          "id": "i075",
+          "kind": "place",
+          "prompt": "Give me a story happening at the farm.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 157
+        },
+        {
+          "id": "i076",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 368
+        },
+        {
+          "id": "i077",
+          "kind": "place",
+          "prompt": "Give me a story happening at the pond.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 92
+        },
+        {
+          "id": "i078",
+          "kind": "place",
+          "prompt": "Give me a story happening at the village.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 42
+        },
+        {
+          "id": "i079",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 368
+        },
+        {
+          "id": "i080",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 129
+        },
+        {
+          "id": "i081",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 98
+        },
+        {
+          "id": "i082",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 129
+        },
+        {
+          "id": "i083",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 129
+        },
+        {
+          "id": "i084",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 98
+        },
+        {
+          "id": "i085",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is surprised.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 78
+        },
+        {
+          "id": "i086",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is proud.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 101
+        },
+        {
+          "id": "i087",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is lonely.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 104
+        },
+        {
+          "id": "i088",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is curious.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 21
+        },
+        {
+          "id": "i089",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 98
+        },
+        {
+          "id": "i090",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 129
+        },
+        {
+          "id": "i091",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 98
+        },
+        {
+          "id": "i092",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is brave.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 21
+        },
+        {
+          "id": "i093",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 98
+        },
+        {
+          "id": "i094",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 98
+        },
+        {
+          "id": "i095",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is lonely.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 104
+        },
+        {
+          "id": "i096",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Lily is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 87
+        },
+        {
+          "id": "i097",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Zara is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 350
+        },
+        {
+          "id": "i098",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Mia is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 95
+        },
+        {
+          "id": "i099",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Otis is surprised.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 205
+        },
+        {
+          "id": "i100",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Ben is curious.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 333
+        },
+        {
+          "id": "i101",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Ingrid is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 94
+        },
+        {
+          "id": "i102",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Tim is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 52
+        },
+        {
+          "id": "i103",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Kofi is brave.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 296
+        },
+        {
+          "id": "i104",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Mia is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 95
+        },
+        {
+          "id": "i105",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Mateo is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 131
+        },
+        {
+          "id": "i106",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Jack is excited.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 86
+        },
+        {
+          "id": "i107",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Priya is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 303
+        },
+        {
+          "id": "i108",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Max is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 88
+        },
+        {
+          "id": "i109",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Bram is angry.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 223
+        },
+        {
+          "id": "i110",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Tim is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 57
+        },
+        {
+          "id": "i111",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Yuki is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 81
+        },
+        {
+          "id": "i112",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i113",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i114",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i115",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i116",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i117",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i118",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i119",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i120",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i121",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i122",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i123",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i124",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i125",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i126",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i127",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 133
+        },
+        {
+          "id": "i128",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i129",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i130",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i131",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i132",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i133",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i134",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i135",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i136",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i137",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i138",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i139",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i140",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i141",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i142",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i143",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 101
+        },
+        {
+          "id": "i144",
+          "kind": "short_topic",
+          "prompt": "A brief story about a toy, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 347
+        },
+        {
+          "id": "i145",
+          "kind": "short_topic",
+          "prompt": "A brief story about a bird, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 116
+        },
+        {
+          "id": "i146",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cat, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 48
+        },
+        {
+          "id": "i147",
+          "kind": "short_topic",
+          "prompt": "A brief story about a dog, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 100
+        },
+        {
+          "id": "i148",
+          "kind": "short_topic",
+          "prompt": "A brief story about a fish, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i149",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cake, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 76
+        },
+        {
+          "id": "i150",
+          "kind": "short_topic",
+          "prompt": "A brief story about a bird, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 116
+        },
+        {
+          "id": "i151",
+          "kind": "short_topic",
+          "prompt": "A brief story about a bird, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 116
+        },
+        {
+          "id": "i152",
+          "kind": "short_topic",
+          "prompt": "A brief story about a bird, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 116
+        },
+        {
+          "id": "i153",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cat, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 48
+        },
+        {
+          "id": "i154",
+          "kind": "short_topic",
+          "prompt": "A brief story about a bird, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 116
+        },
+        {
+          "id": "i155",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cat, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 48
+        },
+        {
+          "id": "i156",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cookie, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 56
+        },
+        {
+          "id": "i157",
+          "kind": "short_topic",
+          "prompt": "A brief story about a fish, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i158",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cat, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 48
+        },
+        {
+          "id": "i159",
+          "kind": "short_topic",
+          "prompt": "A brief story about a duck, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 212
+        },
+        {
+          "id": "i160",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a duck, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 347
+        },
+        {
+          "id": "i161",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a frog, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i162",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a car, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 73
+        },
+        {
+          "id": "i163",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a tree, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 221
+        },
+        {
+          "id": "i164",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a frog, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 137
+        },
+        {
+          "id": "i165",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a box, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 93
+        },
+        {
+          "id": "i166",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a doll, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 95
+        },
+        {
+          "id": "i167",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a rainbow, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 94
+        },
+        {
+          "id": "i168",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a tree, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 221
+        },
+        {
+          "id": "i169",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a dog, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 344
+        },
+        {
+          "id": "i170",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a rabbit, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 113
+        },
+        {
+          "id": "i171",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a fish, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 143
+        },
+        {
+          "id": "i172",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a cat, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 193
+        },
+        {
+          "id": "i173",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a cave, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 330
+        },
+        {
+          "id": "i174",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a elephant, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 55
+        },
+        {
+          "id": "i175",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a box, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 93
+        },
+        {
+          "id": "i176",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i177",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i178",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i179",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i180",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i181",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i182",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i183",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i184",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i185",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i186",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i187",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i188",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i189",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i190",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        },
+        {
+          "id": "i191",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 15
+        }
+      ]
+    },
+    "sampled": {
+      "pass_rate": {
+        "pass": 72,
+        "n": 192,
+        "rate": 0.375,
+        "ci95": [
+          0.3096,
+          0.4453
+        ],
+        "n_distinct": 111,
+        "ci95_clustered": [
+          0.2832,
+          0.4663
+        ]
+      },
+      "by_task": {
+        "dialogue": {
+          "pass": 11,
+          "n": 16,
+          "rate": 0.6875,
+          "ci95": [
+            0.444,
+            0.8584
+          ],
+          "n_distinct": 1,
+          "ci95_clustered": [
+            0.6875,
+            0.6875
+          ]
+        },
+        "emotion": {
+          "pass": 3,
+          "n": 16,
+          "rate": 0.1875,
+          "ci95": [
+            0.0659,
+            0.4301
+          ],
+          "n_distinct": 7,
+          "ci95_clustered": [
+            0.0,
+            0.4615
+          ]
+        },
+        "long": {
+          "pass": 4,
+          "n": 16,
+          "rate": 0.25,
+          "ci95": [
+            0.1018,
+            0.495
+          ],
+          "n_distinct": 1,
+          "ci95_clustered": [
+            0.25,
+            0.25
+          ]
+        },
+        "long_topic": {
+          "pass": 4,
+          "n": 16,
+          "rate": 0.25,
+          "ci95": [
+            0.1018,
+            0.495
+          ],
+          "n_distinct": 13,
+          "ci95_clustered": [
+            0.0588,
+            0.4667
+          ]
+        },
+        "name": {
+          "pass": 5,
+          "n": 16,
+          "rate": 0.3125,
+          "ci95": [
+            0.1416,
+            0.556
+          ],
+          "n_distinct": 13,
+          "ci95_clustered": [
+            0.0,
+            0.55
+          ]
+        },
+        "name_emotion": {
+          "pass": 3,
+          "n": 16,
+          "rate": 0.1875,
+          "ci95": [
+            0.0659,
+            0.4301
+          ],
+          "n_distinct": 15,
+          "ci95_clustered": [
+            0.0,
+            0.375
+          ]
+        },
+        "name_topic": {
+          "pass": 8,
+          "n": 16,
+          "rate": 0.5,
+          "ci95": [
+            0.28,
+            0.72
+          ],
+          "n_distinct": 16,
+          "ci95_clustered": [
+            0.25,
+            0.75
+          ]
+        },
+        "place": {
+          "pass": 11,
+          "n": 16,
+          "rate": 0.6875,
+          "ci95": [
+            0.444,
+            0.8584
+          ],
+          "n_distinct": 8,
+          "ci95_clustered": [
+            0.3333,
+            0.8519
+          ]
+        },
+        "short": {
+          "pass": 6,
+          "n": 16,
+          "rate": 0.375,
+          "ci95": [
+            0.1848,
+            0.6136
+          ],
+          "n_distinct": 1,
+          "ci95_clustered": [
+            0.375,
+            0.375
+          ]
+        },
+        "short_topic": {
+          "pass": 6,
+          "n": 16,
+          "rate": 0.375,
+          "ci95": [
+            0.1848,
+            0.6136
+          ],
+          "n_distinct": 8,
+          "ci95_clustered": [
+            0.222,
+            0.5556
+          ]
+        },
+        "topic": {
+          "pass": 6,
+          "n": 16,
+          "rate": 0.375,
+          "ci95": [
+            0.1848,
+            0.6136
+          ],
+          "n_distinct": 13,
+          "ci95_clustered": [
+            0.1667,
+            0.6154
+          ]
+        },
+        "two_topics": {
+          "pass": 5,
+          "n": 16,
+          "rate": 0.3125,
+          "ci95": [
+            0.1416,
+            0.556
+          ],
+          "n_distinct": 15,
+          "ci95_clustered": [
+            0.0667,
+            0.5625
+          ]
+        }
+      },
+      "by_check": {
+        "contains_all": {
+          "pass": 66,
+          "n": 144,
+          "rate": 0.4583333333333333,
+          "ci95": [
+            0.3791,
+            0.5397
+          ]
+        },
+        "has_dialogue": {
+          "pass": 11,
+          "n": 16,
+          "rate": 0.6875,
+          "ci95": [
+            0.444,
+            0.8584
+          ]
+        },
+        "max_words": {
+          "pass": 14,
+          "n": 32,
+          "rate": 0.4375,
+          "ci95": [
+            0.2817,
+            0.6067
+          ]
+        },
+        "min_words": {
+          "pass": 8,
+          "n": 32,
+          "rate": 0.25,
+          "ci95": [
+            0.1325,
+            0.4211
+          ]
+        }
+      },
+      "name_seen": {
+        "pass": 13,
+        "n": 24,
+        "rate": 0.5416666666666666,
+        "ci95": [
+          0.3507,
+          0.7211
+        ]
+      },
+      "name_unseen": {
+        "pass": 3,
+        "n": 24,
+        "rate": 0.125,
+        "ci95": [
+          0.0434,
+          0.31
+        ]
+      },
+      "natural_end_rate": 0.9086538461538461,
+      "mean_words": 135.82692307692307,
+      "prompts": 208,
+      "scored": 192,
+      "examples": [
+        {
+          "prompt": "Could you make up a tale starring Tim?",
+          "kind": "name",
+          "passed": true,
+          "reply": "It will be fun!\" Tim thought about it and said, \"Okay, I will try!\"\nTim started to build the tale. He put the blocks in a big box. The tale was very hard, but he did it. He made a big tower. Tim was happy. He said, \"Look, Mom! I made a big tower!\" His mom smiled and said, \"Good job, Tim!\"\nLater, Tim's friend, Sam, came over to play. They played with toys and had a great time. Sam said, \"I made a big tower with my blocks!\" Tim was happy he learned how to build a big tower."
+        },
+        {
+          "prompt": "Could you make up a tale starring Zara?",
+          "kind": "name",
+          "passed": false,
+          "reply": "If you do a good job, you can get a surprise!\"\nThe man smiled and said, \"Yes! That sounds like a great idea!\"\nThe man gave the man a special box and said, \"Go ahead and try your best.\"\nThe man opened the box and there was a beautiful toy car inside! He was so happy and thanked the man for his help. He took it home and played with it all day.\nThe man and the little boy became best friends. They had lots of fun together and the man never forgot how nice he was."
+        },
+        {
+          "prompt": "Write me something about a girl or boy called Daisy.",
+          "kind": "name",
+          "passed": false,
+          "reply": "She wants to help her mom. She asks her dad what she can do.\nHer dad says, \"First, you need to use your eyes and your nose and your nose. Then you can hear me and I can tell you what you want to hear. Do you want to try it?\"\nLily says, \"Yes, I want to try it. What is it?\"\nHer dad says, \"You need to use your nose and your nose and your nose. You just need to rub your nose and make it feel good. Then you can hear me and remember me. I love you, Lily.\"\nLily says, \"I love you too, dad. Can I have a turn?\"\nHer dad says, \"Of course, Lily. You can have a turn if you want. But first, you have to wash your hands and face. You need to wash your hands and your nose. Then you can listen to me and tell m"
+        },
+        {
+          "prompt": "Could you make up a tale starring Otis?",
+          "kind": "name",
+          "passed": false,
+          "reply": "It would be fun!\"\nThe squirrel smiled and nodded.\nThe bear ran off to find some leaves. He put them in a pile and started to make a new picture. The squirrel watched as he made a beautiful picture.\nThe bear was so proud of his work. He showed the picture to all of the other animals in the forest. They all thought it was very nice.\nThe bear smiled and was happy he could help his new friends. He was glad he could show them the picture he made."
+        },
+        {
+          "prompt": "Could you make up a tale starring Tim?",
+          "kind": "name",
+          "passed": true,
+          "reply": "You have to say a magic word. If you say the magic word, something fun will happen!\" Tim thought about it and said the magic word, \"Share!\" and the toy started to move. Tim was so happy and thanked the magic word. From that day on, Tim and his toy had many more fun adventures together."
+        },
+        {
+          "prompt": "Write me something about a girl or boy called Ingrid.",
+          "kind": "name",
+          "passed": false,
+          "reply": "Do you want to help me make a cake?\"\nLily was happy and said, \"Yes, please! I want to help you make the cake.\"\nThey went to the kitchen and found the ingredients. They put them in a big bowl and mixed it all together. Then they put the mix in a pan and put it in the oven.\nLily and Ben waited and waited. They were very busy. They did not know that they were making a big mess.\nSoon, they smelled something strange. The ingredients were black and the battery was sticking out of the pan. They smelled something strange.\n\"What is that smell?\" Lily asked.\n\"I don't know. Maybe it is not a cake,\" Ben said.\nThey took the cake out of the oven and looked at it. It was not a cake, but a big spider. It had"
+        }
+      ],
+      "per_prompt": [
+        {
+          "id": "i000",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Tim?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 100
+        },
+        {
+          "id": "i001",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Zara?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 97
+        },
+        {
+          "id": "i002",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Daisy.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 249
+        },
+        {
+          "id": "i003",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Otis?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 90
+        },
+        {
+          "id": "i004",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Tim?",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 56
+        },
+        {
+          "id": "i005",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Ingrid.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 305
+        },
+        {
+          "id": "i006",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Ben.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 246
+        },
+        {
+          "id": "i007",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Kofi.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 142
+        },
+        {
+          "id": "i008",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Tim?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 286
+        },
+        {
+          "id": "i009",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Mateo?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 305
+        },
+        {
+          "id": "i010",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Bob?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 135
+        },
+        {
+          "id": "i011",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Priya?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 77
+        },
+        {
+          "id": "i012",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Ben.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 186
+        },
+        {
+          "id": "i013",
+          "kind": "name",
+          "prompt": "Could you make up a tale starring Bram?",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 72
+        },
+        {
+          "id": "i014",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Tommy.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 266
+        },
+        {
+          "id": "i015",
+          "kind": "name",
+          "prompt": "Write me something about a girl or boy called Yuki.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 12
+        },
+        {
+          "id": "i016",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a moon.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 142
+        },
+        {
+          "id": "i017",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a fairy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 153
+        },
+        {
+          "id": "i018",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a frog.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 97
+        },
+        {
+          "id": "i019",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a bell.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 57
+        },
+        {
+          "id": "i020",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 116
+        },
+        {
+          "id": "i021",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a car.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 56
+        },
+        {
+          "id": "i022",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a ball.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 68
+        },
+        {
+          "id": "i023",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a teacher.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 245
+        },
+        {
+          "id": "i024",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a flower.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 87
+        },
+        {
+          "id": "i025",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 93
+        },
+        {
+          "id": "i026",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a book.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 195
+        },
+        {
+          "id": "i027",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a toy.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 117
+        },
+        {
+          "id": "i028",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 333
+        },
+        {
+          "id": "i029",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a fish.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 270
+        },
+        {
+          "id": "i030",
+          "kind": "topic",
+          "prompt": "Give me a story featuring a toy.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 78
+        },
+        {
+          "id": "i031",
+          "kind": "topic",
+          "prompt": "I'm in the mood for a story that has a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 82
+        },
+        {
+          "id": "i032",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Tim meets a frog.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 142
+        },
+        {
+          "id": "i033",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Zara meets a bell.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 194
+        },
+        {
+          "id": "i034",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Mia meets a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 306
+        },
+        {
+          "id": "i035",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Otis meets a ball.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 107
+        },
+        {
+          "id": "i036",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Kitty meets a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 137
+        },
+        {
+          "id": "i037",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Ingrid meets a book.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 119
+        },
+        {
+          "id": "i038",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Mia meets a toy.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 149
+        },
+        {
+          "id": "i039",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Kofi meets a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 175
+        },
+        {
+          "id": "i040",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Bob meets a toy.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 76
+        },
+        {
+          "id": "i041",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Mateo meets a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 72
+        },
+        {
+          "id": "i042",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Ben meets a apple.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 288
+        },
+        {
+          "id": "i043",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Priya meets a bird.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 118
+        },
+        {
+          "id": "i044",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Tommy meets a car.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 176
+        },
+        {
+          "id": "i045",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Bram meets a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 97
+        },
+        {
+          "id": "i046",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Tim meets a ball.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 94
+        },
+        {
+          "id": "i047",
+          "kind": "name_topic",
+          "prompt": "Make up a story in which Yuki meets a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 88
+        },
+        {
+          "id": "i048",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a moon and a star.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 123
+        },
+        {
+          "id": "i049",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a fairy and a ball.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 70
+        },
+        {
+          "id": "i050",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a frog and a turtle.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 135
+        },
+        {
+          "id": "i051",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a bell and a mouse.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 28
+        },
+        {
+          "id": "i052",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a ball and a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 28
+        },
+        {
+          "id": "i053",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a flower and a star.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 0
+        },
+        {
+          "id": "i054",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a toy and a dog.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 49
+        },
+        {
+          "id": "i055",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a toy and a ball.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 19
+        },
+        {
+          "id": "i056",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a fish and a boat.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 46
+        },
+        {
+          "id": "i057",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a toy and a bird.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 22
+        },
+        {
+          "id": "i058",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a dog and a cat.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 75
+        },
+        {
+          "id": "i059",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a dog and a cat.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 94
+        },
+        {
+          "id": "i060",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a apple and a bear.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 103
+        },
+        {
+          "id": "i061",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a bird and a tree.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 60
+        },
+        {
+          "id": "i062",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a bear and a garden.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 76
+        },
+        {
+          "id": "i063",
+          "kind": "two_topics",
+          "prompt": "Create a tale involving both a ball and a tree.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 100
+        },
+        {
+          "id": "i064",
+          "kind": "place",
+          "prompt": "Give me a story happening at the forest.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 304
+        },
+        {
+          "id": "i065",
+          "kind": "place",
+          "prompt": "Give me a story happening at the pond.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 147
+        },
+        {
+          "id": "i066",
+          "kind": "place",
+          "prompt": "Give me a story happening at the town.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 139
+        },
+        {
+          "id": "i067",
+          "kind": "place",
+          "prompt": "Give me a story happening at the school.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 272
+        },
+        {
+          "id": "i068",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 313
+        },
+        {
+          "id": "i069",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 60
+        },
+        {
+          "id": "i070",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 236
+        },
+        {
+          "id": "i071",
+          "kind": "place",
+          "prompt": "Give me a story happening at the forest.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 332
+        },
+        {
+          "id": "i072",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 77
+        },
+        {
+          "id": "i073",
+          "kind": "place",
+          "prompt": "Give me a story happening at the garden.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 328
+        },
+        {
+          "id": "i074",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 264
+        },
+        {
+          "id": "i075",
+          "kind": "place",
+          "prompt": "Give me a story happening at the farm.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 56
+        },
+        {
+          "id": "i076",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 94
+        },
+        {
+          "id": "i077",
+          "kind": "place",
+          "prompt": "Give me a story happening at the pond.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 146
+        },
+        {
+          "id": "i078",
+          "kind": "place",
+          "prompt": "Give me a story happening at the village.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 266
+        },
+        {
+          "id": "i079",
+          "kind": "place",
+          "prompt": "Give me a story happening at the park.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 288
+        },
+        {
+          "id": "i080",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 147
+        },
+        {
+          "id": "i081",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 45
+        },
+        {
+          "id": "i082",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 213
+        },
+        {
+          "id": "i083",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 83
+        },
+        {
+          "id": "i084",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 41
+        },
+        {
+          "id": "i085",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is surprised.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 84
+        },
+        {
+          "id": "i086",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is proud.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 118
+        },
+        {
+          "id": "i087",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is lonely.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 104
+        },
+        {
+          "id": "i088",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is curious.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 135
+        },
+        {
+          "id": "i089",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 130
+        },
+        {
+          "id": "i090",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 339
+        },
+        {
+          "id": "i091",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 178
+        },
+        {
+          "id": "i092",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is brave.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 31
+        },
+        {
+          "id": "i093",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 118
+        },
+        {
+          "id": "i094",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 74
+        },
+        {
+          "id": "i095",
+          "kind": "emotion",
+          "prompt": "Compose a story in which somebody is lonely.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 242
+        },
+        {
+          "id": "i096",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Lily is scared.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 250
+        },
+        {
+          "id": "i097",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Zara is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 266
+        },
+        {
+          "id": "i098",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Mia is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 105
+        },
+        {
+          "id": "i099",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Otis is surprised.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 68
+        },
+        {
+          "id": "i100",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Ben is curious.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 181
+        },
+        {
+          "id": "i101",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Ingrid is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 52
+        },
+        {
+          "id": "i102",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Tim is scared.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 216
+        },
+        {
+          "id": "i103",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Kofi is brave.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 126
+        },
+        {
+          "id": "i104",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Mia is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 106
+        },
+        {
+          "id": "i105",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Mateo is sad.",
+          "passed": true,
+          "checks": {
+            "contains_all": true
+          },
+          "words": 80
+        },
+        {
+          "id": "i106",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Jack is excited.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 86
+        },
+        {
+          "id": "i107",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Priya is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 129
+        },
+        {
+          "id": "i108",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Max is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 201
+        },
+        {
+          "id": "i109",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Bram is angry.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 269
+        },
+        {
+          "id": "i110",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Tim is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 51
+        },
+        {
+          "id": "i111",
+          "kind": "name_emotion",
+          "prompt": "Give me a story where Yuki is sad.",
+          "passed": false,
+          "checks": {
+            "contains_all": false
+          },
+          "words": 127
+        },
+        {
+          "id": "i112",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 259
+        },
+        {
+          "id": "i113",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 119
+        },
+        {
+          "id": "i114",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 77
+        },
+        {
+          "id": "i115",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 187
+        },
+        {
+          "id": "i116",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 89
+        },
+        {
+          "id": "i117",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 111
+        },
+        {
+          "id": "i118",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 146
+        },
+        {
+          "id": "i119",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 86
+        },
+        {
+          "id": "i120",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 124
+        },
+        {
+          "id": "i121",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 51
+        },
+        {
+          "id": "i122",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 106
+        },
+        {
+          "id": "i123",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 102
+        },
+        {
+          "id": "i124",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 11
+        },
+        {
+          "id": "i125",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": true,
+          "checks": {
+            "max_words": true
+          },
+          "words": 81
+        },
+        {
+          "id": "i126",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 100
+        },
+        {
+          "id": "i127",
+          "kind": "short",
+          "prompt": "Give me a brief little story.",
+          "passed": false,
+          "checks": {
+            "max_words": false
+          },
+          "words": 315
+        },
+        {
+          "id": "i128",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 169
+        },
+        {
+          "id": "i129",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 65
+        },
+        {
+          "id": "i130",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 294
+        },
+        {
+          "id": "i131",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 106
+        },
+        {
+          "id": "i132",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 107
+        },
+        {
+          "id": "i133",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 71
+        },
+        {
+          "id": "i134",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 184
+        },
+        {
+          "id": "i135",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 272
+        },
+        {
+          "id": "i136",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 99
+        },
+        {
+          "id": "i137",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 181
+        },
+        {
+          "id": "i138",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 78
+        },
+        {
+          "id": "i139",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 84
+        },
+        {
+          "id": "i140",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 127
+        },
+        {
+          "id": "i141",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": false,
+          "checks": {
+            "min_words": false
+          },
+          "words": 64
+        },
+        {
+          "id": "i142",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 239
+        },
+        {
+          "id": "i143",
+          "kind": "long",
+          "prompt": "Give me a nice long story.",
+          "passed": true,
+          "checks": {
+            "min_words": true
+          },
+          "words": 209
+        },
+        {
+          "id": "i144",
+          "kind": "short_topic",
+          "prompt": "A brief story about a toy, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 131
+        },
+        {
+          "id": "i145",
+          "kind": "short_topic",
+          "prompt": "A brief story about a bird, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 21
+        },
+        {
+          "id": "i146",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cat, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 145
+        },
+        {
+          "id": "i147",
+          "kind": "short_topic",
+          "prompt": "A brief story about a dog, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 88
+        },
+        {
+          "id": "i148",
+          "kind": "short_topic",
+          "prompt": "A brief story about a fish, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 327
+        },
+        {
+          "id": "i149",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cake, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 99
+        },
+        {
+          "id": "i150",
+          "kind": "short_topic",
+          "prompt": "A brief story about a bird, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 0
+        },
+        {
+          "id": "i151",
+          "kind": "short_topic",
+          "prompt": "A brief story about a bird, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 25
+        },
+        {
+          "id": "i152",
+          "kind": "short_topic",
+          "prompt": "A brief story about a bird, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": true
+          },
+          "words": 54
+        },
+        {
+          "id": "i153",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cat, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 54
+        },
+        {
+          "id": "i154",
+          "kind": "short_topic",
+          "prompt": "A brief story about a bird, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 195
+        },
+        {
+          "id": "i155",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cat, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": false
+          },
+          "words": 131
+        },
+        {
+          "id": "i156",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cookie, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 85
+        },
+        {
+          "id": "i157",
+          "kind": "short_topic",
+          "prompt": "A brief story about a fish, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "max_words": true
+          },
+          "words": 52
+        },
+        {
+          "id": "i158",
+          "kind": "short_topic",
+          "prompt": "A brief story about a cat, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "max_words": false
+          },
+          "words": 92
+        },
+        {
+          "id": "i159",
+          "kind": "short_topic",
+          "prompt": "A brief story about a duck, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "max_words": true
+          },
+          "words": 35
+        },
+        {
+          "id": "i160",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a duck, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 68
+        },
+        {
+          "id": "i161",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a frog, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 177
+        },
+        {
+          "id": "i162",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a car, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 116
+        },
+        {
+          "id": "i163",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a tree, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 87
+        },
+        {
+          "id": "i164",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a frog, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 84
+        },
+        {
+          "id": "i165",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a box, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": false,
+            "min_words": false
+          },
+          "words": 0
+        },
+        {
+          "id": "i166",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a doll, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 247
+        },
+        {
+          "id": "i167",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a rainbow, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 322
+        },
+        {
+          "id": "i168",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a tree, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 196
+        },
+        {
+          "id": "i169",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a dog, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 84
+        },
+        {
+          "id": "i170",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a rabbit, please.",
+          "passed": true,
+          "checks": {
+            "contains_all": true,
+            "min_words": true
+          },
+          "words": 193
+        },
+        {
+          "id": "i171",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a fish, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 79
+        },
+        {
+          "id": "i172",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a cat, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 59
+        },
+        {
+          "id": "i173",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a cave, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 156
+        },
+        {
+          "id": "i174",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a elephant, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 155
+        },
+        {
+          "id": "i175",
+          "kind": "long_topic",
+          "prompt": "A long, detailed story about a box, please.",
+          "passed": false,
+          "checks": {
+            "contains_all": true,
+            "min_words": false
+          },
+          "words": 76
+        },
+        {
+          "id": "i176",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 90
+        },
+        {
+          "id": "i177",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 138
+        },
+        {
+          "id": "i178",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 328
+        },
+        {
+          "id": "i179",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 71
+        },
+        {
+          "id": "i180",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 130
+        },
+        {
+          "id": "i181",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 317
+        },
+        {
+          "id": "i182",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 310
+        },
+        {
+          "id": "i183",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 72
+        },
+        {
+          "id": "i184",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 300
+        },
+        {
+          "id": "i185",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 90
+        },
+        {
+          "id": "i186",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 16
+        },
+        {
+          "id": "i187",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 27
+        },
+        {
+          "id": "i188",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 310
+        },
+        {
+          "id": "i189",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 35
+        },
+        {
+          "id": "i190",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": false,
+          "checks": {
+            "has_dialogue": false
+          },
+          "words": 16
+        },
+        {
+          "id": "i191",
+          "kind": "dialogue",
+          "prompt": "Write a story that is full of conversation.",
+          "passed": true,
+          "checks": {
+            "has_dialogue": true
+          },
+          "words": 201
+        }
+      ]
+    }
+  },
+  "probes": {
+    "accuracy": 0.9090909090909091,
+    "n": 55,
+    "by_category": {
+      "commonsense": {
+        "accuracy": 0.7894736842105263,
+        "n": 19
+      },
+      "grammar": {
+        "accuracy": 1.0,
+        "n": 26
+      },
+      "story_logic": {
+        "accuracy": 0.9,
+        "n": 10
+      }
+    },
+    "items": [
+      {
+        "category": "grammar",
+        "prefix": "The dogs",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -3.1891579627990723,
+        "incorrect_logp": -9.94831657409668,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The cat",
+        "correct": " is",
+        "incorrect": " are",
+        "correct_logp": -5.310351371765137,
+        "incorrect_logp": -12.8270263671875,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Tom and Mia",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -1.0518701076507568,
+        "incorrect_logp": -10.626811981201172,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "She",
+        "correct": " was",
+        "incorrect": " were",
+        "correct_logp": -3.2264082431793213,
+        "incorrect_logp": -11.436344146728516,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "They",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -3.7590153217315674,
+        "incorrect_logp": -8.33755111694336,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "I",
+        "correct": " am",
+        "incorrect": " is",
+        "correct_logp": -2.3923072814941406,
+        "incorrect_logp": -8.995466232299805,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The children",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -1.7721762657165527,
+        "incorrect_logp": -6.655905723571777,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The flowers",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -2.302921772003174,
+        "incorrect_logp": -9.439987182617188,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "We",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -1.6561120748519897,
+        "incorrect_logp": -11.96338176727295,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "You",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -1.2973971366882324,
+        "incorrect_logp": -8.319635391235352,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "It",
+        "correct": " is",
+        "incorrect": " are",
+        "correct_logp": -1.4893511533737183,
+        "incorrect_logp": -9.02819538116455,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Mia and Sam",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -1.252002477645874,
+        "incorrect_logp": -10.418449401855469,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The boy",
+        "correct": " has",
+        "incorrect": " have",
+        "correct_logp": -7.014919281005859,
+        "incorrect_logp": -11.135684967041016,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The boys",
+        "correct": " have",
+        "incorrect": " has",
+        "correct_logp": -5.733194351196289,
+        "incorrect_logp": -10.323667526245117,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "She",
+        "correct": " has",
+        "incorrect": " have",
+        "correct_logp": -5.816747665405273,
+        "incorrect_logp": -11.140625953674316,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "They",
+        "correct": " have",
+        "incorrect": " has",
+        "correct_logp": -5.173373222351074,
+        "incorrect_logp": -10.240203857421875,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "This",
+        "correct": " is",
+        "incorrect": " are",
+        "correct_logp": -0.45633554458618164,
+        "incorrect_logp": -6.9445672035217285,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "These",
+        "correct": " are",
+        "incorrect": " is",
+        "correct_logp": -0.9477939605712891,
+        "incorrect_logp": -5.326261520385742,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "He",
+        "correct": " was",
+        "incorrect": " were",
+        "correct_logp": -2.7176034450531006,
+        "incorrect_logp": -10.805926322937012,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The birds",
+        "correct": " were",
+        "incorrect": " was",
+        "correct_logp": -2.0629310607910156,
+        "incorrect_logp": -8.928543090820312,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Yesterday, they",
+        "correct": " played",
+        "incorrect": " play",
+        "correct_logp": -3.2544288635253906,
+        "incorrect_logp": -5.3130974769592285,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Tomorrow, we will",
+        "correct": " play",
+        "incorrect": " played",
+        "correct_logp": -2.6266937255859375,
+        "incorrect_logp": -11.289010047912598,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Mia looked at",
+        "correct": " herself",
+        "incorrect": " himself",
+        "correct_logp": -6.214014530181885,
+        "incorrect_logp": -8.118043899536133,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "Tom looked at",
+        "correct": " himself",
+        "incorrect": " herself",
+        "correct_logp": -6.000960350036621,
+        "incorrect_logp": -8.157344818115234,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "The girl said she",
+        "correct": " was",
+        "incorrect": " were",
+        "correct_logp": -1.5318679809570312,
+        "incorrect_logp": -9.986003875732422,
+        "passed": true
+      },
+      {
+        "category": "grammar",
+        "prefix": "He",
+        "correct": " likes",
+        "incorrect": " like",
+        "correct_logp": -6.061497688293457,
+        "incorrect_logp": -10.728978157043457,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The sun is very",
+        "correct": " hot",
+        "incorrect": " cold",
+        "correct_logp": -0.9856067299842834,
+        "incorrect_logp": -6.6421685218811035,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Ice is very",
+        "correct": " cold",
+        "incorrect": " hot",
+        "correct_logp": -4.582530975341797,
+        "incorrect_logp": -4.142712593078613,
+        "passed": false
+      },
+      {
+        "category": "commonsense",
+        "prefix": "A fire is",
+        "correct": " hot",
+        "incorrect": " cold",
+        "correct_logp": -2.5163888931274414,
+        "incorrect_logp": -7.435295104980469,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Fish live in the",
+        "correct": " water",
+        "incorrect": " sky",
+        "correct_logp": -3.9948034286499023,
+        "incorrect_logp": -3.8074746131896973,
+        "passed": false
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Birds fly in the",
+        "correct": " sky",
+        "incorrect": " water",
+        "correct_logp": -0.19430239498615265,
+        "incorrect_logp": -7.307530879974365,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "A fish can",
+        "correct": " swim",
+        "incorrect": " fly",
+        "correct_logp": -3.8124289512634277,
+        "incorrect_logp": -4.82846212387085,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "We see with our",
+        "correct": " eyes",
+        "incorrect": " nose",
+        "correct_logp": -3.045335292816162,
+        "incorrect_logp": -8.451847076416016,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "We smell with our",
+        "correct": " nose",
+        "incorrect": " eyes",
+        "correct_logp": -4.9056830406188965,
+        "incorrect_logp": -2.4894661903381348,
+        "passed": false
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Grass is",
+        "correct": " green",
+        "incorrect": " purple",
+        "correct_logp": -8.786667823791504,
+        "incorrect_logp": -9.278412818908691,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The sky is",
+        "correct": " blue",
+        "incorrect": " green",
+        "correct_logp": -2.251445770263672,
+        "incorrect_logp": -7.35505485534668,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "Snow is",
+        "correct": " white",
+        "incorrect": " black",
+        "correct_logp": -7.245449066162109,
+        "incorrect_logp": -6.074930667877197,
+        "passed": false
+      },
+      {
+        "category": "commonsense",
+        "prefix": "When it rains, the ground gets",
+        "correct": " wet",
+        "incorrect": " dry",
+        "correct_logp": -0.20018425583839417,
+        "incorrect_logp": -4.791138648986816,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "She was hungry, so she ate some",
+        "correct": " food",
+        "incorrect": " rocks",
+        "correct_logp": -3.0893197059631348,
+        "incorrect_logp": -9.587738990783691,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "He was sleepy, so he went to",
+        "correct": " bed",
+        "incorrect": " swim",
+        "correct_logp": -1.2566384077072144,
+        "incorrect_logp": -10.744558334350586,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The water was cold, so she felt",
+        "correct": " cold",
+        "incorrect": " hot",
+        "correct_logp": -5.359155654907227,
+        "incorrect_logp": -6.7035698890686035,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "We use a spoon to eat",
+        "correct": " soup",
+        "incorrect": " rocks",
+        "correct_logp": -3.9668915271759033,
+        "incorrect_logp": -12.151728630065918,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "A baby is very",
+        "correct": " small",
+        "incorrect": " old",
+        "correct_logp": -1.4272606372833252,
+        "incorrect_logp": -5.899236679077148,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "The elephant is very",
+        "correct": " big",
+        "incorrect": " tiny",
+        "correct_logp": -2.9369425773620605,
+        "incorrect_logp": -8.316010475158691,
+        "passed": true
+      },
+      {
+        "category": "commonsense",
+        "prefix": "An ant is very",
+        "correct": " small",
+        "incorrect": " big",
+        "correct_logp": -1.9861243963241577,
+        "incorrect_logp": -3.665680408477783,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Tom lost his toy and he felt",
+        "correct": " sad",
+        "incorrect": " happy",
+        "correct_logp": -1.7433993816375732,
+        "incorrect_logp": -7.086753845214844,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Mia got a big present and she felt",
+        "correct": " happy",
+        "incorrect": " sad",
+        "correct_logp": -2.440101146697998,
+        "incorrect_logp": -6.367190361022949,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "The dog was thirsty, so he drank some",
+        "correct": " water",
+        "incorrect": " sand",
+        "correct_logp": -0.17606393992900848,
+        "incorrect_logp": -11.202412605285645,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Ben was tired, so he took a",
+        "correct": " nap",
+        "incorrect": " run",
+        "correct_logp": -0.17299200594425201,
+        "incorrect_logp": -11.425787925720215,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Sam fell down and he started to",
+        "correct": " cry",
+        "incorrect": " dance",
+        "correct_logp": -0.0987754538655281,
+        "incorrect_logp": -11.098173141479492,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "Anna won the game and she felt",
+        "correct": " proud",
+        "incorrect": " sad",
+        "correct_logp": -3.2235960960388184,
+        "incorrect_logp": -2.5011959075927734,
+        "passed": false
+      },
+      {
+        "category": "story_logic",
+        "prefix": "The boy was scared, so he ran to his",
+        "correct": " mom",
+        "incorrect": " toy",
+        "correct_logp": -0.49526718258857727,
+        "incorrect_logp": -6.93959379196167,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "It was dark, so she turned on the",
+        "correct": " light",
+        "incorrect": " sun",
+        "correct_logp": -0.8154561519622803,
+        "incorrect_logp": -7.169378280639648,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "He was very hungry, so he wanted to",
+        "correct": " eat",
+        "incorrect": " sleep",
+        "correct_logp": -0.46440911293029785,
+        "incorrect_logp": -7.97988224029541,
+        "passed": true
+      },
+      {
+        "category": "story_logic",
+        "prefix": "She was very sleepy, so she wanted to",
+        "correct": " sleep",
+        "incorrect": " run",
+        "correct_logp": -1.806089997291565,
+        "incorrect_logp": -6.9927659034729,
+        "passed": true
+      }
+    ]
+  },
+  "edge_cases": {
+    "all_passed": true,
+    "passed": 14,
+    "total": 14,
+    "cases": [
+      {
+        "name": "single_character_prompt",
+        "passed": true,
+        "detail": "12 tokens"
+      },
+      {
+        "name": "whitespace_prompt",
+        "passed": true,
+        "detail": "12 tokens"
+      },
+      {
+        "name": "newline_prompt",
+        "passed": true,
+        "detail": "12 tokens"
+      },
+      {
+        "name": "unicode_prompt",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "emoji_only_prompt",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "control_token_text_is_inert",
+        "passed": true,
+        "detail": "control strings encode as plain text"
+      },
+      {
+        "name": "prompt_longer_than_context",
+        "passed": true,
+        "detail": "prompt 1795 tokens vs window 512"
+      },
+      {
+        "name": "single_token_generation",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "generation_longer_than_context",
+        "passed": true,
+        "detail": "1024 tokens through a 512-token window"
+      },
+      {
+        "name": "greedy_is_deterministic",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "seeded_sampling_is_reproducible",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "no_state_leaks_between_requests",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "stop_sequence_is_honoured",
+        "passed": true,
+        "detail": "stopped at 'ere'"
+      },
+      {
+        "name": "text_roundtrips_through_tokenizer",
+        "passed": true,
+        "detail": "ok"
+      }
+    ]
+  },
+  "eval_sets": {
+    "prompts": {
+      "path": "/Users/aaravkhanal/Desktop/myllm/aarav-lm/evals/prompts_v1.jsonl",
+      "sha256": "89b5ed010850267eaddd6dc0b0e3f6cdf3feee7c0e9313a3fb6fae5b58022a4a",
+      "n": 40
+    },
+    "probes": {
+      "path": "/Users/aaravkhanal/Desktop/myllm/aarav-lm/evals/probes_v1.jsonl",
+      "sha256": "901a559c9e2d267e202ed69a583ff8ea6f710508738801c1b4792fd775df0aac",
+      "n": 55
+    },
+    "instruct": {
+      "path": "/Users/aaravkhanal/Desktop/myllm/aarav-lm/evals/instruct_v2.jsonl",
+      "sha256": "c06287a1a695ec1531c572aad5756213f5c2d9e54695ea605cb44392552c2a14",
+      "n": 208
+    },
+    "dataset_fingerprint": "e2d2af8d15b183a515d56d08805cb33f69c88a0ad57934259bc2a477f0e9ceaf"
+  },
+  "settings": {
+    "max_new_tokens": 200,
+    "max_windows": null,
+    "sampled": {
+      "temperature": 0.8,
+      "top_k": 50,
+      "top_p": 0.95
+    }
+  },
+  "torch": "2.10.0",
+  "eval_seconds": 1543.9
+}
