@@ -1,0 +1,59 @@
+# First SFT run on the new `medium` (25.70M-parameter) base (exp_018), using the low-variance recipe the
+# seed-variance study (docs/RESULTS.md) found stable across seeds -- exp_009's 1-epoch/1800-step recipe, not
+# exp_012's 2-epoch/3600-step recipe, which that same study found swings 7-8 points and flips which length skill
+# is learned across seeds. A single-seed first run on a brand-new base should use the recipe least likely to give
+# a misleading result from seed luck alone; the higher-variance recipe (and a proper multi-seed treatment of
+# either) is a deliberate follow-up, not skipped by oversight.
+#
+# Recipe is otherwise UNCHANGED from sft_small_instruct_v6.yaml (same data, same seed, same every hyperparameter
+# including learning rate, not scaled for the wider base) so a difference from that run is attributable to the
+# base model alone, not to a second changed variable -- same "one axis at a time" principle used throughout this
+# project's own experiments.
+name: sft_medium_instruct_v6
+description: "First SFT of the new medium (25.70M) base on the low-variance v6 recipe, unscaled, for a clean base-model comparison."
+stage: sft
+init_from: experiments/exp_018_medium_tinystories/checkpoints/best.pt
+model_preset: medium
+model_overrides: {}
+tokenizer:
+  kind: bpe
+  vocab_size: 4096
+  artifact_dir: artifacts/tokenizer_tinystories_v2
+  train_files: []
+data:
+  sources:
+  - data/raw/instruct_v6.jsonl
+  format: auto
+  text_field: text
+  doc_separator: <|endoftext|>
+  out_dir: data/processed/instruct_v6_sft
+  val_fraction: 0.01
+  test_fraction: 0.01
+  min_chars: 20
+  max_chars: 100000
+  dedup: true
+  seed: 1337
+train:
+  seed: 1337
+  device: auto
+  precision: fp32
+  max_steps: 1800
+  batch_size: 2
+  grad_accum: 16
+  eval_batch_size: 4
+  lr: 0.0002
+  min_lr_ratio: 0.1
+  warmup_steps: 60
+  weight_decay: 0.01
+  beta1: 0.9
+  beta2: 0.95
+  grad_clip: 1.0
+  eval_interval: 200
+  eval_iters: 40
+  log_interval: 25
+  ckpt_interval: 200
+  early_stop_patience: 0
+  keep_last: 2
+  lora_rank: 0
+  lora_alpha: 16.0
+  lora_dropout: 0.0
