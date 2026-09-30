@@ -321,8 +321,24 @@ def _wait_until(pred, timeout=5.0):
     return False
 
 
-def test_client_disconnect_mid_stream_releases_the_model_promptly(live):
-    """The web UI's Stop button aborts the fetch. The lock used to stay held until a GC happened to run."""
+def test_client_disconnect_mid_stream_releases_the_model_promptly(live, monkeypatch):
+    """The web UI's Stop button aborts the fetch. The lock used to stay held until a GC happened to run.
+
+    The `tiny_run` fixture's model is trained for only 30 steps and runs on CPU: generating up to 400 tokens can
+    finish in well under a millisecond, faster than this test's own client can recv() the first SSE chunk and
+    check the lock -- an inherent race against generation speed, not the behaviour under test, and it flaked
+    (locally under load, and in CI on a slower/faster runner) exactly as that race predicts. `sample_next` is
+    patched with a small per-token delay so the server is reliably still generating when the client checks,
+    regardless of how fast the tiny model itself happens to be on whatever machine runs this."""
+    import aarav_lm.inference.engine as engine_mod
+    real_sample_next = engine_mod.sample_next
+
+    def slow_sample_next(*args, **kwargs):
+        time.sleep(0.02)
+        return real_sample_next(*args, **kwargs)
+
+    monkeypatch.setattr(engine_mod, "sample_next", slow_sample_next)
+
     base, key, engine = live
     port = int(base.rsplit(":", 1)[1])
     body = json.dumps({"prompt": "Once upon a time", "max_tokens": 400, "temperature": 1.0, "stream": True}).encode()

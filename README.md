@@ -22,7 +22,8 @@ play with her toys in the kitchen. One day, she found a big box in the kitchen. 
 
 * **Built from scratch, end to end, on an 8 GB laptop.** A byte-level BPE tokenizer, a Llama-style transformer (RoPE, RMSNorm,
   SwiGLU, grouped-query attention, KV cache), a trainer whose resume is bit-for-bit identical to an uninterrupted run, SFT and LoRA,
-  and two trained models (5M and 14M parameters; the 14M one on 103M tokens). No pretrained weights, no external model calls.
+  and four trained model sizes so far (5M, 14M, 25.7M, with a 48.1M model training on the full TinyStories corpus as this is
+  written). No pretrained weights, no external model calls.
 * **Evaluation you can trust, and the receipts.** Every score sits next to chance level and a confidence interval, models are
   compared on identical prompts, and the final test set was committed before any model was scored on it. Seven scientific problems
   in the project's own pipeline were found, fixed and tested (a subset-noise validation loss, an unweighted loss under masking, a
@@ -41,25 +42,42 @@ play with her toys in the kitchen. One day, she found a big box in the kitchen. 
 
 ## What was built, and what came out
 
-Two models have been trained from random initialisation on the M3, each with the same pipeline:
+Four model sizes have been trained from random initialisation on the M3, each with the same pipeline:
 
-| | `tiny` (v1) | `small` (v2) |
-|---|---|---|
-| **Model** | 4.95M-parameter Llama-style transformer (RMSNorm, RoPE, SwiGLU, grouped-query attention, tied embeddings) | **14,162,304** parameters, same design: 8 layers, width 384, 6 query / 2 KV heads |
-| **Context / vocabulary** | 256 / 2,048 | 512 / 4,096 |
-| **Tokenizer** | Byte-level BPE trained here on the training split only; versioned by SHA-256 | same method; 3.96 characters per token on the corpus |
-| **Data** | 60 MB of TinyStories → 15.8M training tokens | ~400 MB → **103.0M training tokens** (507,597 stories) |
-| **Pretraining** | 3,000 steps, 49.2M tokens (3.1 epochs), **79 min** | 5,500 steps, 90.1M tokens (0.87 epoch), **4.1 h** |
-| **Validation loss** (full split, ± std. error) | 7.66 → **1.642** (perplexity 5.17) | 8.43 → **1.395 ± 0.007** (perplexity 4.03); test 1.406 ± 0.007; 0.51 bits per byte |
-| **Probes** (55 minimal pairs, chance 50%) | 92.7% | 94.5% |
-| **Size** | 19.8 MB fp32, **5.06 MB int8** (+0.01% loss) — packaged in `models/` | 56.7 MB fp32, **14.35 MB int8** (+0.01% loss) — packaged in `models/` |
+| | `tiny` (v1) | `small` (v2) | `medium` | `large` |
+|---|---|---|---|---|
+| **Model** | 4.95M-parameter Llama-style transformer | **14,162,304** params: 8 layers, width 384, 6 query / 2 KV heads | **25,698,816** params: same depth as `small` (8 layers), widened to 512, 8/4 heads | **48,100,480** params: deepened to 10 layers *and* widened to 640, 10/5 heads |
+| **Context / vocabulary** | 256 / 2,048 | 512 / 4,096 | 512 / 4,096 | 512 / 4,096 |
+| **Data** | 60 MB TinyStories → 15.8M tokens | ~1.22 GB → **299.2M training tokens** available (237.6M seen across exp_004+exp_010) | same 1.22 GB corpus, 180.2M tokens (~0.6 epochs) | the **entire** 2.23 GB TinyStoriesV2-GPT4 file (previously only 1.22 GB had ever been used), 546.4M training tokens |
+| **Pretraining** | 3,000 steps, 79 min | 5,500-9,000 steps across two runs, ~12 h total | 11,000 steps, from scratch, ~10.3 h | 15,000 steps, from scratch — **in progress**, ETA ~24-36 h |
+| **Full-split validation loss** | 7.66 → 1.642 | 1.4036 (exp_004) → **1.2876 ± 0.0037** (exp_010, +147M tokens) | **1.2630 ± 0.0036** — beats `small`, with *fewer* tokens seen | not yet finished |
+| **Probes** (55 pairs, chance 50%) | 92.7% | 94.5% | not yet run | — |
+| **Size (int8)** | 5.06 MB | 14.35 MB | not yet packaged | — |
 
 Around them: SFT and LoRA fine-tuning, an evaluation suite with a regression gate, terminal chat, an
-HTTP API with hashed keys and rate limiting, and a web platform. **558 pytest tests** (run in CI on every push) plus a 12-check
-end-to-end smoke test (~10 s).
+HTTP API with hashed keys and rate limiting, and a web platform. Full pytest suite (run in CI on every push, Python
+3.11 and 3.12) plus a 12-check end-to-end smoke test (~10 s).
 
-Token counts are not parameter counts: the corpus is 103M *tokens*, the model 14.2M *parameters*
-(about 6.4 tokens seen per parameter; loss was still falling when training stopped).
+Token counts are not parameter counts: `medium`'s corpus is 180M *tokens*, the model 25.7M *parameters*.
+
+### The scale-up result, honestly: bigger helps loss, and reproducibly costs one instruction-following skill
+
+`medium` (25.7M) was scaled up from `small` on request (more parameters, more tokens) and evaluated properly —
+including catching and correcting a real mistake in the first draft of this comparison (it had accidentally
+compared against a *different* fine-tuning recipe, confounding two changes at once; see
+[docs/RESULTS.md](docs/RESULTS.md) for the full, transparent correction). The corrected, three-seed comparison
+against the recipe-matched `small` runs found two things that both survive all three seeds:
+
+* **Medium is modestly ahead on overall instruction-following pass rate**, in every one of nine greedy
+  (set × seed) comparisons.
+* **Medium reproducibly, and with high statistical confidence (p < 0.001 in every seed), loses the ability to
+  give a short answer on request** — `small` reliably produces a short response 58-100% of the time when asked;
+  `medium` does so 0-33% of the time, every seed.
+
+A genuine trade-off, not noise and not a single-seed artifact — the served model has not been changed pending a
+decision on whether that regression is acceptable or worth investigating. `large` (48.1M, training now) is the
+next scale-up step, using genuinely new tokens (the second half of TinyStories, never touched by any run before
+it) rather than more epochs of the same data.
 
 ### How good is it, honestly?
 
@@ -250,11 +268,16 @@ throttles, so measurements vary ±30% and checkpointing often is the right defau
 
 ## Scaling path and what is not built
 
-The `small` preset is trained (above), and its pretraining has been extended once: 237M tokens in all (exp_010), about 0.9 GB of text and
-roughly 40% of the 2.2 GB TinyStories file (at 3.96 bytes per token, from the measured bits per byte). That was the "cheapest next gain" for language modelling (validation loss 1.404 to 1.288);
-its effect on request following is not separable from training-seed noise with the runs so far. What is untested: several seeds of each recipe (the comparison a recipe choice needs),
-instruction data that teaches length explicitly and stays varied, and a larger model. On 8 GB, roughly
-30-50M parameters is the practical ceiling for pretraining; anything larger needs rented GPU time.
+The `small` preset's pretraining was extended once (237M tokens in all, exp_010) before the scale-up above. Both
+axes since then were pushed for real: parameters (`small` 14.2M → `medium` 25.7M → `large` 48.1M, deepening as
+well as widening past `medium`) and tokens (`medium` reused the existing 1.22 GB corpus; `large` uses the entire
+2.23 GB TinyStoriesV2-GPT4 file for the first time in this project). 48.1M is close to what was previously
+estimated as the practical 8 GB ceiling for pretraining — `large`'s real measured throughput (~1,700-2,600 tok/s,
+noticeably slower than parameter-count scaling alone predicts, since it also deepens rather than only widening)
+is the actual data point now, not an estimate. What remains untested: the same 3-seed SFT treatment on `large`
+once it finishes, instruction data that teaches length explicitly and stays varied (the lever the `medium`
+scale-up result points at), and whether `medium`'s short-response regression is fixable or inherent to scale.
+Anything past `large` needs rented GPU time.
 
 Serving many users at once: `--batch-size N` decodes concurrent requests together (exact; tested against solo generation). Not built: email verification and password reset, preference tuning (DPO), continuous
 batching, real int8 kernels, multi-GPU training, cloud deployment. The order they will be tackled in,
