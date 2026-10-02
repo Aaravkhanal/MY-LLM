@@ -1,0 +1,9 @@
+[instruct_v3.jsonl] greedy: pass 0.597  chance 0.106  95% CI (clustered, 190 distinct prompts) [0.4967, 0.6908]
+[instruct_v3.jsonl] sampled: pass 0.500  chance 0.106  95% CI (clustered, 190 distinct prompts) [0.4221, 0.5784]
+[instruct_v3.jsonl] wrote experiments/exp_023_sft_large_instruct_v6/eval/best__instruct_v3.json
+[instruct_v3.intemplate.jsonl] greedy: pass 0.701  chance 0.106  95% CI (clustered, 277 distinct prompts) [0.6466, 0.757]
+[instruct_v3.intemplate.jsonl] sampled: pass 0.649  chance 0.106  95% CI (clustered, 277 distinct prompts) [0.5958, 0.7011]
+[instruct_v3.intemplate.jsonl] wrote experiments/exp_023_sft_large_instruct_v6/eval/best__instruct_v3.intemplate.json
+[instruct_v4_final.jsonl] greedy: pass 0.576  chance 0.105  95% CI (clustered, 197 distinct prompts) [0.4805, 0.6702]
+[instruct_v4_final.jsonl] sampled: pass 0.486  chance 0.105  95% CI (clustered, 197 distinct prompts) [0.4026, 0.5644]
+[instruct_v4_final.jsonl] wrote experiments/exp_023_sft_large_instruct_v6/eval/best__instruct_v4_final.json
