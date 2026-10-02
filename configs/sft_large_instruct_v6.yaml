@@ -1,0 +1,54 @@
+# SFT (supervised fine-tuning) on the 48.10M large base model (exp_022_large_tinystories/best.pt).
+# Uses the same proven v6 instruct dataset (64.7k conversations) and the same recipe that worked
+# well for the medium model (sft_medium_instruct_v6.yaml) — only the init_from and model_preset
+# change. Scaled max_steps to 2400 (1 epoch of ~64k conversations, 2 conversations/batch,
+# 32 grad-accum steps = effective batch size 64) to match the medium recipe's epoch count.
+# This is exp_023: the first instruct/chat SFT pass on the large (48.10M) base.
+name: sft_large_instruct_v6
+description: "Chat & assistant SFT on the 48.10M large base (exp_022). Same v6 instruct recipe as sft_medium_instruct_v6, adapted for the large preset."
+stage: sft
+init_from: experiments/exp_022_large_tinystories/checkpoints/best.pt
+model_preset: large
+model_overrides: {}
+tokenizer:
+  kind: bpe
+  vocab_size: 4096
+  artifact_dir: artifacts/tokenizer_tinystories_v2
+  train_files: []
+data:
+  sources:
+  - data/raw/instruct_v6.jsonl
+  format: auto
+  text_field: text
+  doc_separator: <|endoftext|>
+  out_dir: data/processed/instruct_v6_sft
+  val_fraction: 0.01
+  test_fraction: 0.01
+  min_chars: 20
+  max_chars: 100000
+  dedup: true
+  seed: 1337
+train:
+  seed: 1337
+  device: auto
+  precision: fp32
+  max_steps: 2400
+  batch_size: 2
+  grad_accum: 16
+  eval_batch_size: 4
+  lr: 0.0002
+  min_lr_ratio: 0.1
+  warmup_steps: 80
+  weight_decay: 0.01
+  beta1: 0.9
+  beta2: 0.95
+  grad_clip: 1.0
+  eval_interval: 200
+  eval_iters: 40
+  log_interval: 25
+  ckpt_interval: 200
+  early_stop_patience: 0
+  keep_last: 2
+  lora_rank: 0
+  lora_alpha: 16.0
+  lora_dropout: 0.0
