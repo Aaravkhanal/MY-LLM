@@ -22,8 +22,8 @@ play with her toys in the kitchen. One day, she found a big box in the kitchen. 
 
 * **Built from scratch, end to end, on an 8 GB laptop.** A byte-level BPE tokenizer, a Llama-style transformer (RoPE, RMSNorm,
   SwiGLU, grouped-query attention, KV cache), a trainer whose resume is bit-for-bit identical to an uninterrupted run, SFT and LoRA,
-  and four trained model sizes so far (5M, 14M, 25.7M, with a 48.1M model training on the full TinyStories corpus as this is
-  written). No pretrained weights, no external model calls.
+  and four trained model sizes so far (5M, 14M, 25.7M, and 48.1M). The 48.1M model completed both pretraining and
+  instruction fine-tuning on this machine. No pretrained weights, no external model calls.
 * **Evaluation you can trust, and the receipts.** Every score sits next to chance level and a confidence interval, models are
   compared on identical prompts, and the final test set was committed before any model was scored on it. Seven scientific problems
   in the project's own pipeline were found, fixed and tested (a subset-noise validation loss, an unweighted loss under masking, a
@@ -37,7 +37,7 @@ play with her toys in the kitchen. One day, she found a big box in the kitchen. 
   read from the running model, API docs whose examples were run against a live server, a dashboard with keys and usage, and a status page. Dark,
   restrained, no blue or purple; tests enforce the design rules and contrast ratios, and a real browser drove every route and failure state
   ([PLATFORM.md](docs/PLATFORM.md), [UI_REDESIGN.md](docs/UI_REDESIGN.md)).
-* **Engineering discipline.** 558 tests, CI on every push, a script that re-runs CI on a fresh clone (it caught a real production bug
+* **Engineering discipline.** 564 tests, CI on every push, a script that re-runs CI on a fresh clone (it caught a real production bug
   before it shipped), and honest limits stated everywhere: this is a small story model, not a general assistant.
 
 ## What was built, and what came out
@@ -48,10 +48,10 @@ Four model sizes have been trained from random initialisation on the M3, each wi
 |---|---|---|---|---|
 | **Model** | 4.95M-parameter Llama-style transformer | **14,162,304** params: 8 layers, width 384, 6 query / 2 KV heads | **25,698,816** params: same depth as `small` (8 layers), widened to 512, 8/4 heads | **48,100,480** params: deepened to 10 layers *and* widened to 640, 10/5 heads |
 | **Context / vocabulary** | 256 / 2,048 | 512 / 4,096 | 512 / 4,096 | 512 / 4,096 |
-| **Data** | 60 MB TinyStories → 15.8M tokens | ~1.22 GB → **299.2M training tokens** available (237.6M seen across exp_004+exp_010) | same 1.22 GB corpus, 180.2M tokens (~0.6 epochs) | the **entire** 2.23 GB TinyStoriesV2-GPT4 file (previously only 1.22 GB had ever been used), 546.4M training tokens |
-| **Pretraining** | 3,000 steps, 79 min | 5,500-9,000 steps across two runs, ~12 h total | 11,000 steps, from scratch, ~10.3 h | 15,000 steps, from scratch — **in progress**, ETA ~24-36 h |
-| **Full-split validation loss** | 7.66 → 1.642 | 1.4036 (exp_004) → **1.2876 ± 0.0037** (exp_010, +147M tokens) | **1.2630 ± 0.0036** — beats `small`, with *fewer* tokens seen | not yet finished |
-| **Probes** (55 pairs, chance 50%) | 92.7% | 94.5% | not yet run | — |
+| **Data** | 60 MB TinyStories → 15.8M tokens | ~1.22 GB → **299.2M training tokens** available (237.6M seen across exp_004+exp_010) | same 1.22 GB corpus, 180.2M tokens (~0.6 epochs) | the **entire** 2.23 GB TinyStoriesV2-GPT4 file (546.4M tokens available); 245.8M tokens seen (~0.45 epochs) |
+| **Pretraining** | 3,000 steps, 79 min | 5,500-9,000 steps across two runs, ~12 h total | 11,000 steps, from scratch, ~10.3 h | **15,000 steps completed**, from scratch, 33.5 h |
+| **Full-split validation loss** | 7.66 → 1.642 | 1.4036 (exp_004) → **1.2876 ± 0.0037** (exp_010, +147M tokens) | **1.2630 ± 0.0036** — beats `small`, with *fewer* tokens seen | **1.1713 ± 0.0027** (2.76M validation tokens) |
+| **Probes** (55 pairs, chance 50%) | 92.7% | 94.5% | not yet run | 94.5% |
 | **Size (int8)** | 5.06 MB | 14.35 MB | not yet packaged | — |
 
 Around them: SFT and LoRA fine-tuning, an evaluation suite with a regression gate, terminal chat, an
@@ -75,9 +75,12 @@ against the recipe-matched `small` runs found two things that both survive all t
   `medium` does so 0-33% of the time, every seed.
 
 A genuine trade-off, not noise and not a single-seed artifact — the served model has not been changed pending a
-decision on whether that regression is acceptable or worth investigating. `large` (48.1M, training now) is the
-next scale-up step, using genuinely new tokens (the second half of TinyStories, never touched by any run before
-it) rather than more epochs of the same data.
+decision on whether that regression is acceptable or worth investigating. `large` (48.1M) has now completed:
+its full-split validation loss is **1.1713 ± 0.0027**, and its first instruction-tuned run reaches **57.6% greedy /
+48.6% sampled** on the final held-out set. That is the highest single-run greedy score in the project, but it is
+not yet a seed-replicated comparison; it also scores **0% on short requests** in greedy decoding, so model scaling
+has not fixed the length-control failure. The large model used genuinely new tokens from the second half of
+TinyStories rather than another epoch over the smaller corpus.
 
 ### How good is it, honestly?
 
